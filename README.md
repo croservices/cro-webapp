@@ -242,6 +242,9 @@ example, the earlier template could be written as:
 Which leaves the current default target in place. Should the current target
 itself be `Iterable`, it is permissible to write simply `<@_>...</@_>`.
 
+If the opening and closing iteration tags are the only thing on the line, then
+no output will be generated for those lines, making the output more pleasant.
+
 #### Conditionals
 
 The `<?$foo>...</?>` ("if") and `<!$foo>...</!>` ("unless") may be used for
@@ -270,6 +273,9 @@ The following constructs are allowed:
 
 Those wishing for more are encouraged to consider writing their logic outside of
 the template.
+
+If the opening and closing condition tags are the only thing on the line, then
+no output will be generated for those lines, making the output more pleasant.
 
 #### Subroutines and macros
 
