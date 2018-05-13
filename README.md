@@ -194,7 +194,7 @@ For example, given the template:
 ```
 <select name="country">
   <@countries>
-    <option value="<$alpha2>"><$name></option>
+    <option value="<.alpha2>"><.name></option>
   </@>
 </select>
 ```
