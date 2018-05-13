@@ -1,0 +1,3 @@
+<div class="weather-info">
+  Today's weather is <.description>, with a low of <.low>C and a high of <.high>C.
+</div>
