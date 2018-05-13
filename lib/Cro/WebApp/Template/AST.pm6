@@ -1,6 +1,7 @@
 unit module Cro::WebApp::Template::AST;
 
 role Node {
+    has Bool $.trim-trailing-horizontal-before = False;
     method compile() { ... }
 }
 
@@ -40,5 +41,20 @@ my class SmartDeref does Node is export {
         '(given (' ~ $!target.compile ~
             ') { .does(Associative) && (.<' ~ $!symbol ~ '>:exists) ?? .<' ~
             $!symbol ~ '> !! .' ~ $!symbol ~ ' })'
+    }
+}
+
+my class Iteration does ContainerNode is export {
+    has Node $.target;
+
+    method compile() {
+        my $children-compiled = @!children.map(*.compile).join(", ");
+        '(' ~ $!target.compile ~ ').map({ join "", (' ~ $children-compiled ~ ') }).join'
+    }
+}
+
+my class Sequence does ContainerNode is export {
+    method compile() {
+        '(join "", (' ~ @!children.map(*.compile).join(", ") ~ '))'
     }
 }

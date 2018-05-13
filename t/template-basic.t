@@ -38,4 +38,20 @@ is render-template($base.add('topic-2.crotmp'), { foo => 1, bar => 2 }),
     Elems is 2.
     EXPECTED
 
+is render-template($base.add('iteration-1.crotmp'),
+        {
+            countries => [
+                { name => 'Argentina', alpha2 => 'AR' },
+                { name => 'Bhutan', alpha2 => 'BT' },
+                { name => 'Czech Republic', alpha2 => 'CZ' },
+            ]
+        }),
+        q:to/EXPECTED/, 'Basic iteration using topic';
+    <select name="country">
+        <option value="AR">Argentina</option>
+        <option value="BT">Bhutan</option>
+        <option value="CZ">Czech Republic</option>
+    </select>
+    EXPECTED
+
 done-testing;
