@@ -47,6 +47,16 @@ class Cro::WebApp::Template::ASTBuilder {
             trim-trailing-horizontal-before => $*lone-start-line;
     }
 
+    method sigil-tag:sym<condition>($/) {
+        my $derefer = $<deref>.ast;
+        make Condition.new:
+            negated => $<negate> eq '!',
+            condition => $derefer(VariableAccess.new(name => '$_')),
+            children => flatten-literals($<sequence-element>.map(*.ast),
+                :trim-trailing-horizontal($*lone-end-line)),
+            trim-trailing-horizontal-before => $*lone-start-line;
+    }
+
     method deref($/) {
         make -> $target {
             SmartDeref.new: :$target, symbol => ~$<deref>

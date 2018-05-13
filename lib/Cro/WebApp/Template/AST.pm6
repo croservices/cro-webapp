@@ -45,11 +45,24 @@ my class SmartDeref does Node is export {
 }
 
 my class Iteration does ContainerNode is export {
-    has Node $.target;
+    has Node $.target is required;
 
     method compile() {
         my $children-compiled = @!children.map(*.compile).join(", ");
         '(' ~ $!target.compile ~ ').map({ join "", (' ~ $children-compiled ~ ') }).join'
+    }
+}
+
+my class Condition does ContainerNode is export {
+    has Node $.condition is required;
+    has Bool $.negated = False;
+
+    method compile() {
+        my $cond = '(' ~ $!condition.compile ~ ')';
+        my $if-true = '(' ~ @!children.map(*.compile).join(", ") ~ ').join';
+        $!negated
+            ?? "$cond ?? '' !! $if-true"
+            !! "$cond ?? $if-true !! ''"
     }
 }
 

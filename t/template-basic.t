@@ -54,4 +54,32 @@ is render-template($base.add('iteration-1.crotmp'),
     </select>
     EXPECTED
 
+is render-template($base.add('conditional-1.crotmp'), { foo => False, bar => False }),
+        q:to/EXPECTED/, 'Basic conditionals behave correctly (1)';
+    This is always here.
+    This is if bar is false
+    This is also always here.
+    EXPECTED
+
+is render-template($base.add('conditional-1.crotmp'), { foo => False, bar => True }),
+        q:to/EXPECTED/, 'Basic conditionals behave correctly (2)';
+    This is always here.
+    This is also always here.
+    EXPECTED
+
+is render-template($base.add('conditional-1.crotmp'), { foo => True, bar => False }),
+        q:to/EXPECTED/, 'Basic conditionals behave correctly (3)';
+    This is always here.
+    This is if foo is true
+    This is if bar is false
+    This is also always here.
+    EXPECTED
+
+is render-template($base.add('conditional-1.crotmp'), { foo => True, bar => True }),
+        q:to/EXPECTED/, 'Basic conditionals behave correctly (4)';
+    This is always here.
+    This is if foo is true
+    This is also always here.
+    EXPECTED
+
 done-testing;

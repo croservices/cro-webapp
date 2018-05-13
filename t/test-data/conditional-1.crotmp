@@ -1,0 +1,8 @@
+This is always here.
+<?.foo>
+This is if foo is true
+</?>
+<!.bar>
+This is if bar is false
+</!>
+This is also always here.

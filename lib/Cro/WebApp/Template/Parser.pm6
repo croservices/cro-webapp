@@ -64,6 +64,27 @@ grammar Cro::WebApp::Template::Parser {
         [ <?{ $*lone-end-line }> [ \h* \n | { $*lone-end-line = False } ] ]?
     }
 
+    token sigil-tag:sym<condition> {
+        :my $*lone-start-line = False;
+        '<' $<negate>=<[?!]>
+        [ <?after \n \h* '<' <[?!]>> { $*lone-start-line = True } ]?
+        [
+        | '.' <deref>
+        ]
+        [ \h* '>' || <.panic('malformed condition tag')> ]
+        [ <?{ $*lone-start-line }> [ \h* \n | { $*lone-start-line = False } ] ]?
+
+        <sequence-element>*
+
+        :my $*lone-end-line = False;
+        '</' $<negate>
+        [ <?after \n \h* '</' <[?!]>> { $*lone-end-line = True } ]?
+        <close-ident=.ident>?
+        [ \h* '>' || <.panic('malformed conditional closing tag')> ]
+        [ <?{ $*lone-end-line }> [ \h* \n | { $*lone-end-line = False } ] ]?
+    }
+
+
     token deref {
         $<deref>=<.ident>
     }
@@ -73,7 +94,7 @@ grammar Cro::WebApp::Template::Parser {
         | <[.$@&:]>
         # The ? and ! for boolification must be followed by a . or $ tag sigil;
         # <!DOCTYPE> and <?xml> style things must be considered literal.
-        | <[?!]> <[.$]>
+        | <[?!]> <[.$>]>
     }
 
     method panic($reason) {
