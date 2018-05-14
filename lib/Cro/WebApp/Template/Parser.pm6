@@ -1,5 +1,6 @@
 grammar Cro::WebApp::Template::Parser {
     token TOP {
+        :my $*IN-ATTRIBUTE = False;
         <sequence-element>*
         [ $ || <.panic: 'confused'> ]
     }
@@ -15,6 +16,7 @@ grammar Cro::WebApp::Template::Parser {
     }
 
     token sequence-element:sym<literal-open-tag> {
+        :my $*IN-ATTRIBUTE = True;
         '<' <![/]> <!sigil>
         <tag-element>+
         [ '>' || <.panic: "malformed tag"> ]

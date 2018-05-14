@@ -35,7 +35,7 @@ class Cro::WebApp::Template::ASTBuilder {
 
     method sigil-tag:sym<topic>($/) {
         my $derefer = $<deref>.ast;
-        make $derefer(VariableAccess.new(name => '$_'));
+        make escape($derefer(VariableAccess.new(name => '$_')));
     }
 
     method sigil-tag:sym<iteration>($/) {
@@ -88,5 +88,11 @@ class Cro::WebApp::Template::ASTBuilder {
                     !! $last-lit;
         }
         return @squashed;
+    }
+
+    sub escape($target) {
+        $*IN-ATTRIBUTE
+            ?? EscapeAttribute.new(:$target)
+            !! EscapeText.new(:$target)
     }
 }

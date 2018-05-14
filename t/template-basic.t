@@ -38,6 +38,14 @@ is render-template($base.add('topic-2.crotmp'), { foo => 1, bar => 2 }),
     Elems is 2.
     EXPECTED
 
+is render-template($base.add('escape.crotmp'),
+        { attr-esc => Q/1 & 'a' & "b" not < or >/, body-esc => '1 < 2 < 3 > 2 & so on' }),
+        q:to/EXPECTED/, 'Escaping in body and attributes works correctly';
+    <div id="1 &amp; &apos;a&apos; &amp; &quot;b&quot; not < or >">
+      1 &lt; 2 &lt; 3 &gt; 2 &amp; so on
+    </div>
+    EXPECTED
+
 is render-template($base.add('iteration-1.crotmp'),
         {
             countries => [

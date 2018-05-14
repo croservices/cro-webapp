@@ -71,3 +71,35 @@ my class Sequence does ContainerNode is export {
         '(join "", (' ~ @!children.map(*.compile).join(", ") ~ '))'
     }
 }
+
+my class EscapeText does Node is export {
+    has Node $.target;
+
+    method compile() {
+        'escape-text(' ~ $!target.compile() ~ ')'
+    }
+}
+
+my class EscapeAttribute does Node is export {
+    has Node $.target;
+
+    method compile() {
+        'escape-attribute(' ~ $!target.compile() ~ ')'
+    }
+}
+
+my constant %escapes = %(
+    '&' => '&amp;',
+    '<' => '&lt;',
+    '>' => '&gt;',
+    '"' => '&quot;',
+    "'" => '&apos;',
+);
+
+sub escape-text(Str() $text) {
+    $text.subst(/<[<>&]>/, { %escapes{.Str} }, :g)
+}
+
+sub escape-attribute(Str() $attr) {
+    $attr.subst(/<[&"']>/, { %escapes{.Str} }, :g)
+}
