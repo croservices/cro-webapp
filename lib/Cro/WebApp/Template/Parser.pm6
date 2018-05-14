@@ -86,7 +86,7 @@ grammar Cro::WebApp::Template::Parser {
 
 
     token deref {
-        $<deref>=<.ident>
+        $<deref>=<.identifier>
     }
 
     token sigil {
@@ -95,6 +95,10 @@ grammar Cro::WebApp::Template::Parser {
         # The ? and ! for boolification must be followed by a . or $ tag sigil;
         # <!DOCTYPE> and <?xml> style things must be considered literal.
         | <[?!]> <[.$>]>
+    }
+
+    token identifier {
+        <.ident> [ <[-']> <.ident> ]*
     }
 
     method panic($reason) {
