@@ -49,7 +49,7 @@ grammar Cro::WebApp::Template::Parser {
     token sigil-tag:sym<iteration> {
         :my $*lone-start-line = False;
         '<@'
-        [ <?after \n \h* '<@'> { $*lone-start-line = True } ]?
+        [ <?after [^ | $ | \n] \h* '<@'> { $*lone-start-line = True } ]?
         [
         | <deref>
         ]
@@ -69,7 +69,7 @@ grammar Cro::WebApp::Template::Parser {
     token sigil-tag:sym<condition> {
         :my $*lone-start-line = False;
         '<' $<negate>=<[?!]>
-        [ <?after \n \h* '<' <[?!]>> { $*lone-start-line = True } ]?
+        [ <?after [^ | $ | \n] \h* '<' <[?!]>> { $*lone-start-line = True } ]?
         [
         | '.' <deref>
         ]
@@ -86,6 +86,32 @@ grammar Cro::WebApp::Template::Parser {
         [ <?{ $*lone-end-line }> [ \h* \n | { $*lone-end-line = False } ] ]?
     }
 
+    token sigil-tag:sym<call> {
+        '<&'
+        <target=.identifier>
+        [ '>' || <.panic: 'malformed call tag'> ]
+    }
+
+    token sigil-tag:sym<sub> {
+        :my $*lone-start-line = False;
+        '<:sub'
+        [ <?after [^ | $ | \n] \h* '<:sub'> { $*lone-start-line = True } ]?
+        \h+
+        [
+        || <name=.identifier> \h*
+           [ '(' \h* ')' \h* ]? '>'
+        || <.panic('malformed sub declaration tag')>
+        ]
+        [ <?{ $*lone-start-line }> [ \h* \n | { $*lone-start-line = False } ] ]?
+
+        <sequence-element>*
+
+        :my $*lone-end-line = False;
+        '</:'
+        [ <?after \n \h* '</:'> { $*lone-end-line = True } ]?
+        [ 'sub'? \h* '>' || <.panic('malformed sub declaration closing tag')> ]
+        [ <?{ $*lone-end-line }> [ \h* \n | { $*lone-end-line = False } ] ]?
+    }
 
     token deref {
         $<deref>=<.identifier>

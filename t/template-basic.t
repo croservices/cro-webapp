@@ -90,4 +90,20 @@ is render-template($base.add('conditional-1.crotmp'), { foo => True, bar => True
     This is also always here.
     EXPECTED
 
+is render-template($base.add('sub-1.crotmp'), {}),
+        q:to/EXPECTED/, 'Basic no-argument sub works';
+      <header>
+        <nav>
+          blah blabh
+        </nav>
+      </header>
+
+      <header>
+        <nav>
+          blah blabh
+        </nav>
+      </header>
+
+    EXPECTED
+
 done-testing;

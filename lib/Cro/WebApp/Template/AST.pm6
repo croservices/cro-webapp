@@ -66,6 +66,24 @@ my class Condition does ContainerNode is export {
     }
 }
 
+my class TemplateSub does ContainerNode is export {
+    has Str $.name is required;
+
+    method compile() {
+        '(sub __TEMPLATE__' ~ $!name ~ "() \{\n" ~
+            'join "", (' ~ @!children.map(*.compile).join(", ") ~ ')' ~
+        "} && '')\n"
+    }
+}
+
+my class Call does Node is export {
+    has Str $.target is required;
+
+    method compile() {
+        '__TEMPLATE__' ~ $!target ~ '()'
+    }
+}
+
 my class Sequence does ContainerNode is export {
     method compile() {
         '(join "", (' ~ @!children.map(*.compile).join(", ") ~ '))'

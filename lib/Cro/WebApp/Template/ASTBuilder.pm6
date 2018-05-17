@@ -57,6 +57,18 @@ class Cro::WebApp::Template::ASTBuilder {
             trim-trailing-horizontal-before => $*lone-start-line;
     }
 
+    method sigil-tag:sym<sub>($/) {
+        make TemplateSub.new:
+            name => ~$<name>,
+            children => flatten-literals($<sequence-element>.map(*.ast),
+                :trim-trailing-horizontal($*lone-end-line)),
+            trim-trailing-horizontal-before => $*lone-start-line;
+    }
+
+    method sigil-tag:sym<call>($/) {
+        make Call.new: target => ~$<target>;
+    }
+
     method deref($/) {
         make -> $target {
             SmartDeref.new: :$target, symbol => ~$<deref>
