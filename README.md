@@ -221,11 +221,8 @@ The result would be:
 </select>
 ```
 
-The `<@foo>` form will:
-
-* Prefer a variable `$foo` as the thing to iterate (short for `<@$foo>`)
-* Otherwise, treat it as if it was short for `<@.foo>`, which follows the same
-  rules as `<.foo>` for resolution
+The `<@foo>` form is short for `<@.foo>`, and follows the same rules as `<.foo>`
+for resolution. It is also possible to write `<@$foo>` to iterate over a variable.
 
 To specify a variable to declare and populate with the current iteration value
 instead, place a `:` afterward the iteration target and name the variable. For
