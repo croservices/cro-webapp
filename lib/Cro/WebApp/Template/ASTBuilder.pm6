@@ -79,6 +79,7 @@ class Cro::WebApp::Template::ASTBuilder {
     method sigil-tag:sym<macro>($/) {
         make TemplateMacro.new:
                 name => ~$<name>,
+                parameters => $<signature> ?? $<signature>.ast !! (),
                 children => flatten-literals($<sequence-element>.map(*.ast),
                         :trim-trailing-horizontal($*lone-end-line)),
                 trim-trailing-horizontal-before => $*lone-start-line;
@@ -87,6 +88,7 @@ class Cro::WebApp::Template::ASTBuilder {
     method sigil-tag:sym<apply>($/) {
         make MacroApplication.new:
                 target => ~$<target>,
+                arguments => $<arglist> ?? $<arglist>.ast !! (),
                 children => flatten-literals($<sequence-element>.map(*.ast),
                         :trim-trailing-horizontal($*lone-end-line)),
                 trim-trailing-horizontal-before => $*lone-start-line;

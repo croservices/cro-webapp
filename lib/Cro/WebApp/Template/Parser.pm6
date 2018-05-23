@@ -105,8 +105,7 @@ grammar Cro::WebApp::Template::Parser {
         [ <?after [^ | $ | \n] \h* '<:sub'> { $*lone-start-line = True } ]?
         \h+
         [
-        || <name=.identifier> \h*
-           <signature>? '>'
+        || <name=.identifier> \h* <signature>? '>'
         || <.panic('malformed sub declaration tag')>
         ]
         [ <?{ $*lone-start-line }> [ \h* \n | { $*lone-start-line = False } ] ]?
@@ -126,8 +125,7 @@ grammar Cro::WebApp::Template::Parser {
         [ <?after [^ | $ | \n] \h* '<:macro'> { $*lone-start-line = True } ]?
         \h+
         [
-        || <name=.identifier> \h*
-        [ '(' \h* ')' \h* ]? '>'
+        || <name=.identifier> \h* <signature>? '>'
         || <.panic('malformed macro declaration tag')>
         ]
         [ <?{ $*lone-start-line }> [ \h* \n | { $*lone-start-line = False } ] ]?
@@ -152,7 +150,7 @@ grammar Cro::WebApp::Template::Parser {
         '<|'
         [ <?after [^ | $ | \n] \h* '<|'> { $*lone-start-line = True } ]?
         <target=.identifier>
-        [ \h* '>' || <.panic('malformed macro application tag')> ]
+        [ \h* <arglist>? \h* '>' || <.panic('malformed macro application tag')> ]
         [ <?{ $*lone-start-line }> [ \h* \n | { $*lone-start-line = False } ] ]?
 
         <sequence-element>*

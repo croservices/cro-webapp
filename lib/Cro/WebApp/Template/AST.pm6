@@ -100,13 +100,15 @@ my class Call does Node is export {
 
 my class TemplateMacro does ContainerNode is export {
     has Str $.name is required;
+    has Str @.parameters;
 
     method compile() {
         my $should-export = !$*IN-SUB;
         {
             my $*IN-SUB = True;
+            my $params = ('&__MACRO_BODY__', |@!parameters).join(", ");
             my $trait = $should-export ?? 'is TEMPLATE-EXPORT' !! '';
-            '(sub __TEMPLATE__' ~ $!name ~ "(&__MACRO_BODY__) $trait \{\n" ~
+            '(sub __TEMPLATE__' ~ $!name ~ "($params) $trait \{\n" ~
                     'join "", (' ~ @!children.map(*.compile).join(", ") ~ ')' ~
                     "} && '')\n"
         }
@@ -121,9 +123,11 @@ my class MacroBody does ContainerNode is export {
 
 my class MacroApplication does ContainerNode is export {
     has Str $.target is required;
+    has Node @.arguments;
 
     method compile() {
-        '__TEMPLATE__' ~ $!target ~ '({ join "", (' ~ @!children.map(*.compile).join(", ") ~ ') })'
+        my $args = @!arguments ?? ", " ~ @!arguments.map(*.compile).join(", ") !! '';
+        '__TEMPLATE__' ~ $!target ~ '({ join "", (' ~ @!children.map(*.compile).join(", ") ~ ') }' ~ $args ~ ')'
     }
 }
 

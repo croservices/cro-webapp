@@ -1,0 +1,14 @@
+<:macro page($title)>
+<html>
+  <head>
+    <title><$title></title>
+  </head>
+  <body>
+    <:body>
+  </body>
+</html>
+</:>
+
+<|page('Wow a title!')>
+  <p>This is my body</p>
+</|>

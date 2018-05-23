@@ -130,6 +130,18 @@ is norm-ws(render-template($base.add('macro-1.crotmp'), { foo => 'xxx', bar => '
       </ul>
     EXPECTED
 
+is norm-ws(render-template($base.add('macro-2.crotmp'), {})),
+        norm-ws(q:to/EXPECTED/), 'Basic no-argument macro works';
+      <html>
+        <head>
+          <title>Wow a title!</title>
+        </head>
+        <body>
+          <p>This is my body</p>
+        </body>
+      </html>
+    EXPECTED
+
 sub norm-ws($str) {
     $str.subst(:g, /\s+/, '')
 }
