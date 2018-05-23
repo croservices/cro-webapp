@@ -351,5 +351,5 @@ Template subs and macros can be factored out into other template files, and
 then imported with `<:use ...>`:
 
 ```
-<:use "common.template">
+<:use "common.crotmp">
 ```

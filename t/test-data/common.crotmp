@@ -1,0 +1,11 @@
+<:sub footer>
+    <footer>
+        Foo bar footer
+    </footer>
+</:>
+
+<:sub header>
+    <header>
+        Foo bar header
+    </header>
+</:>

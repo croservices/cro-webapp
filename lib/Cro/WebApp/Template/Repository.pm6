@@ -11,8 +11,11 @@ class X::Cro::WebApp::Template::NotFound is Exception {
 
 class Cro::WebApp::Template::Compiled {
     has &.renderer;
+    has %.exports;
+    has $.repository;
 
     method render($topic --> Str) {
+        my $*TEMPLATE-REPOSITORY = $!repository;
         &!renderer($topic)
     }
 }
@@ -49,7 +52,8 @@ sub get-template-repository() is export {
 }
 
 sub load-template($abs-path) {
+    my $*TEMPLATE-REPOSITORY = $template-repo;
     my $source = slurp($abs-path);
     my $ast = Cro::WebApp::Template::Parser.parse($source, actions => Cro::WebApp::Template::ASTBuilder).ast;
-    Cro::WebApp::Template::Compiled.new(renderer => $ast.compile)
+    Cro::WebApp::Template::Compiled.new(|$ast.compile, repository => $template-repo)
 }

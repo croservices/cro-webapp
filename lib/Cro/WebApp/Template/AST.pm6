@@ -11,9 +11,15 @@ my role ContainerNode does Node {
 
 my class Template does ContainerNode is export {
     method compile() {
+        my $*IN-SUB = False;
         my $children-compiled = @!children.map(*.compile).join(", ");
         use MONKEY-SEE-NO-EVAL;
-        EVAL 'sub ($_) { join "", (' ~ $children-compiled ~ ') }';
+        sub trait_mod:<is>(Routine $r, :$TEMPLATE-EXPORT!) {
+            %*TEMPLATE-EXPORTS{$r.name.substr('__TEMPLATE__'.chars)} = $r;
+        }
+        my %*TEMPLATE-EXPORTS;
+        my $renderer = EVAL 'sub ($_) { join "", (' ~ $children-compiled ~ ') }';
+        return { :$renderer, exports => %*TEMPLATE-EXPORTS };
     }
 }
 
@@ -70,9 +76,14 @@ my class TemplateSub does ContainerNode is export {
     has Str $.name is required;
 
     method compile() {
-        '(sub __TEMPLATE__' ~ $!name ~ "() \{\n" ~
-            'join "", (' ~ @!children.map(*.compile).join(", ") ~ ')' ~
-        "} && '')\n"
+        my $should-export = !$*IN-SUB;
+        {
+            my $*IN-SUB = True;
+            my $trait = $should-export ?? 'is TEMPLATE-EXPORT' !! '';
+            '(sub __TEMPLATE__' ~ $!name ~ "() $trait \{\n" ~
+                'join "", (' ~ @!children.map(*.compile).join(", ") ~ ')' ~
+            "} && '')\n"
+        }
     }
 }
 
@@ -87,6 +98,19 @@ my class Call does Node is export {
 my class Sequence does ContainerNode is export {
     method compile() {
         '(join "", (' ~ @!children.map(*.compile).join(", ") ~ '))'
+    }
+}
+
+my class Use does Node is export {
+    has Str $.template-name is required;
+    has @.exported-symbols;
+
+    method compile() {
+        my $decls = join ",", @!exported-symbols.map: -> $sym {
+            '(my &__TEMPLATE__' ~ $sym ~ ' = .<' ~ $sym ~ '>)'
+        }
+        '(((' ~ $decls ~ ') given await($*TEMPLATE-REPOSITORY.resolve(\'' ~
+                $!template-name ~ '\')).exports) && "")'
     }
 }
 

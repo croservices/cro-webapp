@@ -69,10 +69,20 @@ class Cro::WebApp::Template::ASTBuilder {
         make Call.new: target => ~$<target>;
     }
 
+    method sigil-tag:sym<use>($/) {
+        my $template-name = $<name>.ast;
+        my $used = await $*TEMPLATE-REPOSITORY.resolve($template-name);
+        make Use.new: :$template-name, exported-symbols => $used.exports.keys;
+    }
+
     method deref($/) {
         make -> $target {
             SmartDeref.new: :$target, symbol => ~$<deref>
         };
+    }
+
+    method single-quote-string($/) {
+        make ~$/;
     }
 
     sub flatten-literals(@children, :$trim-trailing-horizontal) {
