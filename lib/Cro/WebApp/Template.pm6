@@ -1,13 +1,11 @@
 use Cro::WebApp::Template::Repository;
 
 multi render-template(IO::Path $template-path, $initial-topic) is export {
-    my $renderer = await get-template-repository.resolve-absolute($template-path.absolute);
-    $renderer($initial-topic)
+    (await get-template-repository.resolve-absolute($template-path.absolute)).render($initial-topic)
 }
 
 multi render-template(Str $template, $initial-topic) is export {
-    my $renderer = await get-template-repository.resolve($template);
-    $renderer($initial-topic)
+    (await get-template-repository.resolve($template)).render($initial-topic);
 }
 
 sub template-location(IO() $location --> Nil) is export {

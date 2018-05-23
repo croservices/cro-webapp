@@ -9,6 +9,14 @@ class X::Cro::WebApp::Template::NotFound is Exception {
     }
 }
 
+class Cro::WebApp::Template::Compiled {
+    has &.renderer;
+
+    method render($topic --> Str) {
+        &!renderer($topic)
+    }
+}
+
 monitor Cro::WebApp::Template::Repository {
     has Promise %!abs-path-to-compiled;
     has @!search-paths = '.'.IO;
@@ -43,5 +51,5 @@ sub get-template-repository() is export {
 sub load-template($abs-path) {
     my $source = slurp($abs-path);
     my $ast = Cro::WebApp::Template::Parser.parse($source, actions => Cro::WebApp::Template::ASTBuilder).ast;
-    $ast.compile
+    Cro::WebApp::Template::Compiled.new(renderer => $ast.compile)
 }
