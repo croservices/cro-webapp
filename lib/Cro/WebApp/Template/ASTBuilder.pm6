@@ -38,6 +38,10 @@ class Cro::WebApp::Template::ASTBuilder {
         make escape($derefer(VariableAccess.new(name => '$_')));
     }
 
+    method sigil-tag:sym<variable>($/) {
+        make escape(VariableAccess.new(name => '$' ~ $<identifier>));
+    }
+
     method sigil-tag:sym<iteration>($/) {
         my $derefer = $<deref>.ast;
         make Iteration.new:
@@ -59,14 +63,17 @@ class Cro::WebApp::Template::ASTBuilder {
 
     method sigil-tag:sym<sub>($/) {
         make TemplateSub.new:
-            name => ~$<name>,
-            children => flatten-literals($<sequence-element>.map(*.ast),
-                :trim-trailing-horizontal($*lone-end-line)),
-            trim-trailing-horizontal-before => $*lone-start-line;
+                name => ~$<name>,
+                parameters => $<signature> ?? $<signature>.ast !! (),
+                children => flatten-literals($<sequence-element>.map(*.ast),
+                        :trim-trailing-horizontal($*lone-end-line)),
+                trim-trailing-horizontal-before => $*lone-start-line;
     }
 
     method sigil-tag:sym<call>($/) {
-        make Call.new: target => ~$<target>;
+        make Call.new:
+                target => ~$<target>,
+                arguments => $<arglist> ?? $<arglist>.ast !! ();
     }
 
     method sigil-tag:sym<macro>($/) {
@@ -93,6 +100,31 @@ class Cro::WebApp::Template::ASTBuilder {
         my $template-name = $<name>.ast;
         my $used = await $*TEMPLATE-REPOSITORY.resolve($template-name);
         make Use.new: :$template-name, exported-symbols => $used.exports.keys;
+    }
+
+    method signature($/) {
+        make $<parameter>.map(*.ast).list;
+    }
+
+    method parameter($/) {
+        make ~$/;
+    }
+
+    method arglist($/) {
+        make $<argument>.map(*.ast).list;
+    }
+
+    method argument:sym<single-quote-string>($/) {
+        make Literal.new(text => $<single-quote-string>.ast);
+    }
+
+    method argument:sym<variable> {
+        make VariableAccess.new(name => ~$/);
+    }
+
+    method argument:sym<deref>($/) {
+        my $derefer = $<deref>.ast;
+        make $derefer(VariableAccess.new(name => '$_'));
     }
 
     method deref($/) {

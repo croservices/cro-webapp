@@ -47,6 +47,12 @@ grammar Cro::WebApp::Template::Parser {
         [ '>' || <.panic: 'malformed topic tag'> ]
     }
 
+    token sigil-tag:sym<variable> {
+        '<$'
+        <identifier>
+        [ '>' || <.panic: 'malformed variable tag'> ]
+    }
+
     token sigil-tag:sym<iteration> {
         :my $*lone-start-line = False;
         '<@'
@@ -89,7 +95,7 @@ grammar Cro::WebApp::Template::Parser {
 
     token sigil-tag:sym<call> {
         '<&'
-        <target=.identifier> \h*
+        <target=.identifier> \h* <arglist>? \h*
         [ '>' || <.panic: 'malformed call tag'> ]
     }
 
@@ -100,7 +106,7 @@ grammar Cro::WebApp::Template::Parser {
         \h+
         [
         || <name=.identifier> \h*
-           [ '(' \h* ')' \h* ]? '>'
+           <signature>? '>'
         || <.panic('malformed sub declaration tag')>
         ]
         [ <?{ $*lone-start-line }> [ \h* \n | { $*lone-start-line = False } ] ]?
@@ -161,6 +167,32 @@ grammar Cro::WebApp::Template::Parser {
 
     token sigil-tag:sym<use> {
         '<:use' \h+ <name=.single-quote-string> \h* '>'
+    }
+
+    token signature {
+        '(' \s* <parameter>* % [\s* ',' \s*] \s* ')' \h*
+    }
+
+    token parameter {
+        '$' <.identifier>
+    }
+
+    token arglist {
+        '(' \s* <argument>* % [\s* ',' \s*] \s* ')' \h*
+    }
+
+    proto token argument { * }
+
+    token argument:sym<single-quote-string> {
+        <single-quote-string>
+    }
+
+    token argument:sym<variable> {
+        '$' <.identifier>
+    }
+
+    token argument:sym<deref> {
+        '.' <deref>
     }
 
     token deref {

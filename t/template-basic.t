@@ -106,6 +106,16 @@ is render-template($base.add('sub-1.crotmp'), {}),
 
     EXPECTED
 
+is norm-ws(render-template($base.add('sub-2.crotmp'), { greeting => 'Bonjour' })),
+        norm-ws(q:to/EXPECTED/), 'Subs with arguments work';
+    <h1>Hello world</h1>
+    <h1>Bonjour</h1>
+    <h1>Stuff</h1>
+    <p>More stuff</p>
+    <h1>Bonjour</h1>
+    <p>Yet more stuff</p>
+    EXPECTED
+
 is norm-ws(render-template($base.add('macro-1.crotmp'), { foo => 'xxx', bar => 'yyy' })),
         norm-ws(q:to/EXPECTED/), 'Basic no-argument macro works';
       <ul>

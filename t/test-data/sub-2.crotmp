@@ -1,0 +1,11 @@
+<:sub big-heading($text)>
+    <h1><$text></h1>
+</:>
+<:sub head-para($a, $b)>
+    <h1><$a></h1>
+    <p><$b></p>
+</:>
+<&big-heading('Hello world')>
+<&big-heading(.greeting)>
+<&head-para('Stuff', 'More stuff')>
+<&head-para(.greeting, 'Yet more stuff')>

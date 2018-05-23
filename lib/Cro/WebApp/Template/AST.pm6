@@ -74,13 +74,15 @@ my class Condition does ContainerNode is export {
 
 my class TemplateSub does ContainerNode is export {
     has Str $.name is required;
+    has Str @.parameters;
 
     method compile() {
         my $should-export = !$*IN-SUB;
         {
             my $*IN-SUB = True;
+            my $params = @!parameters.join(", ");
             my $trait = $should-export ?? 'is TEMPLATE-EXPORT' !! '';
-            '(sub __TEMPLATE__' ~ $!name ~ "() $trait \{\n" ~
+            '(sub __TEMPLATE__' ~ $!name ~ "($params) $trait \{\n" ~
                 'join "", (' ~ @!children.map(*.compile).join(", ") ~ ')' ~
             "} && '')\n"
         }
@@ -89,9 +91,10 @@ my class TemplateSub does ContainerNode is export {
 
 my class Call does Node is export {
     has Str $.target is required;
+    has Node @.arguments;
 
     method compile() {
-        '__TEMPLATE__' ~ $!target ~ '()'
+        '__TEMPLATE__' ~ $!target ~ '(' ~ @!arguments.map(*.compile).join(", ") ~ ')'
     }
 }
 
