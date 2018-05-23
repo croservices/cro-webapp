@@ -69,6 +69,26 @@ class Cro::WebApp::Template::ASTBuilder {
         make Call.new: target => ~$<target>;
     }
 
+    method sigil-tag:sym<macro>($/) {
+        make TemplateMacro.new:
+                name => ~$<name>,
+                children => flatten-literals($<sequence-element>.map(*.ast),
+                        :trim-trailing-horizontal($*lone-end-line)),
+                trim-trailing-horizontal-before => $*lone-start-line;
+    }
+
+    method sigil-tag:sym<apply>($/) {
+        make MacroApplication.new:
+                target => ~$<target>,
+                children => flatten-literals($<sequence-element>.map(*.ast),
+                        :trim-trailing-horizontal($*lone-end-line)),
+                trim-trailing-horizontal-before => $*lone-start-line;
+    }
+
+    method sigil-tag:sym<body>($/) {
+        make MacroBody.new;
+    }
+
     method sigil-tag:sym<use>($/) {
         my $template-name = $<name>.ast;
         my $used = await $*TEMPLATE-REPOSITORY.resolve($template-name);

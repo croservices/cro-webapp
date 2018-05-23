@@ -1,6 +1,7 @@
 grammar Cro::WebApp::Template::Parser {
     token TOP {
         :my $*IN-ATTRIBUTE = False;
+        :my $*IN-MACRO = False;
         <sequence-element>*
         [ $ || <.panic: 'confused'> ]
     }
@@ -88,7 +89,7 @@ grammar Cro::WebApp::Template::Parser {
 
     token sigil-tag:sym<call> {
         '<&'
-        <target=.identifier>
+        <target=.identifier> \h*
         [ '>' || <.panic: 'malformed call tag'> ]
     }
 
@@ -113,8 +114,53 @@ grammar Cro::WebApp::Template::Parser {
         [ <?{ $*lone-end-line }> [ \h* \n | { $*lone-end-line = False } ] ]?
     }
 
+    token sigil-tag:sym<macro> {
+        :my $*lone-start-line = False;
+        '<:macro'
+        [ <?after [^ | $ | \n] \h* '<:macro'> { $*lone-start-line = True } ]?
+        \h+
+        [
+        || <name=.identifier> \h*
+        [ '(' \h* ')' \h* ]? '>'
+        || <.panic('malformed macro declaration tag')>
+        ]
+        [ <?{ $*lone-start-line }> [ \h* \n | { $*lone-start-line = False } ] ]?
+
+        :my $*IN-MACRO = True;
+        <sequence-element>*
+
+        :my $*lone-end-line = False;
+        '</:'
+        [ <?after \n \h* '</:'> { $*lone-end-line = True } ]?
+        [ 'macro'? \h* '>' || <.panic('malformed macro declaration closing tag')> ]
+        [ <?{ $*lone-end-line }> [ \h* \n | { $*lone-end-line = False } ] ]?
+    }
+
+    token sigil-tag:sym<body> {
+        [{ $*IN-MACRO } || <.panic('Use of <:body> outside of a macro')>]
+        '<:body' \h* '>'
+    }
+
+    token sigil-tag:sym<apply> {
+        :my $*lone-start-line = False;
+        '<|'
+        [ <?after [^ | $ | \n] \h* '<|'> { $*lone-start-line = True } ]?
+        <target=.identifier>
+        [ \h* '>' || <.panic('malformed macro application tag')> ]
+        [ <?{ $*lone-start-line }> [ \h* \n | { $*lone-start-line = False } ] ]?
+
+        <sequence-element>*
+
+        :my $*lone-end-line = False;
+        '</|'
+        [ <?after \n \h* '</|'> { $*lone-end-line = True } ]?
+        <close-ident=.ident>?
+        [ \h* '>' || <.panic('malformed macro application closing tag')> ]
+        [ <?{ $*lone-end-line }> [ \h* \n | { $*lone-end-line = False } ] ]?
+    }
+
     token sigil-tag:sym<use> {
-        '<:use' \h+ <name=.single-quote-string> \h* '>' [\h* \n]?
+        '<:use' \h+ <name=.single-quote-string> \h* '>'
     }
 
     token deref {
@@ -127,7 +173,7 @@ grammar Cro::WebApp::Template::Parser {
 
     token sigil {
         # Single characters we can always take as a tag sigil
-        | <[.$@&:]>
+        | <[.$@&:|]>
         # The ? and ! for boolification must be followed by a . or $ tag sigil;
         # <!DOCTYPE> and <?xml> style things must be considered literal.
         | <[?!]> <[.$>]>

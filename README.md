@@ -318,10 +318,10 @@ And then call it, passing data or literals (which may be string or numeric value
 <&select(.countries, 'country')>
 ```
 
-A template macro works somehwat like a template subroutine, except that the
-usage has a body that may be rendered on request (0 or more times), optionally
-setting a new default target. For example, a macro wrapping some content up in
-a Bootstrap card might look like:
+A template macro works somehwat like a template subroutine, except that the usage
+of it has a body. This body is passed as a thunk, meaning that the macro can choose
+to render it 0 or more times), optionally setting a new default target. For example,
+a macro wrapping some content up in a Bootstrap card might look like:
 
 ```
 <:macro bs-card($title)>
@@ -338,12 +338,12 @@ Where `<:body>` marks the point for the body to be rendered. This macro could
 be used as:
 
 ```
-<&bs-card("My Stuff")>
+<|bs-card("My Stuff")>
   It's my stuff, in a BS card!
-</&>
+</|>
 ```
 
-To set the current target, call it as `<:body $target>`.
+To set the current target for the body in a macro, use `<:body $target>`.
 
 #### Factoring out subs and macros
 

@@ -95,6 +95,35 @@ my class Call does Node is export {
     }
 }
 
+my class TemplateMacro does ContainerNode is export {
+    has Str $.name is required;
+
+    method compile() {
+        my $should-export = !$*IN-SUB;
+        {
+            my $*IN-SUB = True;
+            my $trait = $should-export ?? 'is TEMPLATE-EXPORT' !! '';
+            '(sub __TEMPLATE__' ~ $!name ~ "(&__MACRO_BODY__) $trait \{\n" ~
+                    'join "", (' ~ @!children.map(*.compile).join(", ") ~ ')' ~
+                    "} && '')\n"
+        }
+    }
+}
+
+my class MacroBody does ContainerNode is export {
+    method compile() {
+        '__MACRO_BODY__()'
+    }
+}
+
+my class MacroApplication does ContainerNode is export {
+    has Str $.target is required;
+
+    method compile() {
+        '__TEMPLATE__' ~ $!target ~ '({ join "", (' ~ @!children.map(*.compile).join(", ") ~ ') })'
+    }
+}
+
 my class Sequence does ContainerNode is export {
     method compile() {
         '(join "", (' ~ @!children.map(*.compile).join(", ") ~ '))'
