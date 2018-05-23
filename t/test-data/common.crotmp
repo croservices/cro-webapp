@@ -9,3 +9,11 @@
         Foo bar header
     </header>
 </:>
+
+<:macro wrap>
+    <html>
+        <&header>
+        <:body>
+        <&footer>
+    </html>
+</:>

@@ -1,0 +1,15 @@
+<:macro double>
+  <ul>
+    <li>
+      <:body>
+    </li>
+    <li>
+      <:body>
+    </li>
+  </ul>
+</:>
+
+<|double>
+  <strong><.foo></strong>
+  <.bar>
+</|>
