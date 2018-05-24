@@ -79,6 +79,7 @@ grammar Cro::WebApp::Template::Parser {
         [ <?after [^ | $ | \n] \h* '<' <[?!]>> { $*lone-start-line = True } ]?
         [
         | '.' <deref>
+        | '{' <expression> '}'
         ]
         [ \h* '>' || <.panic('malformed condition tag')> ]
         [ <?{ $*lone-start-line }> [ \h* \n | { $*lone-start-line = False } ] ]?
@@ -185,6 +186,10 @@ grammar Cro::WebApp::Template::Parser {
         <single-quote-string>
     }
 
+    token argument:sym<integer> {
+        \d+
+    }
+
     token argument:sym<variable> {
         '$' <.identifier>
     }
@@ -192,6 +197,40 @@ grammar Cro::WebApp::Template::Parser {
     token argument:sym<deref> {
         '.' <deref>
     }
+
+    rule expression {
+        <?>
+        [ <term> || <.panic('unrecognized term')> ]
+        [ <infix> [ <term> || <.panic('missing or unrecognized term')> ] ]*
+    }
+
+    proto token term { * }
+    token term:sym<argument> { <argument> }
+
+    proto token infix { * }
+    token infix:sym<==> { <sym> }
+    token infix:sym<!=> { <sym> }
+    token infix:sym<< < >> { <sym> }
+    token infix:sym<< <= >> { <sym> }
+    token infix:sym<< > >> { <sym> }
+    token infix:sym<< >= >> { <sym> }
+    token infix:sym<eq> { <sym> }
+    token infix:sym<ne> { <sym> }
+    token infix:sym<lt> { <sym> }
+    token infix:sym<gt> { <sym> }
+    token infix:sym<===> { <sym> }
+    token infix:sym<!===> { <sym> }
+    token infix:sym<&&> { <sym> }
+    token infix:sym<||> { <sym> }
+    token infix:sym<and> { <sym> }
+    token infix:sym<or> { <sym> }
+    token infix:sym<+> { <sym> }
+    token infix:sym<-> { <sym> }
+    token infix:sym<*> { <sym> }
+    token infix:sym</> { <sym> }
+    token infix:sym<%> { <sym> }
+    token infix:sym<~> { <sym> }
+    token infix:sym<x> { <sym> }
 
     token deref {
         $<deref>=<.identifier>
@@ -204,9 +243,9 @@ grammar Cro::WebApp::Template::Parser {
     token sigil {
         # Single characters we can always take as a tag sigil
         | <[.$@&:|]>
-        # The ? and ! for boolification must be followed by a . or $ tag sigil;
-        # <!DOCTYPE> and <?xml> style things must be considered literal.
-        | <[?!]> <[.$>]>
+        # The ? and ! for boolification must be followed by a . or $ tag sigil or
+        # { expression. <!DOCTYPE> and <?xml> style things must be considered literal.
+        | <[?!]> <[.$>{]>
     }
 
     token identifier {

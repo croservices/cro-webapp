@@ -1,0 +1,9 @@
+<:sub testy($a, $b)>
+  <?{ $a == 2 && $b == 2 }>
+    Both two!
+  </?>
+  <?{ $a == 3 || $b == 3 }>
+    At least one three
+  </?>
+</:sub>
+<&testy(.a, .b)>

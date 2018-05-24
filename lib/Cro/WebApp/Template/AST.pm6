@@ -31,6 +31,14 @@ my class Literal does Node is export {
     }
 }
 
+my class IntLiteral does Node is export {
+    has Int $.value is required;
+
+    method compile() {
+        ~$!value
+    }
+}
+
 my class VariableAccess does Node is export {
     has Str $.name is required;
 
@@ -147,6 +155,21 @@ my class Use does Node is export {
         }
         '(((' ~ $decls ~ ') given await($*TEMPLATE-REPOSITORY.resolve(\'' ~
                 $!template-name ~ '\')).exports) && "")'
+    }
+}
+
+my class Expression does Node is export {
+    has Node @.terms;
+    has Str @.infixes;
+
+    method compile() {
+        my @terms = @!terms;
+        my @infixes = @!infixes;
+        my $compiled = '(' ~ @terms.shift.compile();
+        while @infixes {
+            $compiled ~= ' ' ~ @infixes.shift() ~ ' ' ~ @terms.shift.compile();
+        }
+        return $compiled ~ ')';
     }
 }
 

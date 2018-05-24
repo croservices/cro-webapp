@@ -52,10 +52,16 @@ class Cro::WebApp::Template::ASTBuilder {
     }
 
     method sigil-tag:sym<condition>($/) {
-        my $derefer = $<deref>.ast;
+        my $condition = do if $<deref> {
+            my $derefer = $<deref>.ast;
+            $derefer(VariableAccess.new(name => '$_'))
+        }
+        else {
+            $<expression>.ast
+        }
         make Condition.new:
             negated => $<negate> eq '!',
-            condition => $derefer(VariableAccess.new(name => '$_')),
+            condition => $condition,
             children => flatten-literals($<sequence-element>.map(*.ast),
                 :trim-trailing-horizontal($*lone-end-line)),
             trim-trailing-horizontal-before => $*lone-start-line;
@@ -120,13 +126,27 @@ class Cro::WebApp::Template::ASTBuilder {
         make Literal.new(text => $<single-quote-string>.ast);
     }
 
-    method argument:sym<variable> {
+    method argument:sym<integer>($/) {
+        make IntLiteral.new(value => +$/);
+    }
+
+    method argument:sym<variable>($/) {
         make VariableAccess.new(name => ~$/);
     }
 
     method argument:sym<deref>($/) {
         my $derefer = $<deref>.ast;
         make $derefer(VariableAccess.new(name => '$_'));
+    }
+
+    method expression($/) {
+        make Expression.new:
+                terms => $<term>.map(*.ast),
+                infixes => $<infix>.map(~*);
+    }
+
+    method term:sym<argument>($/) {
+        make $<argument>.ast;
     }
 
     method deref($/) {

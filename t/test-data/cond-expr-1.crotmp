@@ -1,0 +1,12 @@
+<?{ .foo == 42 }>
+The answer!
+</?>
+<?{ .foo < 100 }>
+Small
+</?>
+<?{ .foo > 100 }>
+Big
+</?>
+<?{ .bar eq 'golden anchor' }>
+Beer!
+</?>
