@@ -1,3 +1,9 @@
+# !!! Important Warning !!!
+
+This repository contains a work-in-progress draft of something that may end up
+being part of Cro. The things described in this README are partially implemented
+and subject to change.
+
 # Cro::WebApp
 
 The [Cro::HTTP](http://cro.services/) distribution provides a convenient way to
