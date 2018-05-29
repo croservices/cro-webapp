@@ -50,7 +50,7 @@ grammar Cro::WebApp::Template::Parser {
     token sigil-tag:sym<variable> {
         '<$'
         <identifier>
-        [ '>' || <.panic: 'malformed variable tag'> ]
+        [ ['.' <attribute=.identifier>]? '>' || <.panic: 'malformed variable tag'> ]
     }
 
     token sigil-tag:sym<iteration> {
@@ -60,7 +60,7 @@ grammar Cro::WebApp::Template::Parser {
         [
         | <deref>
         ]
-        [ \h* (':' \h* <iter=.parameter>)? '>' || <.panic('malformed iteration tag')> ]
+        [ \h* [':' \h* <iteration-variable=.parameter>]? '>' || <.panic('malformed iteration tag')> ]
         [ <?{ $*lone-start-line }> [ \h* \n | { $*lone-start-line = False } ] ]?
 
         <sequence-element>*

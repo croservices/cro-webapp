@@ -41,8 +41,10 @@ my class IntLiteral does Node is export {
 
 my class VariableAccess does Node is export {
     has Str $.name is required;
+    has $.attribute;
 
     method compile() {
+        with $!attribute { return $!name ~ "<$!attribute>" }
         $!name
     }
 }
@@ -60,10 +62,12 @@ my class SmartDeref does Node is export {
 
 my class Iteration does ContainerNode is export {
     has Node $.target is required;
+    has $.iteration-variable;
 
     method compile() {
+        $!iteration-variable //= '$_';
         my $children-compiled = @!children.map(*.compile).join(", ");
-        '(' ~ $!target.compile ~ ').map({ join "", (' ~ $children-compiled ~ ') }).join'
+        '(' ~ $!target.compile ~ ').map(-> ' ~ $!iteration-variable  ~ ' { join "", (' ~ $children-compiled ~ ') }).join'
     }
 }
 
