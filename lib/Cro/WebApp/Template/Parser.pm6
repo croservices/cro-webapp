@@ -60,7 +60,7 @@ grammar Cro::WebApp::Template::Parser {
         [
         | <deref>
         ]
-        [ \h* '>' || <.panic('malformed iteration tag')> ]
+        [ \h* (':' \h* <iter=.parameter>)? '>' || <.panic('malformed iteration tag')> ]
         [ <?{ $*lone-start-line }> [ \h* \n | { $*lone-start-line = False } ] ]?
 
         <sequence-element>*
