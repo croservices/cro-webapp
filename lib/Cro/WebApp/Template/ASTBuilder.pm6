@@ -39,7 +39,7 @@ class Cro::WebApp::Template::ASTBuilder {
     }
 
     method sigil-tag:sym<variable>($/) {
-        make escape(VariableAccess.new(name => '$' ~ $<identifier>, attribute => $<attribute>));
+        make escape(VariableAccess.new(name => '$' ~ $<identifier>, attribute => $<deref>));
     }
 
     method sigil-tag:sym<iteration>($/) {
