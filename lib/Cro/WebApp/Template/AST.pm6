@@ -60,10 +60,12 @@ my class SmartDeref does Node is export {
 
 my class Iteration does ContainerNode is export {
     has Node $.target is required;
+    has $.iteration-variable;
 
     method compile() {
+        $!iteration-variable //= '$_';
         my $children-compiled = @!children.map(*.compile).join(", ");
-        '(' ~ $!target.compile ~ ').map({ join "", (' ~ $children-compiled ~ ') }).join'
+        '(' ~ $!target.compile ~ ').map(-> ' ~ $!iteration-variable  ~ ' { join "", (' ~ $children-compiled ~ ') }).join'
     }
 }
 
