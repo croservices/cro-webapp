@@ -41,10 +41,8 @@ my class IntLiteral does Node is export {
 
 my class VariableAccess does Node is export {
     has Str $.name is required;
-    has $.attribute;
 
     method compile() {
-        with $!attribute { return $!name ~ "<$!attribute>" }
         $!name
     }
 }
