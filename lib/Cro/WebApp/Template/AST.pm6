@@ -1,3 +1,5 @@
+use Cro::WebApp::Template::Builtins;
+
 unit module Cro::WebApp::Template::AST;
 
 role Node {

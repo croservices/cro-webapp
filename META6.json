@@ -1,19 +1,26 @@
 {
-    "perl"          : "6.*",
-    "name"          : "Cro::WebApp",
-    "version"       : "0.0.1",
-    "description"   : "[DRAFT] HTML templating and other utilities for building server-side web applications with Cro.",
-    "tags"          : [ "template", "web" ],
-    "authors"       : [ "Jonathan Worthington <jnthn@jnthn.net>" ],
-    "license"       : "Artistic-2.0",
-    "depends"       : [  "Cro::HTTP" ],
-    "provides"      : {
-        "Cro::WebApp::Template": "lib/Cro/WebApp/Template.pm6",
-        "Cro::WebApp::Template::AST": "lib/Cro/WebApp/Template/AST.pm6",
-        "Cro::WebApp::Template::ASTBuilder": "lib/Cro/WebApp/Template/ASTBuilder.pm6",
-        "Cro::WebApp::Template::Parser": "lib/Cro/WebApp/Template/Parser.pm6",
-        "Cro::WebApp::Template::Repository": "lib/Cro/WebApp/Template/Repository.pm6"
-    },
+    "depends": ["Cro::HTTP"],
+    "auth": "Edument",
+    "description": "[DRAFT] HTML templating and other utilities for building server-side web applications with Cro.",
     "resources": [],
-    "source-url"    : "https://github.com/jnthn/cro-webapp.git"
+    "version": "0.0.2",
+    "tags": [
+        "template",
+        "web"
+    ],
+    "license": "Artistic-2.0",
+    "source-url": "https://github.com/jnthn/cro-webapp.git",
+    "provides": {
+        "Cro::WebApp::Template::Repository": "lib/Cro/WebApp/Template/Repository.pm6",
+        "Cro::WebApp::Template::AST": "lib/Cro/WebApp/Template/AST.pm6",
+        "Cro::WebApp::Template": "lib/Cro/WebApp/Template.pm6",
+        "Cro::WebApp::Template::Parser": "lib/Cro/WebApp/Template/Parser.pm6",
+        "Cro::WebApp::Template::Builtins": "lib/Cro/WebApp/Template/Builtins.pm6",
+        "Cro::WebApp::Template::ASTBuilder": "lib/Cro/WebApp/Template/ASTBuilder.pm6"
+    },
+    "name": "Cro::WebApp",
+    "perl": "6.*",
+    "test-depends": [],
+    "build-depends": [],
+    "authors": ["Jonathan Worthington <jnthn@jnthn.net>"]
 }

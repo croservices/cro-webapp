@@ -356,3 +356,20 @@ then imported with `<:use ...>`:
 ```
 <:use "common.crotmp">
 ```
+
+#### Inserting HTML and JavaScript
+
+Everything is HTML escaped by default. However, sometimes it is required to
+place a blob of pre-rendered HTML into the template output. There are two
+ways to achieve this.
+
+* The `HTML` built-in function, called as `<&HTML(.stuff)>`, first checks
+  that there is no `script` tag or attribute starting with `javascript:`;
+  if there are any, it will consider this as an XSS attack attempt and
+  throw an exception.
+* The `HTML-AND-JAVASCRIPT` built-in function does not attempt any XSS
+  protection, and simply inserts whatever it is given without any kind of
+  escaping.
+
+Note that the `HTML` function does not promise completely foolproof
+XSS protection. **Use both of these functions very carefully.**
