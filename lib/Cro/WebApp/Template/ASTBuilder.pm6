@@ -153,9 +153,13 @@ class Cro::WebApp::Template::ASTBuilder {
     }
 
     method deref($/) {
-        make -> $target {
-            SmartDeref.new: :$target, symbol => ~$<deref>
-        };
+        make -> $initial {
+            my $target = $initial;
+            for @<deref> {
+                $target = SmartDeref.new: :$target, symbol => ~$_;
+            }
+            $target
+        }
     }
 
     method single-quote-string($/) {

@@ -28,6 +28,19 @@ is render-template($base.add('topic-1.crotmp'), Weather.new),
     </div>
     EXPECTED
 
+my class Temperature {
+    has $.low = 12;
+    has $.high = 18;
+}
+my class WeatherNested {
+    has $.description = 'rainy';
+    has Temperature $.temp .= new;
+}
+is render-template($base.add('multi-level-deref.crotmp'), WeatherNested.new),
+        q:to/EXPECTED/, 'Multi-level smart deference';
+    Today's weather is rainy, with a low of 12C and a high of 18C.
+    EXPECTED
+
 is render-template($base.add('topic-2.crotmp'), { elems => 101 }),
         q:to/EXPECTED/, 'Topic smart deref always prefers hash key';
     Elems is 101.
