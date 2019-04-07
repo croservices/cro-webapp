@@ -16,3 +16,7 @@ sub template-location(IO() $location --> Nil) is export {
 multi template($template, $initial-topic --> Nil) is export {
     content 'text/html', render-template($template, $initial-topic);
 }
+
+multi template($template --> Nil) is export {
+    template($template, Nil);
+}

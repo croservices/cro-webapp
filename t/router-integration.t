@@ -12,6 +12,9 @@ my $application = route {
     get -> {
         template 'macro-1.crotmp', { foo => 'xxx', bar => 'yyy' };
     }
+    get -> 'nodata' {
+        template 'literal.crotmp';
+    }
 }
 my $server = Cro::HTTP::Server.new(:$application, :host('localhost'), :port(TEST_PORT));
 $server.start;
@@ -30,6 +33,13 @@ is norm-ws(await $resp.body-text), norm-ws(q:to/EXPECTED/), 'Request to a templa
           yyy
         </li>
       </ul>
+    EXPECTED
+
+lives-ok { $resp = await Cro::HTTP::Client.get("http://localhost:{TEST_PORT}/nodata") };
+is norm-ws(await $resp.body-text), norm-ws(q:to/EXPECTED/), 'Can use template without data';
+      <div>
+        <strong>Hello, I'm a template!</strong>
+      </div>
     EXPECTED
 
 sub norm-ws($str) {
