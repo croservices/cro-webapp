@@ -51,6 +51,11 @@ is render-template($base.add('topic-2.crotmp'), { foo => 1, bar => 2 }),
     Elems is 2.
     EXPECTED
 
+is render-template($base.add('topic-3.crotmp'), { elems => 101 }),
+        q:to/EXPECTED/, 'Can use <.elems()> and <.<elems>> to disamgiguate';
+    Elems method is 1. Elems key is 101.
+    EXPECTED
+
 is render-template($base.add('escape.crotmp'),
         { attr-esc => Q/1 & 'a' & "b" not < or >/, body-esc => '1 < 2 < 3 > 2 & so on' }),
         q:to/EXPECTED/, 'Escaping in body and attributes works correctly';

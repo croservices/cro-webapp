@@ -233,7 +233,18 @@ grammar Cro::WebApp::Template::Parser {
     token infix:sym<x> { <sym> }
 
     token deref {
-        [$<deref>=<.identifier>]+ % '.'
+        <deref-item>+ % '.'
+    }
+
+    proto token deref-item { * }
+    token deref-item:sym<method> {
+        <identifier> '(' \s* ')'
+    }
+    token deref-item:sym<smart> {
+        <.identifier>
+    }
+    token deref-item:sym<hash-literal> {
+        '<' <( <-[>]>* )> '>'
     }
 
     token single-quote-string {

@@ -60,6 +60,24 @@ my class SmartDeref does Node is export {
     }
 }
 
+my class LiteralMethodDeref does Node is export {
+    has Node $.target is required;
+    has Str $.symbol is required;
+
+    method compile() {
+        '(' ~ $!target.compile ~ ').' ~ $!symbol ~ '()'
+    }
+}
+
+my class HashKeyDeref does Node is export {
+    has Node $.target is required;
+    has Node $.key is required;
+
+    method compile() {
+        '(' ~ $!target.compile ~ '){' ~ $!key.compile ~ '}'
+    }
+}
+
 my class Iteration does ContainerNode is export {
     has Node $.target is required;
     has $.iteration-variable;

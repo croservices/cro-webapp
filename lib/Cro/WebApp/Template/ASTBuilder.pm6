@@ -155,10 +155,28 @@ class Cro::WebApp::Template::ASTBuilder {
     method deref($/) {
         make -> $initial {
             my $target = $initial;
-            for @<deref> {
-                $target = SmartDeref.new: :$target, symbol => ~$_;
+            for @<deref-item> {
+                $target = .ast()($target);
             }
             $target
+        }
+    }
+
+    method deref-item:sym<method>($/) {
+        make -> $target {
+            LiteralMethodDeref.new: :$target, symbol => ~$<identifier>
+        }
+    }
+
+    method deref-item:sym<smart>($/) {
+        make -> $target {
+            SmartDeref.new: :$target, symbol => ~$/
+        }
+    }
+
+    method deref-item:sym<hash-literal>($/) {
+        make -> $target {
+            HashKeyDeref.new: :$target, key => Literal.new(text => ~$/)
         }
     }
 
