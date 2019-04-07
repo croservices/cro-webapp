@@ -77,7 +77,7 @@ template-location 'templates/';
 ```
 
 Means that templates underneath the `templates/` directory will be found without
-needing to be qualifid with that path. Optionally passing `:compile-all` will
+needing to be qualified with that path. Optionally passing `:compile-all` will
 immediately compile all of the templates and die if there are any errors. This
 could be put into a test case:
 
@@ -94,7 +94,7 @@ done-testing;
 ### Template language
 
 The template language is designed to feel natural to Perl 6 developers, taking
-syntactic and semantic inspriration from Perl 6.
+syntactic and semantic inspiration from Perl 6.
 
 #### Generalities
 
@@ -321,7 +321,7 @@ And then call it, passing data or literals (which may be string or numeric value
 <&select(.countries, 'country')>
 ```
 
-A template macro works somehwat like a template subroutine, except that the usage
+A template macro works somewhat like a template subroutine, except that the usage
 of it has a body. This body is passed as a thunk, meaning that the macro can choose
 to render it 0 or more times), optionally setting a new default target. For example,
 a macro wrapping some content up in a Bootstrap card might look like:
