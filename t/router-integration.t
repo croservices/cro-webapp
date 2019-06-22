@@ -15,6 +15,13 @@ my $application = route {
     get -> 'nodata' {
         template 'literal.crotmp';
     }
+    get -> 'ct1' {
+        template 'macro-1.crotmp', { foo => 'abc', bar => 'def' },
+                content-type => 'text/plain';
+    }
+    get -> 'ct2' {
+        template 'literal.crotmp', content-type => 'text/plain';
+    }
 }
 my $server = Cro::HTTP::Server.new(:$application, :host('localhost'), :port(TEST_PORT));
 $server.start;
@@ -22,6 +29,8 @@ LEAVE try $server.stop;
 
 my $resp;
 lives-ok { $resp = await Cro::HTTP::Client.get("http://localhost:{TEST_PORT}/") };
+is $resp.content-type.type-and-subtype, 'text/html',
+        'Got expected default content type';
 is norm-ws(await $resp.body-text), norm-ws(q:to/EXPECTED/), 'Request to a template-served route works';
       <ul>
         <li>
@@ -36,7 +45,34 @@ is norm-ws(await $resp.body-text), norm-ws(q:to/EXPECTED/), 'Request to a templa
     EXPECTED
 
 lives-ok { $resp = await Cro::HTTP::Client.get("http://localhost:{TEST_PORT}/nodata") };
+is $resp.content-type.type-and-subtype, 'text/html',
+        'Got expected default content type';
 is norm-ws(await $resp.body-text), norm-ws(q:to/EXPECTED/), 'Can use template without data';
+      <div>
+        <strong>Hello, I'm a template!</strong>
+      </div>
+    EXPECTED
+
+lives-ok { $resp = await Cro::HTTP::Client.get("http://localhost:{TEST_PORT}/ct1") };
+is $resp.content-type.type-and-subtype, 'text/plain',
+        'Got explicitly set content type when data';
+is norm-ws(await $resp.body-text), norm-ws(q:to/EXPECTED/), 'Template rendered OK';
+      <ul>
+        <li>
+        <strong>abc</strong>
+          def
+        </li>
+        <li>
+          <strong>abc</strong>
+          def
+        </li>
+      </ul>
+    EXPECTED
+
+lives-ok { $resp = await Cro::HTTP::Client.get("http://localhost:{TEST_PORT}/ct2") };
+is $resp.content-type.type-and-subtype, 'text/plain',
+        'Got explicitly set content type when no data';
+is norm-ws(await $resp.body-text), norm-ws(q:to/EXPECTED/), 'Template rendered OK';
       <div>
         <strong>Hello, I'm a template!</strong>
       </div>

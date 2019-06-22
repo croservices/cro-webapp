@@ -13,10 +13,10 @@ sub template-location(IO() $location --> Nil) is export {
     get-template-repository.add-location($location);
 }
 
-multi template($template, $initial-topic --> Nil) is export {
-    content 'text/html', render-template($template, $initial-topic);
+multi template($template, $initial-topic, :$content-type = 'text/html' --> Nil) is export {
+    content $content-type, render-template($template, $initial-topic);
 }
 
-multi template($template --> Nil) is export {
-    template($template, Nil);
+multi template($template, :$content-type = 'text/html' --> Nil) is export {
+    template($template, Nil, :$content-type);
 }
