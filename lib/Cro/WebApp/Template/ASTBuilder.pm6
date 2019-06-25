@@ -152,6 +152,10 @@ class Cro::WebApp::Template::ASTBuilder {
         make $<argument>.ast;
     }
 
+    method term:sym<parens>($/) {
+        make $<expression>.ast;
+    }
+
     method deref($/) {
         make -> $initial {
             my $target = $initial;

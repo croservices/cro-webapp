@@ -34,6 +34,15 @@ is norm-ws(render-template($base.add('cond-expr-2.crotmp'), { a => 1, b => 1 }))
         norm-ws(q:to/EXPECTED/), 'Conditional expressions on variable with multiple infixes (4)';
     EXPECTED
 
+is norm-ws(render-template($base.add('cond-expr-3.crotmp'), { a => 5, b => 6, c => 11 })),
+        norm-ws(q:to/EXPECTED/), 'Conditional expressions with parens for grouping (1)';
+    EXPECTED
+
+is norm-ws(render-template($base.add('cond-expr-3.crotmp'), { a => 2, b => 6, c => 11 })),
+        norm-ws(q:to/EXPECTED/), 'Conditional expressions with parens for grouping (2)';
+    It's a match!
+    EXPECTED
+
 sub norm-ws($str) {
     $str.subst(:g, /\s+/, '')
 }

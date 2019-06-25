@@ -225,6 +225,7 @@ grammar Cro::WebApp::Template::Parser {
 
     proto token term { * }
     token term:sym<argument> { <argument> }
+    rule term:sym<parens> { '(' <expression> ')' }
 
     proto token infix { * }
     token infix:sym<==> { <sym> }
