@@ -270,8 +270,7 @@ The following constructs are allowed:
 * The `+`, `-`, `*`, `/`, and `%` math operations
 * The `~` and `x` string operations
 * Numeric literals (integer, floating point, and rational)
-* String literals, single quotes without interpolation and double quotes with only
-  interpolation of `$variables`
+* String literals (single quoted, without interpolation)
 
 Those wishing for more are encouraged to consider writing their logic outside of
 the template.
