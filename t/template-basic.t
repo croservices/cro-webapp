@@ -56,6 +56,16 @@ is render-template($base.add('topic-3.crotmp'), { elems => 101 }),
     Elems method is 1. Elems key is 101.
     EXPECTED
 
+is render-template($base.add('deref-array-1.crotmp'), [1..5]),
+        q:to/EXPECTED/, 'Can use <.[0]> and <.[2]> array indexing';
+    1 and 3
+    EXPECTED
+
+is render-template($base.add('deref-array-2.crotmp'), { :a[5..10], b => 3 }),
+        q:to/EXPECTED/, 'Can do more complex array indexing';
+    5, 8 and 9
+    EXPECTED
+
 is render-template($base.add('escape.crotmp'),
         { attr-esc => Q/1 & 'a' & "b" not < or >/, body-esc => '1 < 2 < 3 > 2 & so on' }),
         q:to/EXPECTED/, 'Escaping in body and attributes works correctly';

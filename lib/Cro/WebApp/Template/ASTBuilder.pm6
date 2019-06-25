@@ -180,6 +180,12 @@ class Cro::WebApp::Template::ASTBuilder {
         }
     }
 
+    method deref-item:sym<array>($/) {
+        make -> $target {
+            ArrayIndexDeref.new: :$target, index => $<index>.ast
+        }
+    }
+
     method single-quote-string($/) {
         make ~$/;
     }

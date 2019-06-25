@@ -265,6 +265,9 @@ grammar Cro::WebApp::Template::Parser {
     token deref-item:sym<hash-literal> {
         '<' <( <-[>]>* )> '>'
     }
+    token deref-item:sym<array> {
+        '[' <index=.expression> ']'
+    }
 
     token single-quote-string {
         "'" <( <-[']>* )> "'"

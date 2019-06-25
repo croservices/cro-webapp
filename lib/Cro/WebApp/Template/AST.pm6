@@ -69,6 +69,15 @@ my class LiteralMethodDeref does Node is export {
     }
 }
 
+my class ArrayIndexDeref does Node is export {
+    has Node $.target is required;
+    has Node $.index is required;
+
+    method compile() {
+        '(' ~ $!target.compile ~ ')[' ~ $!index.compile ~ ']'
+    }
+}
+
 my class HashKeyDeref does Node is export {
     has Node $.target is required;
     has Node $.key is required;
