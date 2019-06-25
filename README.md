@@ -154,7 +154,6 @@ Various other forms are available:
   (so can be used to overcome the key fallback)
 * `<.<elems>>` will always be a hash index
 * `<.[0]>` indexes the array element 0, assuming the topic is indexable
-* `<."$prop"()>` can be used to do indirect property (method) access
 * `<.{$key}>` can be used to do indirect hash indexing
 * `<.[$idx]>` can be used to do indirect array indexing
 
