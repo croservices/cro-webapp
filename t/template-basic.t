@@ -66,6 +66,11 @@ is render-template($base.add('deref-array-2.crotmp'), { :a[5..10], b => 3 }),
     5, 8 and 9
     EXPECTED
 
+is render-template($base.add('deref-hash.crotmp'), { :foo<bar>, :x<a>, :xxx<c>, :k<x> }),
+        q:to/EXPECTED/, 'Can do indirect hash indexing';
+    bar, a, and c
+    EXPECTED
+
 is render-template($base.add('escape.crotmp'),
         { attr-esc => Q/1 & 'a' & "b" not < or >/, body-esc => '1 < 2 < 3 > 2 & so on' }),
         q:to/EXPECTED/, 'Escaping in body and attributes works correctly';

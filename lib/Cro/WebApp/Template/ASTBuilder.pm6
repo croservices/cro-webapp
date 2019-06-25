@@ -186,6 +186,12 @@ class Cro::WebApp::Template::ASTBuilder {
         }
     }
 
+    method deref-item:sym<hash>($/) {
+        make -> $target {
+            make HashKeyDeref.new: :$target, key => $<key>.ast
+        }
+    }
+
     method single-quote-string($/) {
         make ~$/;
     }
