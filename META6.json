@@ -1,26 +1,31 @@
 {
-    "depends": ["Cro::HTTP"],
-    "auth": "Edument",
-    "description": "[DRAFT] HTML templating and other utilities for building server-side web applications with Cro.",
-    "resources": [],
-    "version": "0.0.2",
-    "tags": [
-        "template",
-        "web"
-    ],
-    "license": "Artistic-2.0",
-    "source-url": "https://github.com/jnthn/cro-webapp.git",
-    "provides": {
-        "Cro::WebApp::Template::Repository": "lib/Cro/WebApp/Template/Repository.pm6",
-        "Cro::WebApp::Template::AST": "lib/Cro/WebApp/Template/AST.pm6",
-        "Cro::WebApp::Template": "lib/Cro/WebApp/Template.pm6",
-        "Cro::WebApp::Template::Parser": "lib/Cro/WebApp/Template/Parser.pm6",
-        "Cro::WebApp::Template::Builtins": "lib/Cro/WebApp/Template/Builtins.pm6",
-        "Cro::WebApp::Template::ASTBuilder": "lib/Cro/WebApp/Template/ASTBuilder.pm6"
-    },
-    "name": "Cro::WebApp",
-    "perl": "6.*",
-    "test-depends": [],
-    "build-depends": [],
-    "authors": ["Jonathan Worthington <jnthn@jnthn.net>"]
+  "name": "Cro::WebApp",
+  "description": "[DRAFT] HTML templating and other utilities for building server-side web applications with Cro.",
+  "version": "0.0.2",
+  "perl": "6.*",
+  "authors": [
+    "Jonathan Worthington <jnthn@jnthn.net>"
+  ],
+  "auth": "Edument",
+  "depends": [
+    "Cro::HTTP"
+  ],
+  "build-depends": [],
+  "test-depends": [],
+  "provides": {
+    "Cro::WebApp::Template": "lib/Cro/WebApp/Template.pm6",
+    "Cro::WebApp::Template::AST": "lib/Cro/WebApp/Template/AST.pm6",
+    "Cro::WebApp::Template::ASTBuilder": "lib/Cro/WebApp/Template/ASTBuilder.pm6",
+    "Cro::WebApp::Template::Builtins": "lib/Cro/WebApp/Template/Builtins.pm6",
+    "Cro::WebApp::Template::Error": "lib/Cro/WebApp/Template/Error.pm6",
+    "Cro::WebApp::Template::Parser": "lib/Cro/WebApp/Template/Parser.pm6",
+    "Cro::WebApp::Template::Repository": "lib/Cro/WebApp/Template/Repository.pm6"
+  },
+  "resources": [],
+  "license": "Artistic-2.0",
+  "tags": [
+    "template",
+    "web"
+  ],
+  "source-url": "https://github.com/jnthn/cro-webapp.git"
 }

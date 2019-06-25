@@ -36,7 +36,7 @@ monitor Cro::WebApp::Template::Repository {
         with %!abs-path-to-compiled{$abs-path} {
             $_
         }
-                else {
+        else {
             %!abs-path-to-compiled{$abs-path} = start load-template($abs-path);
         }
     }
@@ -47,13 +47,14 @@ monitor Cro::WebApp::Template::Repository {
 }
 
 my $template-repo = Cro::WebApp::Template::Repository.new;
-sub get-template-repository() is export {
+sub get-template-repository(--> Cro::WebApp::Template::Repository) is export {
     $template-repo
 }
 
-sub load-template($abs-path) {
+sub load-template(IO() $abs-path --> Cro::WebApp::Template::Compiled) {
     my $*TEMPLATE-REPOSITORY = $template-repo;
     my $source = slurp($abs-path);
+    my $*TEMPLATE-FILE = $abs-path;
     my $ast = Cro::WebApp::Template::Parser.parse($source, actions => Cro::WebApp::Template::ASTBuilder).ast;
     Cro::WebApp::Template::Compiled.new(|$ast.compile, repository => $template-repo)
 }

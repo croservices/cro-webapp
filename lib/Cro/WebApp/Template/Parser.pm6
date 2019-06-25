@@ -1,3 +1,22 @@
+use Cro::WebApp::Template::Error;
+
+class X::Cro::WebApp::Template::SyntaxError does X::Cro::WebApp::Template {
+    has Str $.reason is required;
+    has Cursor $.cursor is required;
+
+    method message() {
+        "Template parse failed: $!reason at line $.line near '$.near'"
+    }
+
+    method line() {
+        $!cursor.orig.substr(0, $!cursor.pos).split(/\n/).elems
+    }
+
+    method near() {
+        $!cursor.orig.substr($!cursor.pos, 40)
+    }
+}
+
 grammar Cro::WebApp::Template::Parser {
     token TOP {
         :my $*IN-ATTRIBUTE = False;
@@ -264,6 +283,7 @@ grammar Cro::WebApp::Template::Parser {
     }
 
     method panic($reason) {
-        die "Template parse failed: $reason near '" ~ self.orig.substr(self.pos, 40) ~ "'";
+        die X::Cro::WebApp::Template::SyntaxError.new:
+                :$reason, :cursor(self), :file($*TEMPLATE-FILE);
     }
 }
