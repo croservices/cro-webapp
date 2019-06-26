@@ -252,7 +252,7 @@ no output will be generated for those lines, making the output more pleasant.
 The `<?$foo>...</?>` ("if") and `<!$foo>...</!>` ("unless") may be used for
 conditional execution. These perform a boolean test on the specified variable.
 It is also allowed to use them with the topic deference sytax, such as
-`<?.is-admin>...</?>`. For more complex conditions, an subset of Perl 6
+`<?.is-admin>...</?>`. For more complex conditions, a subset of Perl 6
 expressions is accepted, using the syntax `<?{ $a eq $b }>...</?>`. The only
 thing notably different from Perl 6 is that `<?{ .answer == 42 }>...</?>` will
 have the same hash/object semantics as in `<.answer>`, for consistency with the
