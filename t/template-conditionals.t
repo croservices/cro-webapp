@@ -43,6 +43,17 @@ is norm-ws(render-template($base.add('cond-expr-3.crotmp'), { a => 2, b => 6, c 
     It's a match!
     EXPECTED
 
+is norm-ws(render-template($base.add('cond-expr-4.crotmp'), { a => 3.5, b => 0.3e1 })),
+        norm-ws(q:to/EXPECTED/), 'Conditional expressions with Rat/Num literals (1)';
+    Foo
+    EXPECTED
+
+is norm-ws(render-template($base.add('cond-expr-4.crotmp'), { a => -3.5, b => 0.3e5 })),
+        norm-ws(q:to/EXPECTED/), 'Conditional expressions with Rat/Num literals (2)';
+    Bar
+    Baz
+    EXPECTED
+
 sub norm-ws($str) {
     $str.subst(:g, /\s+/, '')
 }

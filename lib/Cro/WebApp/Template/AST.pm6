@@ -41,6 +41,22 @@ my class IntLiteral does Node is export {
     }
 }
 
+my class RatLiteral does Node is export {
+    has Rat $.value is required;
+
+    method compile() {
+        $!value.perl
+    }
+}
+
+my class NumLiteral does Node is export {
+    has Num $.value is required;
+
+    method compile() {
+        $!value.perl
+    }
+}
+
 my class VariableAccess does Node is export {
     has Str $.name is required;
 

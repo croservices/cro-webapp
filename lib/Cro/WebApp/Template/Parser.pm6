@@ -206,7 +206,15 @@ grammar Cro::WebApp::Template::Parser {
     }
 
     token argument:sym<integer> {
-        \d+
+        '-'? \d+
+    }
+
+    token argument:sym<rational> {
+        '-'? \d* '.' \d+
+    }
+
+    token argument:sym<num> {
+        '-'? \d* '.' \d+ <[eE]> '-'? \d+
     }
 
     token argument:sym<variable> {

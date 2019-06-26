@@ -133,6 +133,14 @@ class Cro::WebApp::Template::ASTBuilder {
         make IntLiteral.new(value => +$/);
     }
 
+    method argument:sym<rational>($/) {
+        make RatLiteral.new(value => +$/);
+    }
+
+    method argument:sym<num>($/) {
+        make NumLiteral.new(value => +$/);
+    }
+
     method argument:sym<variable>($/) {
         make VariableAccess.new(name => ~$/);
     }
