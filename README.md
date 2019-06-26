@@ -1,19 +1,12 @@
-# !!! Important Warning !!!
-
-This repository contains a work-in-progress draft of something that may end up
-being part of Cro. The things described in this README are partially implemented
-and subject to change.
-
 # Cro::WebApp
 
 The [Cro::HTTP](http://cro.services/) distribution provides a convenient way to
 implement HTTP services, which may be providing an API and/or serving as the
 backend to a Single Page Applications. Sometimes, however, one wishes to build
 a server-side web application, with pages being rendered and data processing
-performed on the server. This distribution provides some functionality to make
-that more convenient, including:
-
-* Support for templates, primarily for producing HTML
+performed on the server. This distribution provides a templating engine to aid
+that, and in the future will contain further features for building such web
+applications.
 
 ## Templates
 

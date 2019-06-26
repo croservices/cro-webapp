@@ -1,12 +1,11 @@
 {
   "name": "Cro::WebApp",
-  "description": "[DRAFT] HTML templating and other utilities for building server-side web applications with Cro.",
+  "description": "HTML templating for building server-side web applications with Cro.",
   "version": "0.0.2",
   "perl": "6.*",
   "authors": [
     "Jonathan Worthington <jnthn@jnthn.net>"
   ],
-  "auth": "Edument",
   "depends": [
     "Cro::HTTP"
   ],
@@ -27,5 +26,5 @@
     "template",
     "web"
   ],
-  "source-url": "https://github.com/jnthn/cro-webapp.git"
+  "source-url": "https://github.com/croservices/cro-webapp.git"
 }
