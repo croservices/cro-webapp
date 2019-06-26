@@ -182,6 +182,17 @@ is norm-ws(render-template($base.add('macro-2.crotmp'), {})),
       </html>
     EXPECTED
 
+is norm-ws(render-template($base.add('comments.crotmp'), {})),
+        norm-ws(q:to/EXPECTED/), 'No problem with HTML comments';
+    <p>Some fine tag</p>
+    <!-- HTML comment -->
+    <div>Something else</div>
+    <!--
+        multi-line HTML comment
+        -->
+    <p>And that's it<!--really--></p>
+    EXPECTED
+
 sub norm-ws($str) {
     $str.subst(:g, /\s+/, '')
 }

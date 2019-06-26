@@ -1,0 +1,7 @@
+<p>Some fine tag</p>
+<!-- HTML comment -->
+<div>Something else</div>
+<!--
+    multi-line HTML comment
+    -->
+<p>And that's it<!--really--></p>

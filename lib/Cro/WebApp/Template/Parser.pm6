@@ -287,7 +287,8 @@ grammar Cro::WebApp::Template::Parser {
         # Single characters we can always take as a tag sigil
         | <[.$@&:|]>
         # The ? and ! for boolification must be followed by a . or $ tag sigil or
-        # { expression. <!DOCTYPE> and <?xml> style things must be considered literal.
+        # { expression. <!DOCTYPE>, <?xml>, and <!--comment--> style things
+        # must be considered literal.
         | <[?!]> <[.$>{]>
     }
 
