@@ -98,7 +98,7 @@ grammar Cro::WebApp::Template::Parser {
         [ <?after [^ | $ | \n] \h* '<' <[?!]>> { $*lone-start-line = True } ]?
         [
         | '.' <deref>
-        | '{' <expression> '}'
+        | '{' <expression> [ '}' || <.panic('malformed expression')> ]
         ]
         [ \h* '>' || <.panic('malformed condition tag')> ]
         [ <?{ $*lone-start-line }> [ \h* \n | { $*lone-start-line = False } ] ]?
