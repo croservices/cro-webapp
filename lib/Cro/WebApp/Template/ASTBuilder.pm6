@@ -125,30 +125,30 @@ class Cro::WebApp::Template::ASTBuilder {
         make $<argument>.map(*.ast).list;
     }
 
-    method argument:sym<single-quote-string>($/) {
+    method term:sym<single-quote-string>($/) {
         make Literal.new(text => $<single-quote-string>.ast);
     }
 
-    method argument:sym<integer>($/) {
+    method term:sym<integer>($/) {
         make IntLiteral.new(value => +$/);
     }
 
-    method argument:sym<rational>($/) {
+    method term:sym<rational>($/) {
         make RatLiteral.new(value => +$/);
     }
 
-    method argument:sym<num>($/) {
+    method term:sym<num>($/) {
         make NumLiteral.new(value => +$/);
     }
 
-    method argument:sym<variable>($/) {
+    method term:sym<variable>($/) {
         my $var = VariableAccess.new(name => ~$<name>);
         make $<deref>
                 ?? $<deref>.ast()($var)
                 !! $var;
     }
 
-    method argument:sym<deref>($/) {
+    method term:sym<deref>($/) {
         my $derefer = $<deref>.ast;
         make $derefer(VariableAccess.new(name => '$_'));
     }

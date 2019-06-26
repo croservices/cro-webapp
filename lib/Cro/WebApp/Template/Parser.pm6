@@ -199,32 +199,6 @@ grammar Cro::WebApp::Template::Parser {
         '(' \s* <argument=.expression>* % [\s* ',' \s*] \s* ')' \h*
     }
 
-    proto token argument { * }
-
-    token argument:sym<single-quote-string> {
-        <single-quote-string>
-    }
-
-    token argument:sym<integer> {
-        '-'? \d+
-    }
-
-    token argument:sym<rational> {
-        '-'? \d* '.' \d+
-    }
-
-    token argument:sym<num> {
-        '-'? \d* '.' \d+ <[eE]> '-'? \d+
-    }
-
-    token argument:sym<variable> {
-        $<name>=[ '$' <.identifier> ] [ '.' <deref> ]?
-    }
-
-    token argument:sym<deref> {
-        '.' <deref>
-    }
-
     rule expression {
         <?>
         [ <term> || <.panic('unrecognized term')> ]
@@ -232,7 +206,31 @@ grammar Cro::WebApp::Template::Parser {
     }
 
     proto token term { * }
-    token term:sym<argument> { <argument> }
+
+    token term:sym<single-quote-string> {
+        <single-quote-string>
+    }
+
+    token term:sym<integer> {
+        '-'? \d+
+    }
+
+    token term:sym<rational> {
+        '-'? \d* '.' \d+
+    }
+
+    token term:sym<num> {
+        '-'? \d* '.' \d+ <[eE]> '-'? \d+
+    }
+
+    token term:sym<variable> {
+        $<name>=[ '$' <.identifier> ] [ '.' <deref> ]?
+    }
+
+    token term:sym<deref> {
+        '.' <deref>
+    }
+
     rule term:sym<parens> { '(' <expression> ')' }
 
     proto token infix { * }
