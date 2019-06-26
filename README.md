@@ -313,11 +313,14 @@ It is possible to declare a template sub that takes parameters:
 </:>
 ```
 
-And then call it, passing data or literals (which may be string or numeric values):
+And then call it with arguments:
 
 ```
 <&select(.countries, 'country')>
 ```
+
+The arguments may be an expression as valid in a <?{ ... }> condition - that is,
+literals, variable access, dereferences, and some basic operators are allowed.
 
 A template macro works somewhat like a template subroutine, except that the usage
 of it has a body. This body is passed as a thunk, meaning that the macro can choose

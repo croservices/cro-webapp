@@ -149,6 +149,13 @@ is norm-ws(render-template($base.add('sub-2.crotmp'), { greeting => 'Bonjour' })
     <p>Yet more stuff</p>
     EXPECTED
 
+is norm-ws(render-template($base.add('sub-3.crotmp'), { t => 'b' })),
+        norm-ws(q:to/EXPECTED/), 'Sub arguments may be any expression';
+    literal and literaler
+    43 and 30
+    bs and bbb
+    EXPECTED
+
 is norm-ws(render-template($base.add('macro-1.crotmp'), { foo => 'xxx', bar => 'yyy' })),
         norm-ws(q:to/EXPECTED/), 'Basic no-argument macro works';
       <ul>

@@ -196,7 +196,7 @@ grammar Cro::WebApp::Template::Parser {
     }
 
     token arglist {
-        '(' \s* <argument>* % [\s* ',' \s*] \s* ')' \h*
+        '(' \s* <argument=.expression>* % [\s* ',' \s*] \s* ')' \h*
     }
 
     proto token argument { * }

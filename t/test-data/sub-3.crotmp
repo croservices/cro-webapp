@@ -1,0 +1,6 @@
+<:sub foo($arg1, $arg2)>
+  <$arg1> and <$arg2>
+</:>
+<&foo('literal', 'literaler')>
+<&foo(1 + 42, 2 * (3 * 5))>
+<&foo(.t ~ 's', .t x 3)>
