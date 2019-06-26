@@ -142,7 +142,10 @@ class Cro::WebApp::Template::ASTBuilder {
     }
 
     method argument:sym<variable>($/) {
-        make VariableAccess.new(name => ~$/);
+        my $var = VariableAccess.new(name => ~$<name>);
+        make $<deref>
+                ?? $<deref>.ast()($var)
+                !! $var;
     }
 
     method argument:sym<deref>($/) {

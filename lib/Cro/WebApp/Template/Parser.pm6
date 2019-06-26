@@ -218,7 +218,7 @@ grammar Cro::WebApp::Template::Parser {
     }
 
     token argument:sym<variable> {
-        '$' <.identifier>
+        $<name>=[ '$' <.identifier> ] [ '.' <deref> ]?
     }
 
     token argument:sym<deref> {

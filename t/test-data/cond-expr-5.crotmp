@@ -1,0 +1,10 @@
+<:sub cond($var)>
+  <?{ $var }>
+    Obj
+    <?{ $var.key }>
+      Key
+    </?>
+  </?>
+</:>
+
+<&cond(.x)>

@@ -54,6 +54,22 @@ is norm-ws(render-template($base.add('cond-expr-4.crotmp'), { a => -3.5, b => 0.
     Baz
     EXPECTED
 
+is norm-ws(render-template($base.add('cond-expr-5.crotmp'), { x => {} })),
+        norm-ws(q:to/EXPECTED/), 'Variables and derefs in conditions (1)';
+    EXPECTED
+
+is norm-ws(render-template($base.add('cond-expr-5.crotmp'), { x => { key => 0 } })),
+        norm-ws(q:to/EXPECTED/), 'Variables and derefs in conditions (2)';
+    Obj
+    EXPECTED
+
+
+is norm-ws(render-template($base.add('cond-expr-5.crotmp'), { x => { key => 2 } })),
+        norm-ws(q:to/EXPECTED/), 'Variables and derefs in conditions (3)';
+    Obj
+    Key
+    EXPECTED
+
 sub norm-ws($str) {
     $str.subst(:g, /\s+/, '')
 }
