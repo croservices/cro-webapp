@@ -244,6 +244,8 @@ grammar Cro::WebApp::Template::Parser {
     token infix:sym<ne> { <sym> }
     token infix:sym<lt> { <sym> }
     token infix:sym<gt> { <sym> }
+    token infix:sym<le> { <sym> }
+    token infix:sym<ge> { <sym> }
     token infix:sym<===> { <sym> }
     token infix:sym<!===> { <sym> }
     token infix:sym<&&> { <sym> }

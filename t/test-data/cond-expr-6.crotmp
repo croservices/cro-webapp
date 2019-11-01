@@ -1,0 +1,15 @@
+<?{ .foo lt 'g' }>
+ltg
+</?>
+<?{ .foo le 'g' }>
+leg
+</?>
+<?{ .foo gt 'g' }>
+gtg
+</?>
+<?{ .foo ge 'g' }>
+geg
+</?>
+<?{ .foo ne 'g' }>
+neg
+</?>

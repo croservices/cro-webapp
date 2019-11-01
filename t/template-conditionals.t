@@ -63,11 +63,30 @@ is norm-ws(render-template($base.add('cond-expr-5.crotmp'), { x => { key => 0 } 
     Obj
     EXPECTED
 
-
 is norm-ws(render-template($base.add('cond-expr-5.crotmp'), { x => { key => 2 } })),
         norm-ws(q:to/EXPECTED/), 'Variables and derefs in conditions (3)';
     Obj
     Key
+    EXPECTED
+
+is norm-ws(render-template($base.add('cond-expr-6.crotmp'), { foo => 'a' })),
+        norm-ws(q:to/EXPECTED/), 'String comparison operators (1)';
+    ltg
+    leg
+    neg
+    EXPECTED
+
+is norm-ws(render-template($base.add('cond-expr-6.crotmp'), { foo => 'z' })),
+        norm-ws(q:to/EXPECTED/), 'String comparison operators (2)';
+    gtg
+    geg
+    neg
+    EXPECTED
+
+is norm-ws(render-template($base.add('cond-expr-6.crotmp'), { foo => 'g' })),
+        norm-ws(q:to/EXPECTED/), 'String comparison operators (3)';
+    leg
+    geg
     EXPECTED
 
 sub norm-ws($str) {
