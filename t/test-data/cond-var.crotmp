@@ -1,0 +1,10 @@
+<:sub test($var)>
+  <?$var>
+    Var <$var> is true
+  </?>
+  <!$var>
+    Var <$var> is false
+  </!>
+</:>
+<&test(1)>
+<&test(0)>

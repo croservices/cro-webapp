@@ -89,6 +89,12 @@ is norm-ws(render-template($base.add('cond-expr-6.crotmp'), { foo => 'g' })),
     geg
     EXPECTED
 
+is norm-ws(render-template($base.add('cond-var.crotmp'), {})),
+        norm-ws(q:to/EXPECTED/), 'Conditionals used directly with variables work';
+    Var 1 is true
+    Var 0 is false
+    EXPECTED
+
 sub norm-ws($str) {
     $str.subst(:g, /\s+/, '')
 }

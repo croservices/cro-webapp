@@ -59,6 +59,9 @@ class Cro::WebApp::Template::ASTBuilder {
             my $derefer = $<deref>.ast;
             $derefer(VariableAccess.new(name => '$_'))
         }
+        elsif $<identifier> {
+            VariableAccess.new(name => '$' ~ $<identifier>)
+        }
         else {
             $<expression>.ast
         }
