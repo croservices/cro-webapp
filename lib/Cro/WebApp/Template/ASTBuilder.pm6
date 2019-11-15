@@ -125,7 +125,15 @@ class Cro::WebApp::Template::ASTBuilder {
     }
 
     method arglist($/) {
-        make $<argument>.map(*.ast).list;
+        make $<arg>.map(*.ast);
+    }
+
+    method arg:by-pos ($/) {
+        make ByPosArgument.new(argument => $<expression>.ast);
+    }
+
+    method arg:by-name ($/) {
+        make ByNameArgument.new(name => ~$<identifier>, argument => $<expression>.ast);
     }
 
     method term:sym<single-quote-string>($/) {

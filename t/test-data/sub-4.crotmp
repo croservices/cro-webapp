@@ -1,0 +1,11 @@
+<:sub foo(:$first, :$second)>
+  <$first> - <$second>
+</:>
+<:sub other($a, :$b)>
+  Both <$a> and <$b>
+</:>
+<&foo(:first('this'), :second('is'))>
+<&foo(:first(1 + 42), :second(2 * (3 * 5)))>
+<&foo(:first(.t ~ 's'), :second(.t x 3))>
+
+<&other('notnamed', :b('named'))>
