@@ -144,9 +144,27 @@ my class TemplateSub does ContainerNode is export {
     }
 }
 
+my role Argument does Node is export {
+    has Node $.argument;
+}
+
+my class ByPosArgument does Argument is export {
+    method compile {
+        $.argument.compile
+    }
+}
+
+my class ByNameArgument does Argument is export {
+    has Str $.name;
+
+    method compile {
+        ':' ~ $!name ~ '(' ~ $.argument.compile ~ ')'
+    }
+}
+
 my class Call does Node is export {
     has Str $.target is required;
-    has Node @.arguments;
+    has Argument @.arguments;
 
     method compile() {
         '__TEMPLATE__' ~ $!target ~ '(' ~ @!arguments.map(*.compile).join(", ") ~ ')'

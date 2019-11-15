@@ -315,6 +315,17 @@ And then call it with arguments:
 The arguments may be an expression as valid in a <?{ ... }> condition - that is,
 literals, variable access, dereferences, and some basic operators are allowed.
 
+As in Perl 6, you can have named - optional - arguments as well:
+
+```
+<:sub haz(:$name)>
+  I can haz <$name>!
+</:>
+
+<&haz(:name('named arguments'))>
+```
+
+
 A template macro works somewhat like a template subroutine, except that the usage
 of it has a body. This body is passed as a thunk, meaning that the macro can choose
 to render it 0 or more times), optionally setting a new default target. For example,

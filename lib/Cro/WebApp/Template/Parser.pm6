@@ -189,15 +189,30 @@ grammar Cro::WebApp::Template::Parser {
     }
 
     token signature {
+        :my $*seen-by-name-arguments = False;
         '(' \s* <parameter>* % [\s* ',' \s*] \s* ')' \h*
     }
 
     token parameter {
+        [
+        || ':' { $*seen-by-name-arguments = True; }
+        || <?{ $*seen-by-name-arguments }> <.panic('Positional argument after named argument')>
+        ]?
         '$' <.identifier>
     }
 
     token arglist {
-        '(' \s* <argument=.expression>* % [\s* ',' \s*] \s* ')' \h*
+        '(' \s* <arg>* % [\s* ',' \s*] \s* ')' \h*
+    }
+
+    proto token arg { * }
+
+    token arg:by-pos { <expression> }
+
+    token arg:by-name {
+        ':' <identifier>
+        '(' ~ ')'
+        <expression>
     }
 
     rule expression {

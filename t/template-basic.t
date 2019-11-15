@@ -2,6 +2,7 @@ use Cro::WebApp::Template;
 use Test;
 
 my constant $base = $*PROGRAM.parent.add('test-data');
+my constant $error-base = $*PROGRAM.parent.add('error-data');
 
 is render-template($base.add('literal.crotmp'), {}), q:to/EXPECTED/, 'Literal text passed through';
     <div>
@@ -155,6 +156,18 @@ is norm-ws(render-template($base.add('sub-3.crotmp'), { t => 'b' })),
     43 and 30
     bs and bbb
     EXPECTED
+
+is norm-ws(render-template($base.add('sub-4.crotmp'), { t => 'b' })),
+        norm-ws(q:to/EXPECTED/), 'Subs can have named arguments';
+    this - is
+    43 - 30
+    bs - bbb
+    Both notnamed and named
+    EXPECTED
+
+throws-like { render-template($error-base.add('sub-pos-after-pos-named.crotmp'), {}) },
+            X::Cro::WebApp::Template::SyntaxError,
+            'Positional argument after named argument at line 1 near \'$a)>';
 
 is norm-ws(render-template($base.add('macro-1.crotmp'), { foo => 'xxx', bar => 'yyy' })),
         norm-ws(q:to/EXPECTED/), 'Basic no-argument macro works';
