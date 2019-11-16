@@ -169,7 +169,7 @@ It is allowed to follow the variable with any of the syntax allowed in a
 example assuming the variables `$person` and `$weather` are defined, then:
 
 ```
-<p>Hello, <$person.name>. The weather is <$weather.description>, wich a low of
+<p>Hello, <$person.name>. The weather is <$weather.description>, with a low of
   <$weather.low>C and a high of <$weather.high>C.</p>
 ```
 
