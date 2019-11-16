@@ -176,7 +176,7 @@ example assuming the variables `$person` and `$weather` are defined, then:
 Would render something like:
 
 ```
-<p>Hello, Darya. The weather is sunny, wich a low of
+<p>Hello, Darya. The weather is sunny, with a low of
   14C and a high of 25C.</p>
 ```
 
