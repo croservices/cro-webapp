@@ -155,6 +155,8 @@ is norm-ws(render-template($base.add('sub-3.crotmp'), { t => 'b' })),
     literal and literaler
     43 and 30
     bs and bbb
+    F
+    T
     EXPECTED
 
 is norm-ws(render-template($base.add('sub-4.crotmp'), { t => 'b' })),

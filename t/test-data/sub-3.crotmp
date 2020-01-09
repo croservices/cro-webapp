@@ -4,3 +4,10 @@
 <&foo('literal', 'literaler')>
 <&foo(1 + 42, 2 * (3 * 5))>
 <&foo(.t ~ 's', .t x 3)>
+
+<:sub bool-arg($arg)>
+  <?$arg>T</?>
+  <!$arg>F</!>
+</:>
+<&bool-arg(False)>
+<&bool-arg(True)>

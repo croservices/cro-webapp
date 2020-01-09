@@ -155,6 +155,10 @@ class Cro::WebApp::Template::ASTBuilder {
         make NumLiteral.new(value => +$/);
     }
 
+    method term:sym<bool>($/) {
+        make BoolLiteral.new(value => $/ eq 'True');
+    }
+
     method term:sym<variable>($/) {
         my $var = VariableAccess.new(name => ~$<name>);
         make $<deref>

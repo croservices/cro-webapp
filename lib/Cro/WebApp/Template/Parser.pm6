@@ -244,6 +244,10 @@ grammar Cro::WebApp::Template::Parser {
         '-'? \d* '.' \d+ <[eE]> '-'? \d+
     }
 
+    token term:sym<bool> {
+        True | False
+    }
+
     token term:sym<variable> {
         $<name>=[ '$' <.identifier> ] [ '.' <deref> ]?
     }
