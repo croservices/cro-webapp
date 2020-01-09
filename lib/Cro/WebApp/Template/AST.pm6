@@ -57,6 +57,14 @@ my class NumLiteral does Node is export {
     }
 }
 
+my class BoolLiteral does Node is export {
+    has Bool $.value is required;
+
+    method compile() {
+        $!value ?? 'True' !! 'False'
+    }
+}
+
 my class VariableAccess does Node is export {
     has Str $.name is required;
 

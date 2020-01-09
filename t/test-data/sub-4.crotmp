@@ -9,3 +9,10 @@
 <&foo(:first(.t ~ 's'), :second(.t x 3))>
 
 <&other('notnamed', :b('named'))>
+
+<:sub pred(:$truth)>
+  <?{ $truth }>T</?>
+  <!{ $truth }>F</!>
+</:>
+<&pred(:truth)>
+<&pred(:!truth)>

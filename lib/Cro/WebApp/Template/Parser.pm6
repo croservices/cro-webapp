@@ -210,9 +210,14 @@ grammar Cro::WebApp::Template::Parser {
     token arg:by-pos { <expression> }
 
     token arg:by-name {
-        ':' <identifier>
-        '(' ~ ')'
-        <expression>
+        :my $negated = False;
+        ':'
+        [ $<negated>='!' { $negated = True} ]?
+        <identifier>
+        [
+            '(' ~ ')' <expression>
+            [ <!{$negated}> || <.panic('Negated named argument may not have a value')> ]
+        ]?
     }
 
     rule expression {

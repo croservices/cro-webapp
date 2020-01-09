@@ -133,7 +133,10 @@ class Cro::WebApp::Template::ASTBuilder {
     }
 
     method arg:by-name ($/) {
-        make ByNameArgument.new(name => ~$<identifier>, argument => $<expression>.ast);
+        my $argument = $<expression>
+                ?? $<expression>.ast
+                !! BoolLiteral.new(value => !$<negated>);
+        make ByNameArgument.new(name => ~$<identifier>, :$argument);
     }
 
     method term:sym<single-quote-string>($/) {
