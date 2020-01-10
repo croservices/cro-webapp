@@ -325,7 +325,6 @@ As in Raku, you can have named - optional - arguments as well:
 <&haz(:name('named arguments'))>
 ```
 
-
 A template macro works somewhat like a template subroutine, except that the usage
 of it has a body. This body is passed as a thunk, meaning that the macro can choose
 to render it 0 or more times), optionally setting a new default target. For example,
@@ -356,10 +355,38 @@ To set the current target for the body in a macro, use `<:body $target>`.
 #### Factoring out subs and macros within an application
 
 Template subs and macros can be factored out into other template files, and
-then imported with `<:use ...>`:
+then imported with `<:use ...>`, passing the filename as a string literal:
 
 ```
 <:use 'common.crotmp'>
+```
+
+#### Providing modules that export template subs and macros
+
+It is also possible to create libraries of Cro template subs and macros, for
+reuse across multiple applications and potentially for publication in the Raku
+ecosystem. Such a library should:
+
+1. Place one or more Cro template files in `resources`.
+2. Make sure those resources are mentioned in the `META6.json`
+3. Have a Raku module with an `EXPORT` sub, which is defined in terms of the
+   `template-library` function exported by `Cro::WebApp::Template::Library`.
+
+The module looks like this:
+
+```
+my %exports := template-library %?RESOURCES<foo.crotmp>, %?RESOURCES<bar.crotmp>;
+
+sub EXPORT() {
+    return %exports;
+}
+```
+
+Supposing that the above code was in a module `Some::Template::Library`, they can
+then be imported into another Cro template as:
+
+```
+<:use Some::Template::Library>
 ```
 
 #### Inserting HTML and JavaScript
