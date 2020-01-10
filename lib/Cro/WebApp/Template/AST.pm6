@@ -218,7 +218,7 @@ my class Sequence does ContainerNode is export {
     }
 }
 
-my class Use does Node is export {
+my class UseFile does Node is export {
     has Str $.template-name is required;
     has @.exported-symbols;
 
@@ -239,6 +239,14 @@ my class Prelude does Node is export {
             '(my &__TEMPLATE__' ~ $sym ~ ' = .<' ~ $sym ~ '>)'
         }
         '(BEGIN (((' ~ $decls ~ ') given await($*TEMPLATE-REPOSITORY.resolve-prelude()).exports) && ""))'
+    }
+}
+
+my class UseModule does Node is export {
+    has Str $.module-name is required;
+
+    method compile() {
+        "((use $!module-name) || '')"
     }
 }
 

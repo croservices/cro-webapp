@@ -1,0 +1,6 @@
+<:sub sub-test($a, $b)>
+Library: <$a> and <$b>
+</:sub>
+<:macro bs-container()>
+<div class="container"><:body></div>
+</:>

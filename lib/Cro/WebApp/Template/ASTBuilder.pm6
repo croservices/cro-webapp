@@ -116,9 +116,19 @@ class Cro::WebApp::Template::ASTBuilder {
     }
 
     method sigil-tag:sym<use>($/) {
-        my $template-name = $<name>.ast;
-        my $used = await $*TEMPLATE-REPOSITORY.resolve($template-name);
-        make Use.new: :$template-name, exported-symbols => $used.exports.keys;
+        with $<file> {
+            my $template-name = .ast;
+            my $used = await $*TEMPLATE-REPOSITORY.resolve($template-name);
+            make UseFile.new: :$template-name, exported-symbols => $used.exports.keys;
+        }
+        orwith $<library> {
+            my $module-name = .ast;
+            make UseModule.new: :$module-name;
+        }
+    }
+
+    method module-name($/) {
+        make ~$/;
     }
 
     method signature($/) {
