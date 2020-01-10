@@ -12,8 +12,8 @@ applications.
 
 Templates are typically used to render some data into HTML. The template engine
 is designed with HTML in mind, and takes care to escape data as it should be
-escaped in HTML. A template is compiled once into Perl 6 code, and then may be
-used many times by passing it different input. The input data can be any Perl 6
+escaped in HTML. A template is compiled once into Raku code, and then may be
+used many times by passing it different input. The input data can be any Raku
 object, including a `Hash` or `Array`.
 
 ### Using a template
@@ -86,8 +86,8 @@ done-testing;
 
 ### Template language
 
-The template language is designed to feel natural to Perl 6 developers, taking
-syntactic and semantic inspiration from Perl 6.
+The template language is designed to feel natural to Raku developers, taking
+syntactic and semantic inspiration from Raku.
 
 #### Generalities
 
@@ -108,7 +108,7 @@ require one to write out the full opener again, just to match the "sigil". One
 may repeat the opening alphabetic characters of an opener in the closer if
 desired, however (so `<@foo>` could be closed with `</@foo>`).
 
-As with Perl 6, there is a notion of current topic, like the Perl 6 `$_`.
+As with Raku, there is a notion of current topic, like the Raku `$_`.
 
 #### Unpacking hash and object properties
 
@@ -245,9 +245,9 @@ no output will be generated for those lines, making the output more pleasant.
 The `<?$foo>...</?>` ("if") and `<!$foo>...</!>` ("unless") may be used for
 conditional execution. These perform a boolean test on the specified variable.
 It is also allowed to use them with the topic deference sytax, such as
-`<?.is-admin>...</?>`. For more complex conditions, a subset of Perl 6
+`<?.is-admin>...</?>`. For more complex conditions, a subset of Raku
 expressions is accepted, using the syntax `<?{ $a eq $b }>...</?>`. The only
-thing notably different from Perl 6 is that `<?{ .answer == 42 }>...</?>` will
+thing notably different from Raku is that `<?{ .answer == 42 }>...</?>` will
 have the same hash/object semantics as in `<.answer>`, for consistency with the
 rest of the templating language.
 
@@ -315,7 +315,7 @@ And then call it with arguments:
 The arguments may be an expression as valid in a <?{ ... }> condition - that is,
 literals, variable access, dereferences, and some basic operators are allowed.
 
-As in Perl 6, you can have named - optional - arguments as well:
+As in Raku, you can have named - optional - arguments as well:
 
 ```
 <:sub haz(:$name)>
@@ -353,7 +353,7 @@ be used as:
 
 To set the current target for the body in a macro, use `<:body $target>`.
 
-#### Factoring out subs and macros
+#### Factoring out subs and macros within an application
 
 Template subs and macros can be factored out into other template files, and
 then imported with `<:use ...>`:
