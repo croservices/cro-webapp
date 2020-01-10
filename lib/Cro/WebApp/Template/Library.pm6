@@ -7,7 +7,7 @@ sub template-library(*@resources) is export {
     my %exports;
     for @resources {
         my $source = .slurp;
-        my $*TEMPLATE-FILE = .relative;
+        my $*TEMPLATE-FILE = .IO;
         my $ast = Cro::WebApp::Template::Parser.parse($source, actions => Cro::WebApp::Template::ASTBuilder).ast;
         my %template-exports := $ast.compile()<exports>;
         for %template-exports.kv -> $sym, $sub {
