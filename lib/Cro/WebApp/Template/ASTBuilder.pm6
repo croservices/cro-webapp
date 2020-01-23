@@ -2,7 +2,12 @@ use Cro::WebApp::Template::AST;
 
 class Cro::WebApp::Template::ASTBuilder {
     method TOP($/) {
-        make Template.new(children => flatten-literals($<sequence-element>.map(*.ast)));
+        my @prelude;
+        unless $*COMPILING-PRELUDE {
+            my $loaded-prelude = await $*TEMPLATE-REPOSITORY.resolve-prelude();
+            @prelude[0] = Prelude.new: exported-symbols => $loaded-prelude.exports.keys;
+        }
+        make Template.new(children => [|@prelude, |flatten-literals($<sequence-element>.map(*.ast))]);
     }
 
     method sequence-element:sym<sigil-tag>($/) {

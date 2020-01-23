@@ -12,6 +12,7 @@
   "build-depends": [],
   "test-depends": [],
   "provides": {
+    "Cro::WebApp::Form": "lib/Cro/WebApp/Form.pm6",
     "Cro::WebApp::Template": "lib/Cro/WebApp/Template.pm6",
     "Cro::WebApp::Template::AST": "lib/Cro/WebApp/Template/AST.pm6",
     "Cro::WebApp::Template::ASTBuilder": "lib/Cro/WebApp/Template/ASTBuilder.pm6",
@@ -20,7 +21,9 @@
     "Cro::WebApp::Template::Parser": "lib/Cro/WebApp/Template/Parser.pm6",
     "Cro::WebApp::Template::Repository": "lib/Cro/WebApp/Template/Repository.pm6"
   },
-  "resources": [],
+  "resources": [
+    "prelude.crotmp"
+  ],
   "license": "Artistic-2.0",
   "tags": [
     "template",

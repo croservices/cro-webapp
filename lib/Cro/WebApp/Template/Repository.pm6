@@ -41,6 +41,11 @@ monitor Cro::WebApp::Template::Repository {
         }
     }
 
+    method resolve-prelude(--> Promise) {
+        my $*COMPILING-PRELUDE = True;
+        self.resolve-absolute(%?RESOURCES<prelude.crotmp>.IO);
+    }
+
     method add-location(IO::Path $location --> Nil) {
         @!search-paths.push($location);
     }

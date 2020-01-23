@@ -231,6 +231,17 @@ my class Use does Node is export {
     }
 }
 
+my class Prelude does Node is export {
+    has @.exported-symbols;
+
+    method compile() {
+        my $decls = join ",", @!exported-symbols.map: -> $sym {
+            '(my &__TEMPLATE__' ~ $sym ~ ' = .<' ~ $sym ~ '>)'
+        }
+        '(((' ~ $decls ~ ') given await($*TEMPLATE-REPOSITORY.resolve-prelude()).exports) && "")'
+    }
+}
+
 my class Expression does Node is export {
     has Node @.terms;
     has Str @.infixes;
