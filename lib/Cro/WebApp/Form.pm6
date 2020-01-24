@@ -205,6 +205,18 @@ role Cro::WebApp::Form {
             when Bool {
                 ?$value
             }
+            when Int {
+                $value.Int // Int
+            }
+            when Num {
+                $value.Num // Num
+            }
+            when Rat {
+                $value.Rat // Rat
+            }
+            default {
+                die "Don't know how to parse form data into a $type.^name()";
+            }
         }
     }
 
