@@ -137,27 +137,44 @@ multi trait_mod:<will>(Attribute:D $attr, &block, :$select! --> Nil) is export {
 
 #| The set of validation issues relating to a form.
 class Cro::WebApp::Form::ValidationState {
-    has @!failures;
+    enum Problem <
+        BadInput CustomError PatternMismatch RangeOverflow RangeUnderflow
+        StepMismatch TooLong TooShort TypeMismatch ValueMissing
+    >;
+
+    class Error {
+        has Str $.input is required;
+        has Problem $.problem is required;
+        has Str $.explanation;
+    }
+
+    has Error @.errors;
 
     #| Adds an error indicating that a required value is missing.
     method add-value-missing-error(Str $input --> Nil) {
-        @!failures.push: 'XXX';
+        @!errors.push: Error.new(:$input, :problem(ValueMissing));
     }
 
     #| Adds an error indicating that a value is too short.
     method add-too-short-error(Str $input --> Nil) {
-        @!failures.push: 'XXX';
+        @!errors.push: Error.new(:$input, :problem(TooShort));
     }
 
     #| Adds an error indicating that a value is too long.
     method add-too-long-error(Str $input --> Nil) {
-        @!failures.push: 'XXX';
+        @!errors.push: Error.new(:$input, :problem(TooLong));
+    }
+
+    #| Adds an error indicating that a value is a bad input (could not be parsed into
+    #| the desired type).
+    method add-bad-input-error(Str $input --> Nil) {
+        @!errors.push: Error.new(:$input, :problem(BadInput));
     }
 
     #| Check if the form is valid. If there are validation failures, this
     #| returns False.
     method is-valid(--> Bool) {
-        not @!failures
+        not @!errors
     }
 }
 
@@ -170,6 +187,10 @@ role Cro::WebApp::Form {
     #| Computed validation state.
     has Cro::WebApp::Form::ValidationState $!validation-state;
 
+    #| Unparseable values (for if a form was submitted with a value that could not be
+    #| parsed into the required type).
+    has %!unparseable;
+
     #| Create an empty instance of the form without any data in it.
     method empty() {
         self.CREATE
@@ -180,6 +201,7 @@ role Cro::WebApp::Form {
     multi method parse(Cro::HTTP::Body::WWWFormUrlEncoded $body) {
         my %form-data := $body.hash;
         my %values;
+        my %unparseable;
         for self.^attributes.grep(*.has_accessor) -> Attribute $attr {
             my $name = $attr.name.substr(2);
             my $value := %form-data{$name};
@@ -187,16 +209,21 @@ role Cro::WebApp::Form {
                 my $value-type = $attr.type.of;
                 my @values := $value ~~ Cro::HTTP::MultiValue ?? $value.list !!
                         $value.defined ?? ($value,) !! ();
-                %values{$name} := @values.map({ self!parse-one-value($value-type, $_) }).list;
+                %values{$name} := @values.map({ self!parse-one-value($name, $value-type, $_, %unparseable) }).list;
             }
             else {
-                %values{$name} := self!parse-one-value($attr.type, $value);
+                %values{$name} := self!parse-one-value($name, $attr.type, $value, %unparseable);
             }
         }
-        self.bless(|%values)
+        given self.bless(|%values) -> Cro::WebApp::Form $parsed {
+            for %unparseable.kv -> $input, $value {
+                $parsed.add-unparseable-form-value($input, $value);
+            }
+            $parsed
+        }
     }
 
-    method !parse-one-value(Mu $declared-type, Mu $value) {
+    method !parse-one-value(Str $name, Mu $declared-type, Mu $value, %unparseable) {
         my $type = Any ~~ $declared-type ?? Str !! $declared-type;
         given $type {
             when Str {
@@ -206,18 +233,29 @@ role Cro::WebApp::Form {
                 ?$value
             }
             when Int {
-                $value.Int // Int
+                $value.defined
+                        ?? ($value.Int // unparseable($name, $value, %unparseable, Int))
+                        !! Int
             }
             when Num {
-                $value.Num // Num
+                $value.defined
+                        ?? ($value.Num // unparseable($name, $value, %unparseable, Num))
+                        !! Num
             }
             when Rat {
-                $value.Rat // Rat
+                $value.defined
+                        ?? ($value.Rat // unparseable($name, $value, %unparseable, Rat))
+                        !! Rat
             }
             default {
                 die "Don't know how to parse form data into a $type.^name()";
             }
         }
+    }
+
+    sub unparseable(Str $name, Str $value, %unparseable, $void) {
+        %unparseable{$name} = $value;
+        $void
     }
 
     #| Produce a description of the form and its content for use in rendering
@@ -346,10 +384,21 @@ role Cro::WebApp::Form {
         @words.join(' ')
     }
 
+    #| Stores a string value for a form input that could not be parsed into the desired
+    #| data type, for the purpose of validation.
+    method add-unparseable-form-value(Str $input, Str $value --> Nil) {
+        %!unparseable{$input} = $value;
+    }
+
     #| Checks if the form meets all validation constraints. Returns Ture if so.
     method is-valid(--> Bool) {
+        self.validation-state.is-valid
+    }
+
+    #| Get the validation state of the form.
+    method validation-state(--> Cro::WebApp::Form::ValidationState) {
         self!ensure-validation-state();
-        $!validation-state.is-valid
+        $!validation-state
     }
 
     method !ensure-validation-state(--> Nil) {
@@ -363,6 +412,13 @@ role Cro::WebApp::Form {
             my $value = $attr.get_value(self);
             my $type = $attr.type;
 
+            # We check for unparseables first, so we don't have to consider them in any
+            # further validation logic.
+            if %!unparseable{$name} {
+                $!validation-state.add-bad-input-error($name);
+                next;
+            }
+
             if $attr.required {
                 my $is-set = do given $type {
                     when Str { $value.defined && $value.trim ne '' }
@@ -373,6 +429,23 @@ role Cro::WebApp::Form {
                     # Don't validate this attribute further if it's missing.
                     $!validation-state.add-value-missing-error($name);
                     next;
+                }
+            }
+
+            # Only do further checks if we have a value to check (if we get to here
+            # with no value, then it was not a required value).
+            next without $value;
+
+            with $attr.?webapp-form-type {
+                when 'number' {
+                    # We may have already parsed it into a numeric value, in which
+                    # case it's obviously fine, so only check the string case.
+                    if $type !~~ Real {
+                        without $value.Real {
+                            $!validation-state.add-bad-input-error($name);
+                            next;
+                        }
+                    }
                 }
             }
 
