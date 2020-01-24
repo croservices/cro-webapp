@@ -6,6 +6,8 @@ my role FormProperties {
     has Bool $.webapp-form-is-password is rw;
     has Hash $.webapp-form-multiline is rw;
     has Block $.webapp-form-select is rw;
+    has Int $.webapp-form-minlength is rw;
+    has Int $.webapp-form-maxlength is rw;
 }
 
 #| Ensure that the attribute has the FormProperties mixin.
@@ -32,6 +34,18 @@ multi trait_mod:<is>(Attribute:D $attr, :$multiline! --> Nil) is export {
     $attr.webapp-form-multiline = %multiline;
 }
 
+#| Set the minimum length of an input field
+multi trait_mod:<is>(Attribute:D $attr, Int :min-length(:$minlength)! --> Nil) is export {
+    ensure-attr-state($attr);
+    $attr.webapp-form-minlength = $minlength;
+}
+
+#| Set the maximum length of an input field
+multi trait_mod:<is>(Attribute:D $attr, Int :max-length(:$maxlength)! --> Nil) is export {
+    ensure-attr-state($attr);
+    $attr.webapp-form-maxlength = $maxlength;
+}
+
 #| Provide code that will be run in order to produce the values to select from. Should
 #| return a list of Pair objects, where the key is the selected value and the value is
 #| the text to display. If non-Pairs are in the list, a Pair with the same key and value
@@ -41,11 +55,40 @@ multi trait_mod:<will>(Attribute:D $attr, &block, :$select! --> Nil) is export {
     $attr.webapp-form-select = &block;
 }
 
+#| The set of validation issues relating to a form.
+class Cro::WebApp::Form::ValidationState {
+    has @!failures;
+
+    #| Adds an error indicating that a required value is missing.
+    method add-value-missing-error(Str $input --> Nil) {
+        @!failures.push: 'XXX';
+    }
+
+    #| Adds an error indicating that a value is too short.
+    method add-too-short-error(Str $input --> Nil) {
+        @!failures.push: 'XXX';
+    }
+
+    #| Adds an error indicating that a value is too long.
+    method add-too-long-error(Str $input --> Nil) {
+        @!failures.push: 'XXX';
+    }
+
+    #| Check if the form is valid. If there are validation failures, this
+    #| returns False.
+    method is-valid(--> Bool) {
+        not @!failures
+    }
+}
+
 #| A role to be composed into Cro web application form objects, providing the key form
 #| functionality.
 role Cro::WebApp::Form {
-    #| We cache the render data, in case it is asked for multiple times.
+    #| Cached rendered data, in case it is asked for multiple times.
     has $!cached-render-data;
+
+    #| Computed validation state.
+    has Cro::WebApp::Form::ValidationState $!validation-state;
 
     #| Create an empty instance of the form without any data in it.
     method empty() {
@@ -171,6 +214,55 @@ role Cro::WebApp::Form {
         my @words = $attr.name.substr(2).split('-');
         @words[0] .= tclc;
         @words.join(' ')
+    }
+
+    #| Checks if the form meets all validation constraints. Returns Ture if so.
+    method is-valid(--> Bool) {
+        self!ensure-validation-state();
+        $!validation-state.is-valid
+    }
+
+    method !ensure-validation-state(--> Nil) {
+        # If we already calculated the validation state, don't do it again.
+        return with $!validation-state;
+
+        # Add per field validation errors.
+        $!validation-state .= new;
+        for self.^attributes.grep(*.has_accessor) -> Attribute $attr {
+            my $name = $attr.name.substr(2);
+            my $value = $attr.get_value(self);
+            my $type = $attr.type;
+
+            if $attr.required {
+                my $is-set = do given $type {
+                    when Str { $value.defined && $value.trim ne '' }
+                    when Positional { $value.elems > 0 }
+                    default { $value.defined }
+                }
+                unless $is-set {
+                    # Don't validate this attribute further if it's missing.
+                    $!validation-state.add-value-missing-error($name);
+                    next;
+                }
+            }
+
+            with $attr.?webapp-form-minlength -> $min {
+                if $value.defined && $value ne '' {
+                    if $value.chars < $min {
+                        $!validation-state.add-too-short-error($name);
+                        next;
+                    }
+                }
+            }
+            with $attr.?webapp-form-maxlength -> $max {
+                if $value.defined && $value ne '' {
+                    if $value.chars > $max {
+                        $!validation-state.add-too-long-error($name);
+                        next;
+                    }
+                }
+            }
+        }
     }
 }
 
