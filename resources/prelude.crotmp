@@ -1,15 +1,30 @@
 <:sub class($maybe-class)><?$maybe-class> class="<$maybe-class>"</?></:>
 <:sub rows-cols($rows, $cols)><?$rows> rows="<$rows>"</?><?$cols> cols="<$cols>"</?></:>
+<:sub opt($_, $name)><?.{$name}.defined> <$name>="<.{$name}>" </?></:>
+<:sub num-opts($_)><&opt($_, 'min')><&opt($_, 'max')></:>
+<:sub str-opts($_)><&opt($_, 'minlength')><&opt($_, 'maxlength')></:>
 
 <:sub form($_, :$input-group-class, :$input-control-class, :$input-label-class,
                :$check-group-class, :$check-control-class, :$check-label-class,
                :$submit-button-class)>
   <form method="post">
   <@HTML-RENDER-DATA.controls>
-    <?{ .type eq 'text' }>
+    <?{ .type eq 'text' || .type eq 'email' || .type eq 'search' || .type eq 'url' || .type eq 'tel' }>
       <div<&class($input-group-class)>>
         <label for="<.name>"<&class($input-label-class)>><.label></label>
-        <input type="text" name="<.name>" id="<.name>"<&class($input-control-class)><?.<value>.defined()> value="<.value>"</?>>
+        <input type="<.type>" name="<.name>" id="<.name>"<&class($input-control-class)><&str-opts($_)><?.<value>.defined()> value="<.value>"</?>>
+      </div>
+    </?>
+    <?{ .type eq 'number' }>
+      <div<&class($input-group-class)>>
+        <label for="<.name>"<&class($input-label-class)>><.label></label>
+        <input type="number" name="<.name>" id="<.name>"<&class($input-control-class)><&num-opts($_)><?.<value>.defined()> value="<.value>"</?>>
+      </div>
+    </?>
+    <?{ .type eq 'color' || .type eq 'date' || .type eq 'datetime-local' || .type eq 'month' || .type eq 'time' || .type eq 'week' }>
+      <div<&class($input-group-class)>>
+        <label for="<.name>"<&class($input-label-class)>><.label></label>
+        <input type="<.type>" name="<.name>" id="<.name>"<&class($input-control-class)><?.<value>.defined()> value="<.value>"</?>>
       </div>
     </?>
     <?{ .type eq 'password' }>
@@ -21,7 +36,7 @@
     <?{ .type eq 'textarea' }>
       <div<&class($input-group-class)>>
         <label for="<.name>"<&class($input-label-class)>><.label></label>
-        <textarea name="<.name>" id="<.name>"<&class($input-control-class)><&rows-cols(.rows, .cols)>><?.<value>.defined()><.value></?></textarea>
+        <textarea name="<.name>" id="<.name>"<&class($input-control-class)><&rows-cols(.rows, .cols)><&str-opts($_)>><?.<value>.defined()><.value></?></textarea>
       </div>
     </?>
     <?{ .type eq 'checkbox' }>

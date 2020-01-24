@@ -3,11 +3,13 @@ use Cro::HTTP::MultiValue;
 
 #| A role to be mixed in to Attribute to hold extra form-related properties.
 my role FormProperties {
-    has Bool $.webapp-form-is-password is rw;
+    has Str $.webapp-form-type is rw;
     has Hash $.webapp-form-multiline is rw;
     has Block $.webapp-form-select is rw;
     has Int $.webapp-form-minlength is rw;
     has Int $.webapp-form-maxlength is rw;
+    has Real $.webapp-form-min is rw;
+    has Real $.webapp-form-max is rw;
 }
 
 #| Ensure that the attribute has the FormProperties mixin.
@@ -20,7 +22,73 @@ sub ensure-attr-state(Attribute $attr --> Nil) {
 #| Indicate that this is a password form field
 multi trait_mod:<is>(Attribute:D $attr, :$password! --> Nil) is export {
     ensure-attr-state($attr);
-    $attr.webapp-form-is-password = True;
+    $attr.webapp-form-type = 'password';
+}
+
+#| Indicate that this is a number form field
+multi trait_mod:<is>(Attribute:D $attr, :$number! --> Nil) is export {
+    ensure-attr-state($attr);
+    $attr.webapp-form-type = 'number';
+}
+
+#| Indicate that this is a color form field
+multi trait_mod:<is>(Attribute:D $attr, :$color! --> Nil) is export {
+    ensure-attr-state($attr);
+    $attr.webapp-form-type = 'color';
+}
+
+#| Indicate that this is a date form field
+multi trait_mod:<is>(Attribute:D $attr, :$date! --> Nil) is export {
+    ensure-attr-state($attr);
+    $attr.webapp-form-type = 'date';
+}
+
+#| Indicate that this is a local date/time form field
+multi trait_mod:<is>(Attribute:D $attr, :datetime(:$datetime-local)! --> Nil) is export {
+    ensure-attr-state($attr);
+    $attr.webapp-form-type = 'datetime-local';
+}
+
+#| Indicate that this is an email form field
+multi trait_mod:<is>(Attribute:D $attr, :$email! --> Nil) is export {
+    ensure-attr-state($attr);
+    $attr.webapp-form-type = 'email';
+}
+
+#| Indicate that this is a month form field
+multi trait_mod:<is>(Attribute:D $attr, :$month! --> Nil) is export {
+    ensure-attr-state($attr);
+    $attr.webapp-form-type = 'month';
+}
+
+#| Indicate that this is a telephone form field
+multi trait_mod:<is>(Attribute:D $attr, :telephone(:$tel)! --> Nil) is export {
+    ensure-attr-state($attr);
+    $attr.webapp-form-type = 'tel';
+}
+
+#| Indicate that this is a search form field
+multi trait_mod:<is>(Attribute:D $attr, :$search! --> Nil) is export {
+    ensure-attr-state($attr);
+    $attr.webapp-form-type = 'search';
+}
+
+#| Indicate that this is a time form field
+multi trait_mod:<is>(Attribute:D $attr, :$time! --> Nil) is export {
+    ensure-attr-state($attr);
+    $attr.webapp-form-type = 'time';
+}
+
+#| Indicate that this is a URL form field
+multi trait_mod:<is>(Attribute:D $attr, :$url! --> Nil) is export {
+    ensure-attr-state($attr);
+    $attr.webapp-form-type = 'url';
+}
+
+#| Indicate that this is a week form field
+multi trait_mod:<is>(Attribute:D $attr, :$week! --> Nil) is export {
+    ensure-attr-state($attr);
+    $attr.webapp-form-type = 'week';
 }
 
 #| Indicate that this is a multi-line form field. Optionally, the number of
@@ -44,6 +112,18 @@ multi trait_mod:<is>(Attribute:D $attr, Int :min-length(:$minlength)! --> Nil) i
 multi trait_mod:<is>(Attribute:D $attr, Int :max-length(:$maxlength)! --> Nil) is export {
     ensure-attr-state($attr);
     $attr.webapp-form-maxlength = $maxlength;
+}
+
+#| Set the minimum numeric value of an input field
+multi trait_mod:<is>(Attribute:D $attr, Real :$min! --> Nil) is export {
+    ensure-attr-state($attr);
+    $attr.webapp-form-min = $min;
+}
+
+#| Set the maximum numeric value of an input field
+multi trait_mod:<is>(Attribute:D $attr, Real :$max! --> Nil) is export {
+    ensure-attr-state($attr);
+    $attr.webapp-form-max = $max;
 }
 
 #| Provide code that will be run in order to produce the values to select from. Should
@@ -148,9 +228,19 @@ role Cro::WebApp::Form {
 
     method !calculate-control-type(Attribute $attr) {
         # See if we've been explicitly told what it is.
-        with $attr.?webapp-form-is-password {
-            ensure-acceptable-type($attr);
-            return 'password';
+        with $attr.?webapp-form-type {
+            # Some of these are are special, some not just text-like.
+            when 'number' {
+                return self!calculate-numeric-control-type($attr);
+            }
+            when 'email' | 'search' | 'tel' | 'url' {
+                ensure-acceptable-type($attr);
+                return self!calculate-text-control-type($attr, $_);
+            }
+            default {
+                ensure-acceptable-type($attr);
+                return $_;
+            }
         }
         with $attr.?webapp-form-select {
             my %properties = options => self!calculate-options($attr, $_);
@@ -166,16 +256,44 @@ role Cro::WebApp::Form {
         }
         with $attr.?webapp-form-multiline {
             ensure-acceptable-type($attr);
-            return 'textarea', self!add-current-value($attr, $_);
+            return self!calculate-text-control-type($attr, 'textarea', $_);
         }
 
-        # Otherwise, go by type; booleans become checkboxes, and Str, numeric, or untyped
-        # become basic inputs.
-        if $attr.type ~~ Bool {
-            return 'checkbox', self!add-current-value($attr);
+        # Otherwise, look at the type-specific cases; booleans become checkboxes, and
+        # numerics become number.
+        unless $attr.type =:= Mu {
+            if $attr.type ~~ Bool {
+                return 'checkbox', self!add-current-value($attr);
+            }
+            if $attr.type ~~ Real {
+                return self!calculate-numeric-control-type($attr);
+            }
         }
+
+        # Otherwise, we're looking at a text property.
         ensure-acceptable-type($attr);
-        return 'text', self!add-current-value($attr);
+        return self!calculate-text-control-type($attr);
+    }
+
+    method !calculate-text-control-type(Attribute $attr, $type = 'text', %properties? is copy) {
+        with $attr.?webapp-form-minlength {
+            %properties<minlength> = ~$_;
+        }
+        with $attr.?webapp-form-maxlength {
+            %properties<maxlength> = ~$_;
+        }
+        return $type, self!add-current-value($attr, %properties)
+    }
+
+    method !calculate-numeric-control-type(Attribute $attr) {
+        my %min-max;
+        with $attr.?webapp-form-min {
+            %min-max<min> = ~$_;
+        }
+        with $attr.?webapp-form-max {
+            %min-max<max> = ~$_;
+        }
+        return 'number', self!add-current-value($attr, %min-max);
     }
 
     method !add-current-value(Attribute $attr, %properties? is copy) {
@@ -203,7 +321,7 @@ role Cro::WebApp::Form {
     multi sub ensure-acceptable-type(Attribute $attr --> Nil) {
         ensure-acceptable-type($attr, $attr.type);
     }
-    multi sub ensure-acceptable-type(Attribute $attr, $type --> Nil) {
+    multi sub ensure-acceptable-type(Attribute $attr, Mu $type --> Nil) {
         unless $type ~~ Str || $type ~~ Real || Any ~~ $type {
             die "Don't know how to handle type '$type.^name()' of '$attr.name()' in a form";
         }
