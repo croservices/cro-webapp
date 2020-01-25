@@ -165,6 +165,18 @@ class Cro::WebApp::Form::ValidationState {
         @!errors.push: Error.new(:$input, :problem(TooLong));
     }
 
+    #| Adds an error indicating that a value was greater than the allowed
+    #| maximum.
+    method add-range-overflow-error(Str $input --> Nil) {
+        @!errors.push: Error.new(:$input, :problem(RangeOverflow));
+    }
+
+    #| Adds an error indicating that a value was less than the allowed
+    #| minimum.
+    method add-range-underflow-error(Str $input --> Nil) {
+        @!errors.push: Error.new(:$input, :problem(RangeUnderflow));
+    }
+
     #| Adds an error indicating that a value is a bad input (could not be parsed into
     #| the desired type).
     method add-bad-input-error(Str $input --> Nil) {
@@ -450,7 +462,7 @@ role Cro::WebApp::Form {
             }
 
             with $attr.?webapp-form-minlength -> $min {
-                if $value.defined && $value ne '' {
+                if $value ne '' {
                     if $value.chars < $min {
                         $!validation-state.add-too-short-error($name);
                         next;
@@ -458,9 +470,38 @@ role Cro::WebApp::Form {
                 }
             }
             with $attr.?webapp-form-maxlength -> $max {
-                if $value.defined && $value ne '' {
+                if $value ne '' {
                     if $value.chars > $max {
                         $!validation-state.add-too-long-error($name);
+                        next;
+                    }
+                }
+            }
+
+            with $attr.?webapp-form-min -> $min {
+                if $value ~~ Real {
+                    if $value < $min {
+                        $!validation-state.add-range-underflow-error($name);
+                        next;
+                    }
+                }
+                orwith $value.Real {
+                    if $_ < $min {
+                        $!validation-state.add-range-underflow-error($name);
+                        next;
+                    }
+                }
+            }
+            with $attr.?webapp-form-max -> $max {
+                if $value ~~ Real {
+                    if $value > $max {
+                        $!validation-state.add-range-overflow-error($name);
+                        next;
+                    }
+                }
+                orwith $value.Real {
+                    if $_ > $max {
+                        $!validation-state.add-range-overflow-error($name);
                         next;
                     }
                 }

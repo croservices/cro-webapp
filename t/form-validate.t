@@ -164,6 +164,41 @@ use Test;
         nok TestNumbers.parse($body).is-valid,
                 'Form is invalid if we cannot parse an Str input marked with `is number`';
     }
+
+    {
+        my $body = Cro::HTTP::Body::WWWFormUrlEncoded.new: :pairs[
+            i => '142',
+            n => '1.5',
+            r => '-2.3',
+            s => '5'
+        ];
+        given TestNumbers.parse($body) {
+            nok .is-valid,
+                    'Form is invalid if numbers are out of min/max range';
+            is .validation-state.errors.elems, 4,
+                    'Have four errors';
+            given .validation-state.errors[0] {
+                is .input, 'i', 'Correct input on Int input error';
+                is .problem, Cro::WebApp::Form::ValidationState::Problem::RangeOverflow,
+                        'Correct problem (too high)';
+            }
+            given .validation-state.errors[1] {
+                is .input, 'n', 'Correct input on Num input error';
+                is .problem, Cro::WebApp::Form::ValidationState::Problem::RangeOverflow,
+                        'Correct problem (too high)';
+            }
+            given .validation-state.errors[2] {
+                is .input, 'r', 'Correct input on Rat input error';
+                is .problem, Cro::WebApp::Form::ValidationState::Problem::RangeUnderflow,
+                        'Correct problem (too low)';
+            }
+            given .validation-state.errors[3] {
+                is .input, 's', 'Correct input on Str input error';
+                is .problem, Cro::WebApp::Form::ValidationState::Problem::RangeUnderflow,
+                        'Correct problem (too low)';
+            }
+        }
+    }
 }
 
 done-testing;
