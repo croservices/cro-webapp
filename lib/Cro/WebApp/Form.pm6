@@ -10,6 +10,7 @@ my role FormProperties {
     has Int $.webapp-form-maxlength is rw;
     has Real $.webapp-form-min is rw;
     has Real $.webapp-form-max is rw;
+    has List @.webapp-form-validations;
 }
 
 #| Ensure that the attribute has the FormProperties mixin.
@@ -135,17 +136,29 @@ multi trait_mod:<will>(Attribute:D $attr, &block, :$select! --> Nil) is export {
     $attr.webapp-form-select = &block;
 }
 
+#| Describe how a field is validated. Two arguments are expected to the
+#| trait: something the value will be smart-matched against, and the
+#| error message for if the validation fails.
+multi trait_mod:<is>(Attribute:D $attr, :$validated! --> Nil) is export {
+    ensure-attr-state($attr);
+    unless $validated ~~ List && $validated.elems == 2 {
+        die "Trait 'is validated' on attribute '$attr.name()' requires two arguments " ~
+                "(one to smart-match the value against, one with the error message)";
+    }
+    $attr.webapp-form-validations.push($validated);
+}
+
 #| The set of validation issues relating to a form.
 class Cro::WebApp::Form::ValidationState {
     enum Problem <
-        BadInput CustomError PatternMismatch RangeOverflow RangeUnderflow
+        BadInput CustomError RangeOverflow RangeUnderflow
         StepMismatch TooLong TooShort TypeMismatch ValueMissing
     >;
 
     class Error {
         has Str $.input is required;
         has Problem $.problem is required;
-        has Str $.explanation;
+        has $.message;
     }
 
     has Error @.errors;
@@ -181,6 +194,11 @@ class Cro::WebApp::Form::ValidationState {
     #| the desired type).
     method add-bad-input-error(Str $input --> Nil) {
         @!errors.push: Error.new(:$input, :problem(BadInput));
+    }
+
+    #| Add a custom validation error.
+    method add-custom-error(Str $input, Str $message --> Nil) {
+        @!errors.push: Error.new(:$input, :problem(CustomError), :$message);
     }
 
     #| Check if the form is valid. If there are validation failures, this
@@ -447,6 +465,7 @@ role Cro::WebApp::Form {
             # Only do further checks if we have a value to check (if we get to here
             # with no value, then it was not a required value).
             next without $value;
+            next if $value ~~ Str && $value eq '';
 
             with $attr.?webapp-form-type {
                 when 'number' {
@@ -462,19 +481,15 @@ role Cro::WebApp::Form {
             }
 
             with $attr.?webapp-form-minlength -> $min {
-                if $value ne '' {
-                    if $value.chars < $min {
-                        $!validation-state.add-too-short-error($name);
-                        next;
-                    }
+                if $value.chars < $min {
+                    $!validation-state.add-too-short-error($name);
+                    next;
                 }
             }
             with $attr.?webapp-form-maxlength -> $max {
-                if $value ne '' {
-                    if $value.chars > $max {
-                        $!validation-state.add-too-long-error($name);
-                        next;
-                    }
+                if $value.chars > $max {
+                    $!validation-state.add-too-long-error($name);
+                    next;
                 }
             }
 
@@ -503,6 +518,15 @@ role Cro::WebApp::Form {
                     if $_ > $max {
                         $!validation-state.add-range-overflow-error($name);
                         next;
+                    }
+                }
+            }
+
+            with $attr.?webapp-form-validations -> @validations {
+                for @validations -> [$check, $message] {
+                    if $value !~~ $check {
+                        $!validation-state.add-custom-error($name, $message);
+                        last;
                     }
                 }
             }

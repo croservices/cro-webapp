@@ -201,4 +201,36 @@ use Test;
     }
 }
 
+{
+    class CustomValidation does Cro::WebApp::Form {
+        has Str $.isbn is validated(/^[97[8|9]]?\d**9(\d|X)$/, 'Must be a valid ISBN');
+        has Int $.prime is validated(*.is-prime, 'Must be a prime number');
+    }
+
+    ok CustomValidation.empty.is-valid,
+            'Custom validations not triggered on not present inputs';
+    ok CustomValidation.new(isbn => '123456789X', prime => 101).is-valid,
+            'Custom validations pass when all inputs meet the requirements';
+
+    given CustomValidation.new(isbn => '1234', prime => 42) {
+        nok .is-valid, 'Validation fails when custom validations are not met';
+        is .validation-state.errors.elems, 2,
+                'Have two errors';
+        given .validation-state.errors[0] {
+            is .input, 'isbn', 'Correct input on first error';
+            is .problem, Cro::WebApp::Form::ValidationState::Problem::CustomError,
+                    'Problem is a custom error';
+            is .message, 'Must be a valid ISBN',
+                    'Correct message attached';
+        }
+        given .validation-state.errors[1] {
+            is .input, 'prime', 'Correct input on second error';
+            is .problem, Cro::WebApp::Form::ValidationState::Problem::CustomError,
+                    'Problem is a custom error';
+            is .message, 'Must be a prime number',
+                    'Correct message attached';
+        }
+    }
+}
+
 done-testing;
