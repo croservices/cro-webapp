@@ -233,4 +233,53 @@ use Test;
     }
 }
 
+{
+    class Signup is Cro::WebApp::Form {
+        has Str $.username is required is minlength(5);
+        has Str $.password is required is minlength(8);
+        has Str $.verify-password is required;
+
+        method validate-form(--> Nil) {
+            if $!password ne $!verify-password {
+                self.add-validation-error("Passowrd and verify password do not match");
+            }
+        }
+    }
+
+    given Signup.empty {
+        nok .is-valid, 'Empty form is not valid';
+        is .validation-state.errors.elems, 3, 'Have 3 errors';
+        is all(.validation-state.errors>>.problem),
+                Cro::WebApp::Form::ValidationState::Problem::ValueMissing,
+                'All errors are about missing values';
+    }
+
+    given Signup.new(username => 'foobar', password => 'ninechars', verify-password => 'ninechars') {
+        ok .is-valid, 'Form with all correct fields validates';
+    }
+
+    given Signup.new(username => 'foobar', password => 'ninechars', verify-password => '') {
+        nok .is-valid, 'Form with missing required input does not validate';
+        is .validation-state.errors.elems, 1,
+                'Only one error is present';
+        is .validation-state.errors[0].problem,
+                Cro::WebApp::Form::ValidationState::Problem::ValueMissing,
+                'Error is about missing field; we did not bother trying form-level';
+    }
+
+    given Signup.new(username => 'foobar', password => 'ninechars', verify-password => 'notmatching') {
+        nok .is-valid, 'Form is not valid if form-level validation adds errors';
+        is .validation-state.errors.elems, 1,
+                'There is one error';
+        given .validation-state.errors[0] {
+            nok .input.defined,
+                    'The error is not associated with a particular input';
+            is .problem, Cro::WebApp::Form::ValidationState::Problem::CustomError,
+                    'Error is about missing field; we did not bother trying form-level';
+            is .message, 'Passowrd and verify password do not match',
+                    'Correct message';
+        }
+    }
+}
+
 done-testing;

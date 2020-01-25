@@ -196,9 +196,14 @@ class Cro::WebApp::Form::ValidationState {
         @!errors.push: Error.new(:$input, :problem(BadInput));
     }
 
-    #| Add a custom validation error.
-    method add-custom-error(Str $input, Str $message --> Nil) {
+    #| Add a custom validation error on a particular field.
+    multi method add-custom-error(Str $input, $message --> Nil) {
         @!errors.push: Error.new(:$input, :problem(CustomError), :$message);
+    }
+
+    #| Add a form-level error (one not connected to a particular field).
+    multi method add-custom-error($message --> Nil) {
+        @!errors.push: Error.new(:input(Str), :problem(CustomError), :$message);
     }
 
     #| Check if the form is valid. If there are validation failures, this
@@ -531,6 +536,19 @@ role Cro::WebApp::Form {
                 }
             }
         }
+
+        # If it's valid at this point, perform form-level validation. (Don't
+        # bother if there's per-field problems. Doing it this way means the
+        # validation logic at form level can assume all the per-input constraints
+        # are met, and so be simpler.)
+        if $!validation-state.is-valid {
+            self.?validate-form();
+        }
+    }
+
+    #| Add a form-level validation error.
+    method add-validation-error($message --> Nil) {
+        $!validation-state.add-custom-error($message);
     }
 }
 
