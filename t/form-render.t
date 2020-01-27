@@ -306,4 +306,64 @@ use Test;
             'Various formatted input types render the correct type';
 }
 
+{
+    my class TestNumbers does Cro::WebApp::Form {
+        has Int $.i is required is min(1) is max(100);
+        has Num $.n is required is min(-1e0) is max(1e0);
+        has Rat $.r is required is min(0) is max(1);
+        has Str $.s is required is number is min(10) is max(20);
+    }
+
+    {
+        my $body = Cro::HTTP::Body::WWWFormUrlEncoded.new: :pairs[
+            i => 'omg',
+            n => 'wtf',
+            r => 'bbq',
+            s => 'sauce'
+        ];
+        is-deeply TestNumbers.parse($body).HTML-RENDER-DATA,
+                {
+                    controls => [
+                        {
+                            type => 'number',
+                            name => 'i',
+                            label => 'I',
+                            required => True,
+                            min => '1',
+                            max => '100',
+                            value => 'omg'
+                        },
+                        {
+                            type => 'number',
+                            name => 'n',
+                            label => 'N',
+                            required => True,
+                            min => '-1',
+                            max => '1',
+                            value => 'wtf'
+                        },
+                        {
+                            type => 'number',
+                            name => 'r',
+                            label => 'R',
+                            required => True,
+                            min => '0',
+                            max => '1',
+                            value => 'bbq'
+                        },
+                        {
+                            type => 'number',
+                            name => 's',
+                            label => 'S',
+                            required => True,
+                            min => '10',
+                            max => '20',
+                            value => 'sauce'
+                        },
+                    ]
+                },
+                'Unparseable number values are round-tripped';
+    }
+}
+
 done-testing;

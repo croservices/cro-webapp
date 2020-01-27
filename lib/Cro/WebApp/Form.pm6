@@ -385,6 +385,9 @@ role Cro::WebApp::Form {
         with $attr.get_value(self) {
             %properties<value> = $_;
         }
+        orwith %!unparseable{$attr.name.substr(2)} {
+            %properties<value> = $_;
+        }
         return %properties;
     }
 
