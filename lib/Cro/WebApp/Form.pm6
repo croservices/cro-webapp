@@ -298,17 +298,31 @@ role Cro::WebApp::Form {
     method HTML-RENDER-DATA(--> Hash) {
         .return with $!cached-render-data;
         my @controls;
+        my %validation-by-control;
+        with $!validation-state {
+            for .errors {
+                %validation-by-control{.input // ''}.push($_);
+            }
+        }
         for self.^attributes.grep(*.has_accessor) -> Attribute $attr {
             my ($control-type, %properties) = self!calculate-control-type($attr);
+            my $name = $attr.name.substr(2);
             my %control =
-                    name => $attr.name.substr(2),
+                    name => $name,
                     label => self!calculate-label($attr),
                     required => ?$attr.required,
                     type => $control-type,
                     %properties;
+            if %validation-by-control{$name} -> @errors {
+                self!set-control-validation(%control, @errors)
+            }
             @controls.push(%control);
         }
-        return $!cached-render-data := { :@controls };
+        my %rendered := { :@controls, was-validated => $!validation-state.defined };
+        if %validation-by-control{''} -> @errors {
+            %rendered<validation-errors> = [@errors.map(*.message)];
+        }
+        return $!cached-render-data := %rendered;
     }
 
     method !calculate-control-type(Attribute $attr) {
@@ -318,7 +332,7 @@ role Cro::WebApp::Form {
             when 'number' {
                 return self!calculate-numeric-control-type($attr);
             }
-            when 'email' | 'search' | 'tel' | 'url' {
+            when 'email' | 'search' | 'tel' | 'url' | 'password' {
                 ensure-acceptable-type($attr);
                 return self!calculate-text-control-type($attr, $_);
             }
@@ -422,6 +436,45 @@ role Cro::WebApp::Form {
         @words.join(' ')
     }
 
+    #| Add validation errors to a control.
+    method !set-control-validation(%control, @errors --> Nil) {
+        # TODO i18n support
+        my @messages;
+        for @errors -> $error {
+            @messages.push: do with $error.message {
+                $_
+            }
+            else {
+                given $error.problem {
+                    when Cro::WebApp::Form::ValidationState::Problem::ValueMissing {
+                        'Please fill in this field'
+                    }
+                    when Cro::WebApp::Form::ValidationState::Problem::RangeOverflow {
+                        "Must not be greater than %control<max>"
+                    }
+                    when Cro::WebApp::Form::ValidationState::Problem::RangeUnderflow {
+                        "Must not be less than %control<min>"
+                    }
+                    when Cro::WebApp::Form::ValidationState::Problem::TooLong {
+                        "Must not be longer than %control<maxlength> characters"
+                    }
+                    when Cro::WebApp::Form::ValidationState::Problem::TooShort {
+                        "Must not be shorter than %control<minlength> characters"
+                    }
+                    default {
+                        given %control<type> // '' {
+                            when 'email' { 'Must be an email address' }
+                            when 'number' { 'Must be a number' }
+                            when 'url' { 'Must be a URL' }
+                            default { 'This value is not appropriate' }
+                        }
+                    }
+                }
+            }
+        }
+        %control<validation-errors> = @messages;
+    }
+
     #| Stores a string value for a form input that could not be parsed into the desired
     #| data type, for the purpose of validation.
     method add-unparseable-form-value(Str $input, Str $value --> Nil) {
@@ -449,6 +502,7 @@ role Cro::WebApp::Form {
             my $name = $attr.name.substr(2);
             my $value = $attr.get_value(self);
             my $type = $attr.type;
+            $type = Str if Any ~~ $type;
 
             # We check for unparseables first, so we don't have to consider them in any
             # further validation logic.

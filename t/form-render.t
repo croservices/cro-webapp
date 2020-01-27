@@ -10,6 +10,7 @@ use Test;
 
     is-deeply TestForm.empty.HTML-RENDER-DATA,
             {
+                was-validated => False,
                 controls => [
                     {
                         type => 'text',
@@ -44,6 +45,7 @@ use Test;
 
     is-deeply BlogPost.empty.HTML-RENDER-DATA,
             {
+                was-validated => False,
                 controls => [
                     {
                         type => 'text',
@@ -98,6 +100,7 @@ use Test;
             tags => ['City', 'Steam'];
     is-deeply $post-with-data.HTML-RENDER-DATA,
             {
+                was-validated => False,
                 controls => [
                     {
                         type => 'text',
@@ -156,6 +159,7 @@ use Test;
 
     is-deeply TestLengths.empty.HTML-RENDER-DATA,
             {
+                was-validated => False,
                 controls => [
                     {
                         type => 'text',
@@ -186,6 +190,7 @@ use Test;
 
     is-deeply TestNumbers.empty.HTML-RENDER-DATA,
             {
+                was-validated => False,
                 controls => [
                     {
                         type => 'number',
@@ -240,6 +245,7 @@ use Test;
 
     is-deeply FormattedInputTypes.empty.HTML-RENDER-DATA,
             {
+                was-validated => False,
                 controls => [
                     {
                         type => 'color',
@@ -323,6 +329,7 @@ use Test;
         ];
         is-deeply TestNumbers.parse($body).HTML-RENDER-DATA,
                 {
+                    was-validated => False,
                     controls => [
                         {
                             type => 'number',
@@ -363,6 +370,111 @@ use Test;
                     ]
                 },
                 'Unparseable number values are round-tripped';
+    }
+}
+
+{
+    class TestValidation does Cro::WebApp::Form {
+        has $.name is required;
+        has $.bio is required is minlength(10) is maxlength(1000);
+        has Int $.age is required is min(18) is max(150);
+        has Str $.isbn is required is validated(/^[97[8|9]]?\d**9(\d|X)$/, 'Must be a valid ISBN');
+    }
+
+    given TestValidation.new(:name(''), :bio('short'), :age(5), :isbn('9999')) {
+        nok .is-valid, 'Test form for validation errors is not valid';
+        is-deeply .HTML-RENDER-DATA,
+                {
+                    was-validated => True,
+                    controls => [
+                        {
+                            type => 'text',
+                            name => 'name',
+                            label => 'Name',
+                            required => True,
+                            value => '',
+                            validation-errors => ['Please fill in this field'],
+                        },
+                        {
+                            type => 'text',
+                            name => 'bio',
+                            label => 'Bio',
+                            required => True,
+                            value => 'short',
+                            minlength => '10',
+                            maxlength => '1000',
+                            validation-errors => ["Must not be shorter than 10 characters"],
+                        },
+                        {
+                            type => 'number',
+                            name => 'age',
+                            label => 'Age',
+                            required => True,
+                            value => 5,
+                            min => '18',
+                            max => '150',
+                            validation-errors => ["Must not be less than 18"],
+                        },
+                        {
+                            type => 'text',
+                            name => 'isbn',
+                            label => 'Isbn',
+                            required => True,
+                            value => '9999',
+                            validation-errors => ['Must be a valid ISBN'],
+                        },
+                    ]
+                },
+                'Input level validation results are included in the form output';
+    }
+}
+
+{
+    class Signup is Cro::WebApp::Form {
+        has Str $.username is required is minlength(5);
+        has Str $.password is required is password is minlength(8);
+        has Str $.verify-password is password is required;
+
+        method validate-form(--> Nil) {
+            if $!password ne $!verify-password {
+                self.add-validation-error("Passowrd and verify password do not match");
+            }
+        }
+    }
+
+    given Signup.new(username => 'foobar', password => 'ninechars', verify-password => 'notmatching') {
+        nok .is-valid, 'Form is not valid if form-level validation adds errors';
+        is-deeply .HTML-RENDER-DATA,
+                {
+                    was-validated => True,
+                    validation-errors => ["Passowrd and verify password do not match"],
+                    controls => [
+                        {
+                            type => 'text',
+                            name => 'username',
+                            label => 'Username',
+                            required => True,
+                            minlength => '5',
+                            value => 'foobar',
+                        },
+                        {
+                            type => 'password',
+                            name => 'password',
+                            label => 'Password',
+                            required => True,
+                            minlength => '8',
+                            value => 'ninechars',
+                        },
+                        {
+                            type => 'password',
+                            name => 'verify-password',
+                            label => 'Verify password',
+                            required => True,
+                            value => 'notmatching',
+                        },
+                    ],
+                },
+                'Form-level validation errors are included in render output';
     }
 }
 
