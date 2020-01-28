@@ -2,6 +2,7 @@
 <:sub class-name($maybe-class)><?$maybe-class><$maybe-class> </?></:>
 <:sub control-class($_, $control-class, :$is-invalid-class)>
   class="<&class-name($control-class)><?.<validation-errors>><&class-name($is-invalid-class)></?>"
+  <?.<help>>aria-describedby="<.name>_help"</?>
 </:>
 <:sub rows-cols($rows, $cols)><?$rows> rows="<$rows>"</?><?$cols> cols="<$cols>"</?></:>
 <:sub opt($_, $name)><?.{$name}.defined> <$name>="<.{$name}>" </?></:>
@@ -16,7 +17,7 @@
 </:>
 <:sub control-help($_, :$help-class)>
   <?.<help>>
-    <small<&class($help-class)>><.help></small>
+    <small id="<.name>_help"<&class($help-class)>><.help></small>
   </?>
 </:>
 
