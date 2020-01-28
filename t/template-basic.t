@@ -167,6 +167,7 @@ is norm-ws(render-template($base.add('sub-4.crotmp'), { t => 'b' })),
     Both notnamed and named
     T
     F
+    aaa - bbb
     EXPECTED
 
 throws-like { render-template($error-base.add('sub-pos-after-pos-named.crotmp'), {}) },

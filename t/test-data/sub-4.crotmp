@@ -16,3 +16,8 @@
 </:>
 <&pred(:truth)>
 <&pred(:!truth)>
+
+<:sub forward(:$first, :$second)>
+  <&foo(:$first, :$second)>
+</:>
+<&forward(:first('aaa'), :second('bbb'))>

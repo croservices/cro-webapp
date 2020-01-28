@@ -138,9 +138,16 @@ class Cro::WebApp::Template::ASTBuilder {
     }
 
     method arg:by-name ($/) {
-        my $argument = $<expression>
-                ?? $<expression>.ast
-                !! BoolLiteral.new(value => !$<negated>);
+        my $argument;
+        with $<var-name> {
+            $argument = VariableAccess.new(name => ~$_);
+        }
+        orwith $<expression> {
+            $argument = .ast;
+        }
+        else {
+            $argument = BoolLiteral.new(value => !$<negated>);
+        }
         make ByNameArgument.new(name => ~$<identifier>, :$argument);
     }
 

@@ -212,12 +212,17 @@ grammar Cro::WebApp::Template::Parser {
     token arg:by-name {
         :my $negated = False;
         ':'
-        [ $<negated>='!' { $negated = True} ]?
-        <identifier>
         [
-            '(' ~ ')' <expression>
-            [ <!{$negated}> || <.panic('Negated named argument may not have a value')> ]
-        ]?
+        | $<var-name>=['$' <identifier>]
+        | [ $<negated>='!' { $negated = True} ]?
+          <identifier>
+          [
+          '(' ~ ')' <expression>
+          [ <!{$negated}> || <.panic('Negated named argument may not have a value')> ]
+          ]?
+        ]
+
+
     }
 
     rule expression {
