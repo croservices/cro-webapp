@@ -6,12 +6,17 @@
 <:sub rows-cols($rows, $cols)><?$rows> rows="<$rows>"</?><?$cols> cols="<$cols>"</?></:>
 <:sub opt($_, $name)><?.{$name}.defined> <$name>="<.{$name}>" </?></:>
 <:sub num-opts($_)><&opt($_, 'min')><&opt($_, 'max')></:>
-<:sub str-opts($_)><&opt($_, 'minlength')><&opt($_, 'maxlength')></:>
+<:sub str-opts($_)><&opt($_, 'minlength')><&opt($_, 'maxlength')><&opt($_, 'placeholder')></:>
 <:sub control-validation-message($_, :$invalid-feedback-class)>
   <?.<validation-errors>>
     <@<validation-errors>>
       <div<&class($invalid-feedback-class)>><$_>
     </@>
+  </?>
+</:>
+<:sub control-help($_, :$help-class)>
+  <?.<help>>
+    <small<&class($help-class)>><.help></small>
   </?>
 </:>
 
@@ -32,7 +37,7 @@
                :$check-group-class, :$check-control-class, :$check-label-class,
                :$novalidate, :$was-validated-class, :$is-invalid-class,
                :$invalid-feedback-class, :$form-errors-class, :$form-errors-text,
-               :$submit-button-class)>
+               :$help-class, :$submit-button-class)>
   <form method="post"<?$novalidate> novalidate</?><?{ .<was-validated> && $was-validated-class }> class="<$was-validated-class>"</?>>
   <&form-errors($_, :$form-errors-class, :$form-errors-text)>
   <@HTML-RENDER-DATA.controls>
@@ -40,6 +45,7 @@
       <div<&class($input-group-class)>>
         <label for="<.name>"<&class($input-label-class)>><.label></label>
         <input type="<.type>" name="<.name>" id="<.name>"<&control-class($_, $input-control-class, :$is-invalid-class)><&str-opts($_)><?.<value>.defined()> value="<.value>"</?>>
+        <&control-help($_, :$help-class)>
         <&control-validation-message($_, :$invalid-feedback-class)>
       </div>
     </?>
@@ -47,6 +53,7 @@
       <div<&class($input-group-class)>>
         <label for="<.name>"<&class($input-label-class)>><.label></label>
         <input type="number" name="<.name>" id="<.name>"<&control-class($_, $input-control-class, :$is-invalid-class)><&num-opts($_)><?.<value>.defined()> value="<.value>"</?>>
+        <&control-help($_, :$help-class)>
         <&control-validation-message($_, :$invalid-feedback-class)>
       </div>
     </?>
@@ -54,6 +61,7 @@
       <div<&class($input-group-class)>>
         <label for="<.name>"<&class($input-label-class)>><.label></label>
         <input type="<.type>" name="<.name>" id="<.name>"<&control-class($_, $input-control-class, :$is-invalid-class)><?.<value>.defined()> value="<.value>"</?>>
+        <&control-help($_, :$help-class)>
         <&control-validation-message($_, :$invalid-feedback-class)>
       </div>
     </?>
@@ -61,6 +69,7 @@
       <div<&class($input-group-class)>>
         <label for="<.name>"<&class($input-label-class)>><.label></label>
         <input type="password" name="<.name>" id="<.name>"<&control-class($_, $input-control-class, :$is-invalid-class)>>
+        <&control-help($_, :$help-class)>
         <&control-validation-message($_, :$invalid-feedback-class)>
       </div>
     </?>
@@ -68,6 +77,7 @@
       <div<&class($input-group-class)>>
         <label for="<.name>"<&class($input-label-class)>><.label></label>
         <textarea name="<.name>" id="<.name>"<&control-class($_, $input-control-class, :$is-invalid-class)><&rows-cols(.rows, .cols)><&str-opts($_)>><?.<value>.defined()><.value></?></textarea>
+        <&control-help($_, :$help-class)>
         <&control-validation-message($_, :$invalid-feedback-class)>
       </div>
     </?>
@@ -75,6 +85,7 @@
       <div<&class($check-group-class)>>
         <input type="checkbox" name="<.name>" id="<.name>"<&control-class($_, $check-control-class, :$is-invalid-class)><?.<value>> checked</?>>
         <label for="<.name>"<&class($check-label-class)>><.label></label>
+        <&control-help($_, :$help-class)>
         <&control-validation-message($_, :$invalid-feedback-class)>
       </div>
     </?>
@@ -86,6 +97,7 @@
             <option value="<$opt.[0]>"<?{ $opt.[2] }> selected</?>><$opt.[1]></option>
           </@>
         </select>
+        <&control-help($_, :$help-class)>
         <&control-validation-message($_, :$invalid-feedback-class)>
       </div>
     </?>

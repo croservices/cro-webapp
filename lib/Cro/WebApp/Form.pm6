@@ -3,6 +3,9 @@ use Cro::HTTP::MultiValue;
 
 #| A role to be mixed in to Attribute to hold extra form-related properties.
 my role FormProperties {
+    has $.webapp-form-label is rw;
+    has $.webapp-form-placeholder is rw;
+    has $.webapp-form-help is rw;
     has Str $.webapp-form-type is rw;
     has Hash $.webapp-form-multiline is rw;
     has Block $.webapp-form-select is rw;
@@ -18,6 +21,25 @@ sub ensure-attr-state(Attribute $attr --> Nil) {
     unless $attr ~~ FormProperties {
         $attr does FormProperties;
     }
+}
+
+#| Customize the label for the form field (without this, the attribute name will be used
+#| to generate a label).
+multi trait_mod:<is>(Attribute:D $attr, :$label! --> Nil) is export {
+    ensure-attr-state($attr);
+    $attr.webapp-form-label = $label;
+}
+
+#| Provide placeholder text for a form field.
+multi trait_mod:<is>(Attribute:D $attr, :$placeholder! --> Nil) is export {
+    ensure-attr-state($attr);
+    $attr.webapp-form-placeholder = $placeholder;
+}
+
+#| Provide help text for a form field.
+multi trait_mod:<is>(Attribute:D $attr, :$help! --> Nil) is export {
+    ensure-attr-state($attr);
+    $attr.webapp-form-help = $help;
 }
 
 #| Indicate that this is a password form field
@@ -310,6 +332,8 @@ role Cro::WebApp::Form {
             my %control =
                     name => $name,
                     label => self!calculate-label($attr),
+                    (with $attr.?webapp-form-help { help => $_ }),
+                    (with $attr.?webapp-form-placeholder { placeholder => $_ }),
                     required => ?$attr.required,
                     type => $control-type,
                     %properties;
@@ -430,10 +454,16 @@ role Cro::WebApp::Form {
     }
 
     method !calculate-label($attr) {
-        # Fall back to mangling the attribute name.
-        my @words = $attr.name.substr(2).split('-');
-        @words[0] .= tclc;
-        @words.join(' ')
+        with $attr.?webapp-form-label {
+            # Explicitly provided label
+            $_
+        }
+        else {
+            # Fall back to mangling the attribute name.
+            my @words = $attr.name.substr(2).split('-');
+            @words[0] .= tclc;
+            @words.join(' ')
+        }
     }
 
     #| Add validation errors to a control.

@@ -478,4 +478,26 @@ use Test;
     }
 }
 
+{
+    my class CustomTexts does Cro::WebApp::Form {
+        has Str $.foo is label('Some custom label') is help('Just a hint') is placeholder('type here');
+    }
+
+    is-deeply CustomTexts.empty.HTML-RENDER-DATA,
+            {
+                was-validated => False,
+                controls => [
+                    {
+                        type => 'text',
+                        name => 'foo',
+                        label => 'Some custom label',
+                        placeholder => 'type here',
+                        help => 'Just a hint',
+                        required => False,
+                    },
+                ]
+            },
+            'Custom label, placeholder, and hint are included in rendering description';
+}
+
 done-testing;
