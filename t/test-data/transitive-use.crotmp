@@ -1,0 +1,4 @@
+<:use 'transitive-use-module.crotmp'>
+<|page('A heading!')>
+  <p>Content!</p>
+</|>

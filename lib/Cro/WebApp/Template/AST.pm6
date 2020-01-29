@@ -226,8 +226,8 @@ my class Use does Node is export {
         my $decls = join ",", @!exported-symbols.map: -> $sym {
             '(my &__TEMPLATE__' ~ $sym ~ ' = .<' ~ $sym ~ '>)'
         }
-        '(((' ~ $decls ~ ') given await($*TEMPLATE-REPOSITORY.resolve(\'' ~
-                $!template-name ~ '\')).exports) && "")'
+        '(BEGIN (((' ~ $decls ~ ') given await($*TEMPLATE-REPOSITORY.resolve(\'' ~
+                $!template-name ~ '\')).exports) && ""))'
     }
 }
 
@@ -238,7 +238,7 @@ my class Prelude does Node is export {
         my $decls = join ",", @!exported-symbols.map: -> $sym {
             '(my &__TEMPLATE__' ~ $sym ~ ' = .<' ~ $sym ~ '>)'
         }
-        '(((' ~ $decls ~ ') given await($*TEMPLATE-REPOSITORY.resolve-prelude()).exports) && "")'
+        '(BEGIN (((' ~ $decls ~ ') given await($*TEMPLATE-REPOSITORY.resolve-prelude()).exports) && ""))'
     }
 }
 

@@ -1,0 +1,7 @@
+<:use 'common.crotmp'>
+<:macro page($heading)>
+  <|wrap>
+    <h1><$heading></h1>
+    <:body>
+  </|>
+</:>

@@ -27,6 +27,20 @@ is norm-ws(render-template('use-test-2.crotmp', {})),
     </html>
     EXPECTED
 
+is norm-ws(render-template('transitive-use.crotmp', {})),
+        norm-ws(q:to/EXPECTED/), 'Transitive use of `use` works fine';
+    <html>
+    <header>
+        Foo bar header
+    </header>
+    <h1>A heading!</h1>
+    <p>Content!</p>
+    <footer>
+        Foo bar footer
+    </footer>
+    </html>
+    EXPECTED
+
 sub norm-ws($str) {
     $str.subst(:g, /\s+/, '')
 }
