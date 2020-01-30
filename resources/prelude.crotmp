@@ -11,7 +11,7 @@
 <:sub control-validation-message($_, :$invalid-feedback-class)>
   <?.<validation-errors>>
     <@<validation-errors>>
-      <div<&class($invalid-feedback-class)>><$_>
+      <div<&class($invalid-feedback-class)>><$_></div>
     </@>
   </?>
 </:>
