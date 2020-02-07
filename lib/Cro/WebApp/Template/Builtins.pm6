@@ -5,13 +5,13 @@ class X::Cro::WebApp::Template::XSS is Exception {
     }
 }
 
-sub __TEMPLATE__HTML(Str() $html) is export {
+sub __TEMPLATE_SUB__HTML(Str() $html) is export {
     if $html ~~ /:i '<' \s* script \W | \" \s* javascript \s* ':'/ {
         die X::Cro::WebApp::Template::XSS.new(content => ~$/);
     }
     $html
 }
 
-sub __TEMPLATE__HTML-AND-JAVASCRIPT(Str() $html) is export {
+sub __TEMPLATE_SUB__HTML-AND-JAVASCRIPT(Str() $html) is export {
     $html
 }
