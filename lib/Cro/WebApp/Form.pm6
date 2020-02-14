@@ -253,6 +253,16 @@ role Cro::WebApp::Form {
         self.CREATE
     }
 
+    #| Return the form data as a hash
+    method form-data() {
+      my %values;
+      for self.^attributes.grep(*.has_accessor) -> Attribute $attr {
+        my $name = $attr.name.substr(2);
+        %values{$name} = $attr.get_value(self);
+      }
+      %values
+    }
+
     #| Take a application/x-www-form-urlencoded body and populate the form values based
     #| upon it.
     multi method parse(Cro::HTTP::Body::WWWFormUrlEncoded $body) {

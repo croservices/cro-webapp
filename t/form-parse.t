@@ -18,6 +18,8 @@ use Test;
             is-deeply .email, 'foo@bar.com', 'Correct text input value when provided';
             is-deeply .password, 'correcthorsebatterystaple', 'Correct password input value when provided';
             is-deeply .remember-me, False, 'Correct boolean value when nothing provided';
+            is-deeply .form-data, %(email => 'foo@bar.com', password => 'correcthorsebatterystaple', remember-me => False),
+              'Can get the object data as a hash';
         }
     }
 
