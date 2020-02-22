@@ -5,7 +5,9 @@ class Cro::WebApp::Template::ASTBuilder {
         my @prelude;
         unless $*COMPILING-PRELUDE {
             my $loaded-prelude = await $*TEMPLATE-REPOSITORY.resolve-prelude();
-            @prelude[0] = Prelude.new: exported-symbols => $loaded-prelude.exports.keys;
+            @prelude[0] = Prelude.new:
+                    exported-subs => $loaded-prelude.exports<sub>.keys,
+                    exported-macros => $loaded-prelude.exports<macro>.keys;
         }
         make Template.new(children => [|@prelude, |flatten-literals($<sequence-element>.map(*.ast))]);
     }
@@ -116,9 +118,21 @@ class Cro::WebApp::Template::ASTBuilder {
     }
 
     method sigil-tag:sym<use>($/) {
-        my $template-name = $<name>.ast;
-        my $used = await $*TEMPLATE-REPOSITORY.resolve($template-name);
-        make Use.new: :$template-name, exported-symbols => $used.exports.keys;
+        with $<file> {
+            my $template-name = .ast;
+            my $used = await $*TEMPLATE-REPOSITORY.resolve($template-name);
+            make UseFile.new: :$template-name,
+                    exported-subs => $used.exports<sub>.keys,
+                    exported-macros => $used.exports<macro>.keys;
+        }
+        orwith $<library> {
+            my $module-name = .ast;
+            make UseModule.new: :$module-name;
+        }
+    }
+
+    method module-name($/) {
+        make ~$/;
     }
 
     method signature($/) {

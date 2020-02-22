@@ -185,7 +185,16 @@ grammar Cro::WebApp::Template::Parser {
     }
 
     token sigil-tag:sym<use> {
-        '<:use' \h+ <name=.single-quote-string> \h* '>'
+        '<:use' \h+
+        [
+        | <file=.single-quote-string>
+        | <library=.module-name>
+        ]
+        \h* '>'
+    }
+
+    token module-name {
+        <.identifier>+ % '::'
     }
 
     token signature {

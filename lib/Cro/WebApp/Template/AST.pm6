@@ -16,10 +16,13 @@ my class Template does ContainerNode is export {
         my $*IN-SUB = False;
         my $children-compiled = @!children.map(*.compile).join(", ");
         use MONKEY-SEE-NO-EVAL;
-        sub trait_mod:<is>(Routine $r, :$TEMPLATE-EXPORT!) {
-            %*TEMPLATE-EXPORTS{$r.name.substr('__TEMPLATE__'.chars)} = $r;
+        multi sub trait_mod:<is>(Routine $r, :$TEMPLATE-EXPORT-SUB!) {
+            %*TEMPLATE-EXPORTS<sub>{$r.name.substr('__TEMPLATE_SUB__'.chars)} = $r;
         }
-        my %*TEMPLATE-EXPORTS;
+        multi sub trait_mod:<is>(Routine $r, :$TEMPLATE-EXPORT-MACRO!) {
+            %*TEMPLATE-EXPORTS<macro>{$r.name.substr('__TEMPLATE_MACRO__'.chars)} = $r;
+        }
+        my %*TEMPLATE-EXPORTS = :sub{}, :macro{};
         my $renderer = EVAL 'sub ($_) { join "", (' ~ $children-compiled ~ ') }';
         return { :$renderer, exports => %*TEMPLATE-EXPORTS };
     }
@@ -144,8 +147,8 @@ my class TemplateSub does ContainerNode is export {
         {
             my $*IN-SUB = True;
             my $params = @!parameters.join(", ");
-            my $trait = $should-export ?? 'is TEMPLATE-EXPORT' !! '';
-            '(sub __TEMPLATE__' ~ $!name ~ "($params) $trait \{\n" ~
+            my $trait = $should-export ?? 'is TEMPLATE-EXPORT-SUB' !! '';
+            '(sub __TEMPLATE_SUB__' ~ $!name ~ "($params) $trait \{\n" ~
                 'join "", (' ~ @!children.map(*.compile).join(", ") ~ ')' ~
             "} && '')\n"
         }
@@ -175,7 +178,7 @@ my class Call does Node is export {
     has Argument @.arguments;
 
     method compile() {
-        '__TEMPLATE__' ~ $!target ~ '(' ~ @!arguments.map(*.compile).join(", ") ~ ')'
+        '__TEMPLATE_SUB__' ~ $!target ~ '(' ~ @!arguments.map(*.compile).join(", ") ~ ')'
     }
 }
 
@@ -188,8 +191,8 @@ my class TemplateMacro does ContainerNode is export {
         {
             my $*IN-SUB = True;
             my $params = ('&__MACRO_BODY__', |@!parameters).join(", ");
-            my $trait = $should-export ?? 'is TEMPLATE-EXPORT' !! '';
-            '(sub __TEMPLATE__' ~ $!name ~ "($params) $trait \{\n" ~
+            my $trait = $should-export ?? 'is TEMPLATE-EXPORT-MACRO' !! '';
+            '(sub __TEMPLATE_MACRO__' ~ $!name ~ "($params) $trait \{\n" ~
                     'join "", (' ~ @!children.map(*.compile).join(", ") ~ ')' ~
                     "} && '')\n"
         }
@@ -208,7 +211,7 @@ my class MacroApplication does ContainerNode is export {
 
     method compile() {
         my $args = @!arguments ?? ", " ~ @!arguments.map(*.compile).join(", ") !! '';
-        '__TEMPLATE__' ~ $!target ~ '({ join "", (' ~ @!children.map(*.compile).join(", ") ~ ') }' ~ $args ~ ')'
+        '__TEMPLATE_MACRO__' ~ $!target ~ '({ join "", (' ~ @!children.map(*.compile).join(", ") ~ ') }' ~ $args ~ ')'
     }
 }
 
@@ -218,27 +221,37 @@ my class Sequence does ContainerNode is export {
     }
 }
 
-my class Use does Node is export {
+my class UseFile does Node is export {
     has Str $.template-name is required;
-    has @.exported-symbols;
+    has @.exported-subs;
+    has @.exported-macros;
 
     method compile() {
-        my $decls = join ",", @!exported-symbols.map: -> $sym {
-            '(my &__TEMPLATE__' ~ $sym ~ ' = .<' ~ $sym ~ '>)'
-        }
+        my $decls = join ",", flat
+                @!exported-subs.map(-> $sym { '(my &__TEMPLATE_SUB__' ~ $sym ~ ' = .<sub><' ~ $sym ~ '>)' }),
+                @!exported-macros.map(-> $sym { '(my &__TEMPLATE_MACRO__' ~ $sym ~ ' = .<macro><' ~ $sym ~ '>)' });
         '(BEGIN (((' ~ $decls ~ ') given await($*TEMPLATE-REPOSITORY.resolve(\'' ~
                 $!template-name ~ '\')).exports) && ""))'
     }
 }
 
 my class Prelude does Node is export {
-    has @.exported-symbols;
+    has @.exported-subs;
+    has @.exported-macros;
 
     method compile() {
-        my $decls = join ",", @!exported-symbols.map: -> $sym {
-            '(my &__TEMPLATE__' ~ $sym ~ ' = .<' ~ $sym ~ '>)'
-        }
+        my $decls = join ",", flat
+                @!exported-subs.map(-> $sym { '(my &__TEMPLATE_SUB__' ~ $sym ~ ' = .<sub><' ~ $sym ~ '>)' }),
+                @!exported-macros.map(-> $sym { '(my &__TEMPLATE_MACRO__' ~ $sym ~ ' = .<macro><' ~ $sym ~ '>)' });
         '(BEGIN (((' ~ $decls ~ ') given await($*TEMPLATE-REPOSITORY.resolve-prelude()).exports) && ""))'
+    }
+}
+
+my class UseModule does Node is export {
+    has Str $.module-name is required;
+
+    method compile() {
+        "((use $!module-name) || '')"
     }
 }
 
