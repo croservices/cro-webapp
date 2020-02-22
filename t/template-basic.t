@@ -96,6 +96,10 @@ is render-template($base.add('iteration-1.crotmp'),
     </select>
     EXPECTED
 
+throws-like { render-template($error-base.add('iteration-with-named-arg.crotmp'), {}) },
+        X::Cro::WebApp::Template::SyntaxError,
+        'Cannot use a named parameter as the iteration variable';
+
 is render-template($base.add('conditional-1.crotmp'), { foo => False, bar => False }),
         q:to/EXPECTED/, 'Basic conditionals behave correctly (1)';
     This is always here.

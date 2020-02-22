@@ -79,7 +79,7 @@ grammar Cro::WebApp::Template::Parser {
         [
         | <deref>
         ]
-        [ \h* [':' \h* <iteration-variable=.parameter>]? \h* '>' || <.panic('malformed iteration tag')> ]
+        [ \h* [':' \h* <iteration-variable=.parameter(:!allow-named)>]? \h* '>' || <.panic('malformed iteration tag')> ]
         [ <?{ $*lone-start-line }> [ \h* \n | { $*lone-start-line = False } ] ]?
 
         <sequence-element>*
@@ -202,9 +202,11 @@ grammar Cro::WebApp::Template::Parser {
         '(' \s* <parameter>* % [\s* ',' \s*] \s* ')' \h*
     }
 
-    token parameter {
+    token parameter(:$allow-named = True) {
         [
-        || ':' { $*seen-by-name-arguments = True; }
+        || ':'
+           [ <?{ $allow-named }> || <.panic('Canot use a named parameter here')> ]
+           { $*seen-by-name-arguments = True; }
         || <?{ $*seen-by-name-arguments }> <.panic('Positional argument after named argument')>
         ]?
         '$' <.identifier>
