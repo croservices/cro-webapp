@@ -64,7 +64,7 @@ class Cro::WebApp::Template::ASTBuilder {
     method sigil-tag:sym<condition>($/) {
         my $condition = do if $<deref> {
             my $derefer = $<deref>.ast;
-            $derefer(VariableAccess.new(name => '$_'))
+            $derefer(VariableAccess.new(name => $<identifier> ?? '$' ~ $<identifier> !! '$_'))
         }
         elsif $<identifier> {
             VariableAccess.new(name => '$' ~ $<identifier>)

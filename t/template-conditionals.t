@@ -95,6 +95,12 @@ is norm-ws(render-template($base.add('cond-var.crotmp'), {})),
     Var 0 is false
     EXPECTED
 
+is norm-ws(render-template($base.add('cond-var-deref.crotmp'), { x => { :foo }, y => { :!foo } })),
+        norm-ws(q:to/EXPECTED/), 'Conditionals that dereference variables work';
+    foo
+    not foo
+    EXPECTED
+
 sub norm-ws($str) {
     $str.subst(:g, /\s+/, '')
 }

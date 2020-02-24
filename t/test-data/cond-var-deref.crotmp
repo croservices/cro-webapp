@@ -1,0 +1,10 @@
+<:sub test($a)>
+  <?$a.foo>
+    foo
+  </?>
+  <!$a.foo>
+    not foo
+  </!>
+</:>
+<&test(.x)>
+<&test(.y)>

@@ -244,8 +244,9 @@ no output will be generated for those lines, making the output more pleasant.
 
 The `<?$foo>...</?>` ("if") and `<!$foo>...</!>` ("unless") may be used for
 conditional execution. These perform a boolean test on the specified variable.
-It is also allowed to use them with the topic deference sytax, such as
-`<?.is-admin>...</?>`. For more complex conditions, a subset of Raku
+It is also allowed to use them with the topic deference syntax, such as
+`<?.is-admin>...</?>`, or variables and dereferences together, such as
+`<?$user.is-admin>...</?>`. For more complex conditions, a subset of Raku
 expressions is accepted, using the syntax `<?{ $a eq $b }>...</?>`. The only
 thing notably different from Raku is that `<?{ .answer == 42 }>...</?>` will
 have the same hash/object semantics as in `<.answer>`, for consistency with the
