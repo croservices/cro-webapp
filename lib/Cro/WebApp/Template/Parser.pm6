@@ -79,7 +79,7 @@ grammar Cro::WebApp::Template::Parser {
         [
         | <deref>
         ]
-        [ \h* [':' \h* <iteration-variable=.parameter(:!allow-named)>]? \h* '>' || <.panic('malformed iteration tag')> ]
+        [ \h* [':' \h* <iteration-variable=.parameter(:!allow-named, :!allow-default)>]? \h* '>' || <.panic('malformed iteration tag')> ]
         [ <?{ $*lone-start-line }> [ \h* \n | { $*lone-start-line = False } ] ]?
 
         <sequence-element>*
@@ -199,17 +199,19 @@ grammar Cro::WebApp::Template::Parser {
 
     token signature {
         :my $*seen-by-name-arguments = False;
-        '(' \s* <parameter>* % [\s* ',' \s*] \s* ')' \h*
+        '(' \s* <parameter>* % [\s* ',' \s*] \s*
+        [ ')' || <.panic('Malformed signature')> ] \h*
     }
 
-    token parameter(:$allow-named = True) {
+    token parameter(:$allow-named = True, :$allow-default = True) {
         [
-        || ':'
+        || $<named>=':'
            [ <?{ $allow-named }> || <.panic('Canot use a named parameter here')> ]
            { $*seen-by-name-arguments = True; }
         || <?{ $*seen-by-name-arguments }> <.panic('Positional argument after named argument')>
         ]?
-        '$' <.identifier>
+        $<name>=['$' <.identifier>]
+        [ <?{ $allow-default }> \s* '=' \s* <default=.expression> ]?
     }
 
     token arglist {

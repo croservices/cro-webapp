@@ -140,7 +140,10 @@ class Cro::WebApp::Template::ASTBuilder {
     }
 
     method parameter($/) {
-        make ~$/;
+        make TemplateParameter.new:
+                name => ~$<name>,
+                named => ?$<named>,
+                default => $<default> ?? $<default>.ast !! Nil;
     }
 
     method arglist($/) {

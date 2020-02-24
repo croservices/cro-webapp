@@ -328,6 +328,14 @@ As in Raku, you can have named - optional - arguments as well:
 <&haz(:name('named arguments'))>
 ```
 
+Defaults can also be set (and implicitly make positional parameters optional too):
+
+```
+<:sub result($value = 0, :$unit = 'kg')>
+  <$value> <$unit>
+</:>
+```
+
 A template macro works somewhat like a template subroutine, except that the usage
 of it has a body. This body is passed as a thunk, meaning that the macro can choose
 to render it 0 or more times), optionally setting a new default target. For example,

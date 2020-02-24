@@ -174,6 +174,17 @@ is norm-ws(render-template($base.add('sub-4.crotmp'), { t => 'b' })),
     aaa - bbb
     EXPECTED
 
+is norm-ws(render-template($base.add('sub-5.crotmp'), {})),
+        norm-ws(q:to/EXPECTED/), 'Parameters can have defaults';
+    foo bar
+    x bar
+    x y
+    foo bar
+    x bar
+    foo y
+    x y
+    EXPECTED
+
 throws-like { render-template($error-base.add('sub-pos-after-pos-named.crotmp'), {}) },
             X::Cro::WebApp::Template::SyntaxError,
             'Positional argument after named argument at line 1 near \'$a)>';

@@ -119,9 +119,9 @@ my class Iteration does ContainerNode is export {
     has $.iteration-variable;
 
     method compile() {
-        $!iteration-variable //= '$_';
+        my $variable = $!iteration-variable.?name // '$_';
         my $children-compiled = @!children.map(*.compile).join(", ");
-        '(' ~ $!target.compile ~ ').map(-> ' ~ $!iteration-variable  ~ ' { join "", (' ~ $children-compiled ~ ') }).join'
+        '(' ~ $!target.compile ~ ').map(-> ' ~ $variable  ~ ' { join "", (' ~ $children-compiled ~ ') }).join'
     }
 }
 
@@ -138,15 +138,25 @@ my class Condition does ContainerNode is export {
     }
 }
 
+my class TemplateParameter does Node is export {
+    has Str $.name is required;
+    has Bool $.named is required;
+    has Node $.default;
+
+    method compile() {
+        ($!named ?? ':' !! '') ~ $!name ~ ($!default ?? ' = ' ~ $!default.compile !! '')
+    }
+}
+
 my class TemplateSub does ContainerNode is export {
     has Str $.name is required;
-    has Str @.parameters;
+    has TemplateParameter @.parameters;
 
     method compile() {
         my $should-export = !$*IN-SUB;
         {
             my $*IN-SUB = True;
-            my $params = @!parameters.join(", ");
+            my $params = @!parameters.map(*.compile).join(", ");
             my $trait = $should-export ?? 'is TEMPLATE-EXPORT-SUB' !! '';
             '(sub __TEMPLATE_SUB__' ~ $!name ~ "($params) $trait \{\n" ~
                 'join "", (' ~ @!children.map(*.compile).join(", ") ~ ')' ~
@@ -184,13 +194,13 @@ my class Call does Node is export {
 
 my class TemplateMacro does ContainerNode is export {
     has Str $.name is required;
-    has Str @.parameters;
+    has TemplateParameter @.parameters;
 
     method compile() {
         my $should-export = !$*IN-SUB;
         {
             my $*IN-SUB = True;
-            my $params = ('&__MACRO_BODY__', |@!parameters).join(", ");
+            my $params = ('&__MACRO_BODY__', |@!parameters.map(*.compile)).join(", ");
             my $trait = $should-export ?? 'is TEMPLATE-EXPORT-MACRO' !! '';
             '(sub __TEMPLATE_MACRO__' ~ $!name ~ "($params) $trait \{\n" ~
                     'join "", (' ~ @!children.map(*.compile).join(", ") ~ ')' ~
