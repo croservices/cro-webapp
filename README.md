@@ -115,7 +115,9 @@ As with Raku, there is a notion of current topic, like the Raku `$_`.
 The `<.name>` form can be used to access object properties of the current topic.
 If the current topic does the `Associative` role, then this form will prefer to
 take the value under the `name` hash key, falling back to looking for a method
-`name` if there is no such key.
+`name` if there is no such key. Failure to find the method is a soft failure in
+the case of an `Associative` (e.g. it just produces `Nil`), and an exception
+otherwise.
 
 For example, given a template:
 

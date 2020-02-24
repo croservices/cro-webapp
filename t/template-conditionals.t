@@ -101,6 +101,12 @@ is norm-ws(render-template($base.add('cond-var-deref.crotmp'), { x => { :foo }, 
     not foo
     EXPECTED
 
+is norm-ws(render-template($base.add('cond-var-deref.crotmp'), { x => { :foo }, y => { } })),
+        norm-ws(q:to/EXPECTED/), 'Conditionals do not blow up over missing hash keys';
+    foo
+    not foo
+    EXPECTED
+
 sub norm-ws($str) {
     $str.subst(:g, /\s+/, '')
 }

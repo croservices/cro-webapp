@@ -8,10 +8,11 @@ my constant TEST_PORT = 30210;
 
 my $application = route {
     use Cro::WebApp::Form;
+    use Cro::WebApp::Template;
 
     my class BlogPost does Cro::WebApp::Form {
         has Str $.title is required;
-        has Str $.content is multiline(:15rows, :80cols);
+        has Str $.content is multiline;
         has Str $.category will select { 'Coding', 'Photography', 'Trains' };
         has Str @.tags will select { 'Raku', 'Compiler', 'Landscape', 'City', 'Steam' }
     }
@@ -26,10 +27,19 @@ my $application = route {
                 DUMP
         }
     }
+
+    template-location $*PROGRAM.parent.add('test-data');
+
+    get -> 'render' {
+        template 'form.crotmp', { form => BlogPost.empty }
+    }
 }
 my $server = Cro::HTTP::Server.new(:$application, :host('localhost'), :port(TEST_PORT));
 $server.start;
 LEAVE try $server.stop;
+
+lives-ok { await Cro::HTTP::Client.get("http://localhost:{TEST_PORT}/render") },
+        'Can render a form in a template';
 
 subtest 'Form data is parsed from a application/x-www-form-urlencoded submission' => {
     my $resp;

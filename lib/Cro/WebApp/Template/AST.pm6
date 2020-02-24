@@ -82,8 +82,8 @@ my class SmartDeref does Node is export {
 
     method compile() {
         '(given (' ~ $!target.compile ~
-            ') { .does(Associative) && (.<' ~ $!symbol ~ '>:exists) ?? .<' ~
-            $!symbol ~ '> !! .' ~ $!symbol ~ ' })'
+            ') { .does(Associative) ?? ((.<' ~ $!symbol ~ '>:exists) ?? .<' ~
+            $!symbol ~ '> !! .?' ~ $!symbol ~ ') !! .' ~ $!symbol ~ ' })'
     }
 }
 
