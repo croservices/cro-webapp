@@ -103,6 +103,9 @@
         <&control-validation-message($_, :$invalid-feedback-class)>
       </div>
     </?>
+    <?{ .type eq 'hidden' }>
+      <input type="hidden" name="<.name>" id="<.name>"<?.<value>.defined()> value="<.value>"</?>>
+    </?>
   </@>
   <button type="submit"<&class($submit-button-class)>>
     <?$submit-button-text><$submit-button-text></?><!$submit-button-text>Save</!>

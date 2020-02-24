@@ -238,6 +238,9 @@ class Cro::WebApp::Form::ValidationState {
 #| A role to be composed into Cro web application form objects, providing the key form
 #| functionality.
 role Cro::WebApp::Form {
+    #| The CSRF token hidden field name and cookie name.
+    my constant CSRF-TOKEN-NAME = '__CSRF_TOKEN';
+
     #| Cached rendered data, in case it is asked for multiple times.
     has $!cached-render-data;
 
@@ -247,6 +250,9 @@ role Cro::WebApp::Form {
     #| Unparseable values (for if a form was submitted with a value that could not be
     #| parsed into the required type).
     has %!unparseable;
+
+    #| The received CSRF token.
+    has Str $!received-csrf-token;
 
     #| Create an empty instance of the form without any data in it.
     method empty() {
@@ -285,6 +291,9 @@ role Cro::WebApp::Form {
         given self.bless(|%values) -> Cro::WebApp::Form $parsed {
             for %unparseable.kv -> $input, $value {
                 $parsed.add-unparseable-form-value($input, $value);
+            }
+            with $body{CSRF-TOKEN-NAME} {
+                $parsed.set-received-csrf-token($_);
             }
             $parsed
         }
@@ -325,6 +334,9 @@ role Cro::WebApp::Form {
         $void
     }
 
+    #| Sets the CSRF token that was received in the form.
+    method set-received-csrf-token(Str $!received-csrf-token --> Nil) {}
+
     #| Produce a description of the form and its content for use in rendering
     #| the form to HTML.
     method HTML-RENDER-DATA(--> Hash) {
@@ -352,6 +364,7 @@ role Cro::WebApp::Form {
             }
             @controls.push(%control);
         }
+        self!add-csrf-protection(@controls);
         my %rendered := { :@controls, was-validated => $!validation-state.defined };
         if %validation-by-control{''} -> @errors {
             %rendered<validation-errors> = [@errors.map(*.message)];
@@ -515,6 +528,26 @@ role Cro::WebApp::Form {
         %control<validation-errors> = @messages;
     }
 
+    #| Adds CSRF protection if we've a visible request/response.
+    method !add-csrf-protection(@controls) {
+        use Cro::HTTP::Cookie;
+        use Cro::HTTP::Router;
+        with try response -> Cro::HTTP::Response $response {
+            my $token = $response.request.cookie-value(CSRF-TOKEN-NAME) //
+                    $response.cookies.first(*.name eq CSRF-TOKEN-NAME).?value;
+            without $token {
+                my constant @CHARS = flat 'A'..'Z', 'a'..'z', '0'..'9';
+                $token = @CHARS.roll(64).join;
+                try $response.set-cookie(CSRF-TOKEN-NAME, $token, path => '/');
+            }
+            @controls.unshift: {
+                name => CSRF-TOKEN-NAME,
+                type => 'hidden',
+                value => $token
+            };
+        }
+    }
+
     #| Stores a string value for a form input that could not be parsed into the desired
     #| data type, for the purpose of validation.
     method add-unparseable-form-value(Str $input, Str $value --> Nil) {
@@ -536,8 +569,11 @@ role Cro::WebApp::Form {
         # If we already calculated the validation state, don't do it again.
         return with $!validation-state;
 
-        # Add per field validation errors.
+        # Add any CSRF errors.
         $!validation-state .= new;
+        self!check-csrf-token();
+
+        # Add per field validation errors.
         for self.^attributes.grep(*.has_accessor) -> Attribute $attr {
             my $name = $attr.name.substr(2);
             my $value = $attr.get_value(self);
@@ -640,6 +676,21 @@ role Cro::WebApp::Form {
         # are met, and so be simpler.)
         if $!validation-state.is-valid {
             self.?validate-form();
+        }
+    }
+
+    #| Checks that we have the required CSRF token and it matches.
+    method !check-csrf-token() {
+        use Cro::HTTP::Router;
+        with try request -> Cro::HTTP::Request $request {
+            with $request.cookie-value(CSRF-TOKEN-NAME) -> $expected {
+                if ($!received-csrf-token // '') ne $expected {
+                    $!validation-state.add-custom-error('CSRF form token missing or invalid');
+                }
+            }
+            else {
+                $!validation-state.add-custom-error('CSRF cookie missing');
+            }
         }
     }
 
