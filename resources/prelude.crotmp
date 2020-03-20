@@ -96,7 +96,7 @@
         <label for="<.name>"<&class($input-label-class)>><.label></label>
         <select <?.multi>multiple</?> name="<.name>" id="<.name>"<&control-class($_, $input-control-class, :$is-invalid-class)>>
           <@options : $opt>
-            <option value="<$opt.[0]>"<?{ $opt.[2] }> selected</?>><$opt.[1]></option>
+            <option value="<$opt.[0]>"<?{ $opt.[2] }> selected="selected"</?>><$opt.[1]></option>
           </@>
         </select>
         <&control-help($_, :$help-class)>
