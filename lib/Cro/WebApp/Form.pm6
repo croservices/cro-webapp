@@ -548,6 +548,11 @@ role Cro::WebApp::Form {
         }
     }
 
+    #| Generate a default name for this form.
+    method GENERATE-NAME() {
+        self.^name
+    }
+
     #| Stores a string value for a form input that could not be parsed into the desired
     #| data type, for the purpose of validation.
     method add-unparseable-form-value(Str $input, Str $value --> Nil) {
