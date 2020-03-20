@@ -550,7 +550,7 @@ role Cro::WebApp::Form {
 
     #| Generate a default name for this form.
     method GENERATE-NAME() {
-        self.^name
+        self.^shortname
     }
 
     #| Stores a string value for a form input that could not be parsed into the desired
