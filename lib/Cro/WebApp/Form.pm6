@@ -385,7 +385,7 @@ role Cro::WebApp::Form {
             }
             default {
                 ensure-acceptable-type($attr);
-                return $_;
+                return $_, self!add-current-value($attr);
             }
         }
         with $attr.?webapp-form-select {

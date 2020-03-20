@@ -152,6 +152,26 @@ use Test;
 }
 
 {
+    my class DateForm does Cro::WebApp::Form {
+        has $.date is required is date;
+    }
+    is-deeply DateForm.new(date => '2020-12-25').HTML-RENDER-DATA,
+            {
+                was-validated => False,
+                controls => [
+                    {
+                        type => 'date',
+                        name => 'date',
+                        label => 'Date',
+                        required => True,
+                        value => '2020-12-25',
+                    },
+                ]
+            },
+            'Form with date gets correct HTML description';
+}
+
+{
     my class TestLengths does Cro::WebApp::Form {
         has Str $.a is minlength(5);
         has $.b is maxlength(10);
