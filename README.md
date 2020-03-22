@@ -356,7 +356,7 @@ Where `<:body>` marks the point for the body to be rendered. This macro could
 be used as:
 
 ```
-<|bs-card("My Stuff")>
+<|bs-card('My Stuff')>
   It's my stuff, in a BS card!
 </|>
 ```
