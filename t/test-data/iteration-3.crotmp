@@ -1,0 +1,8 @@
+<:sub iterate-it($country-list)>
+  <select name="country">
+    <@$country-list>
+      <option value="<.alpha2>"><.name></option>
+    </@>
+  </select>
+</:>
+<&iterate-it(.countries)>

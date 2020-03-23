@@ -78,6 +78,7 @@ grammar Cro::WebApp::Template::Parser {
         [ <?after [^ | $ | \n] \h* '<@'> { $*lone-start-line = True } ]?
         [
         | <deref>
+        | $<variable>=['$' <.identifier>] ['.' <deref>]?
         ]
         [ \h* [':' \h* <iteration-variable=.parameter(:!allow-named, :!allow-default)>]? \h* '>' || <.panic('malformed iteration tag')> ]
         [ <?{ $*lone-start-line }> [ \h* \n | { $*lone-start-line = False } ] ]?

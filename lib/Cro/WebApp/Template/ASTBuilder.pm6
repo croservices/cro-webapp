@@ -51,11 +51,14 @@ class Cro::WebApp::Template::ASTBuilder {
     }
 
     method sigil-tag:sym<iteration>($/) {
-        my $derefer = $<deref>.ast;
+        my $target = VariableAccess.new(name => $<variable> ?? ~$<variable> !! '$_');
+        with $<deref> {
+            my $derefer = $<deref>.ast;
+            $target = $derefer($target);
+        }
         my $iteration-variable = $<iteration-variable>.ast;
         make Iteration.new:
-            target => $derefer(VariableAccess.new(name => '$_')),
-            :$iteration-variable,
+            :$target,  :$iteration-variable,
             children => flatten-literals($<sequence-element>.map(*.ast),
                 :trim-trailing-horizontal($*lone-end-line)),
             trim-trailing-horizontal-before => $*lone-start-line;
