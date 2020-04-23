@@ -7,7 +7,8 @@
     "Jonathan Worthington <jnthn@jnthn.net>"
   ],
   "depends": [
-    "Cro::HTTP"
+    "Cro::HTTP",
+    "OO::Monitors"
   ],
   "build-depends": [],
   "test-depends": [],
