@@ -137,4 +137,19 @@ use Test;
     }
 }
 
+{
+    my class TestDate does Cro::WebApp::Form {
+        has Date $.date is required;
+        has DateTime $.datetime is required;
+    }
+    my $body = Cro::HTTP::Body::WWWFormUrlEncoded.new: :pairs[
+        date => '2020-02-21',
+        datetime => '2020-02-21T10:20:00'
+    ];
+    given TestDate.parse($body) {
+        is-deeply .date, Date.new(2020, 2, 21), 'Date is parsed correctly';
+        is-deeply .datetime, DateTime.new(2020, 2, 21, 10, 20, 00), 'DateTime is parsed correctly';
+    }
+}
+
 done-testing;
