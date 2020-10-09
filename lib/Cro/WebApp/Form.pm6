@@ -323,6 +323,16 @@ role Cro::WebApp::Form {
                         ?? ($value.Rat // unparseable($name, $value, %unparseable, Rat))
                         !! Rat
             }
+            when Date {
+                $value.defined
+                        ?? (Date.new($value) // unparseable($name, $value, %unparseable, Date))
+                        !! Date
+            }
+            when DateTime {
+                $value.defined
+                        ?? (DateTime.new($value) // unparseable($name, $value, %unparseable, DateTime))
+                        !! DateTime
+            }
             default {
                 die "Don't know how to parse form data into a $type.^name()";
             }
