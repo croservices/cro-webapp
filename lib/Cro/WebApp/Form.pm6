@@ -424,6 +424,12 @@ role Cro::WebApp::Form {
             if $attr.type ~~ Real {
                 return self!calculate-numeric-control-type($attr);
             }
+            if $attr.type ~~ Date {
+                return 'date', self!add-current-value($attr);
+            }
+            if $attr.type ~~ DateTime {
+                return 'datetime-local', self!add-current-value($attr);
+            }
         }
 
         # Otherwise, we're looking at a text property.
@@ -454,7 +460,9 @@ role Cro::WebApp::Form {
 
     method !add-current-value(Attribute $attr, %properties? is copy) {
         with $attr.get_value(self) {
-            %properties<value> = $_;
+            when Date { %properties<value> = .yyyy-mm-dd; }
+            when DateTime { %properties<value> = .Str; }
+            default { %properties<value> = $_; }
         }
         orwith %!unparseable{$attr.name.substr(2)} {
             %properties<value> = $_;
@@ -481,7 +489,7 @@ role Cro::WebApp::Form {
         ensure-acceptable-type($attr, $attr.type);
     }
     multi sub ensure-acceptable-type(Attribute $attr, Mu $type --> Nil) {
-        unless $type ~~ Str || $type ~~ Real || Any ~~ $type {
+        unless $type ~~ Str || $type ~~ Real || $type ~~ Date || $type ~~ DateTime || Any ~~ $type {
             die "Don't know how to handle type '$type.^name()' of '$attr.name()' in a form";
         }
     }

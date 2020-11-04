@@ -172,6 +172,46 @@ use Test;
 }
 
 {
+    my class DateForm does Cro::WebApp::Form {
+        has Date $.date is required;
+    }
+    is-deeply DateForm.new(date => Date.new('2020-12-25')).HTML-RENDER-DATA,
+            {
+                was-validated => False,
+                controls => [
+                    {
+                        type => 'date',
+                        name => 'date',
+                        label => 'Date',
+                        required => True,
+                        value => '2020-12-25',
+                    },
+                ]
+            },
+            'Form with Date type attribute renders a date control';
+}
+
+{
+    my class DateTimeForm does Cro::WebApp::Form {
+        has DateTime $.when is required;
+    }
+    is-deeply DateTimeForm.new(when => DateTime.new('2020-12-25T10:00:00Z')).HTML-RENDER-DATA,
+            {
+                was-validated => False,
+                controls => [
+                    {
+                        type => 'datetime-local',
+                        name => 'when',
+                        label => 'When',
+                        required => True,
+                        value => '2020-12-25T10:00:00Z',
+                    },
+                ]
+            },
+            'Form with DateTime type attribute renders a datetime-local control';
+}
+
+{
     my class TestLengths does Cro::WebApp::Form {
         has Str $.a is minlength(5);
         has $.b is maxlength(10);
