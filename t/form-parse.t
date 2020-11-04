@@ -148,7 +148,7 @@ use Test;
     ];
     given TestDate.parse($body) {
         is-deeply .date, Date.new(2020, 2, 21), 'Date is parsed correctly';
-        is-deeply .datetime, DateTime.new(2020, 2, 21, 10, 20, 00), 'DateTime is parsed correctly';
+        is-deeply .datetime, DateTime.new(2020, 2, 21, 10, 20, 0), 'DateTime is parsed correctly';
     }
 }
 
