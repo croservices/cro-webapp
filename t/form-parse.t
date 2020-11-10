@@ -152,4 +152,26 @@ use Test;
     }
 }
 
+{
+    my class TestFile is Cro::WebApp::Form {
+        has $.f is required is file;
+    }
+    {
+        my $body = Cro::HTTP::Body::WWWFormUrlEncoded.new;
+        given TestFile.parse($body) {
+            is-deeply .f, Any, 'WWWFormUrlEncoded cannot produce a body part form nothing';
+        }
+    }
+    {
+        my $body = Cro::HTTP::Body::MultiPartFormData.new: :parts[
+            Cro::HTTP::Body::MultiPartFormData::Part.new(name => 'f', filename => 'a.txt', body-blob => "Ohai".encode('utf-8')),
+        ];
+        given TestFile.parse($body) {
+            ok .f.defined, 'WWWFormUrlEncoded can produce a body part for the file';
+            is .f.filename, 'a.txt', 'WWWFormUrlEncoded can produce a body part for the file';
+            is .f.body-blob.decode('utf-8'), 'Ohai', 'Body roundtrips';
+        }
+    }
+}
+
 done-testing;

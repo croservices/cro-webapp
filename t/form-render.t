@@ -301,11 +301,14 @@ use Test;
         has Str $.tm is required is time;
         has Str $.u is required is url;
         has Str $.w is required is week;
+        has Str $.h is required is hidden;
+        has $.f is required is file;
     }
 
     is-deeply FormattedInputTypes.empty.HTML-RENDER-DATA,
             {
                 was-validated => False,
+                enctype => 'multipart/form-data',
                 controls => [
                     {
                         type => 'color',
@@ -365,6 +368,18 @@ use Test;
                         type => 'week',
                         name => 'w',
                         label => 'W',
+                        required => True,
+                    },
+                    {
+                        type => 'hidden',
+                        name => 'h',
+                        label => 'H',
+                        required => True,
+                    },
+                    {
+                        type => 'file',
+                        name => 'f',
+                        label => 'F',
                         required => True,
                     },
                 ]
