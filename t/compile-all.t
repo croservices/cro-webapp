@@ -19,4 +19,8 @@ throws-like
         line => 3,
         'Compilation errors reported by compile-all (nested directory)';
 
+lives-ok
+        { template-location $*PROGRAM.parent.add('compile-all-error-deep'), :compile-all, test => { $_ !~~ / 'broken' | 'problem' / } },
+        'Can ignore files';
+
 done-testing;
