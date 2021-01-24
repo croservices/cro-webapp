@@ -24,7 +24,7 @@ multi render-template(Str $template, $initial-topic --> Str) is export {
 #| templates will be compiled up front before the function returns. Otherwise, they
 #| will be compiled on first use. If using compile-all, a test parameter can be set
 #| to limit the templates to compile. By default it will exclude entries whose name
-#| has a leading dot (a "hidden" file in a UNIX system). This can be overriden if
+#| has a leading dot (a "hidden" file in a UNIX system). This can be overridden if
 #| necessary by setting it to *.
 sub template-location(IO() $location, :$compile-all, :$test = { .IO.basename !~~ / ^ '.' / } --> Nil) is export {
     my $template-repo = get-template-repository;
