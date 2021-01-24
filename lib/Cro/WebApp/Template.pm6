@@ -1,15 +1,22 @@
 use Cro::HTTP::Router;
+use Cro::WebApp::LogTimelineSchema;
 use Cro::WebApp::Template::Repository;
 
 #| Render the template at the specified path using the specified data, and
 #| return the result as a string
 multi render-template(IO::Path $template-path, $initial-topic --> Str) is export {
-    (await get-template-repository.resolve-absolute($template-path.absolute)).render($initial-topic)
+    my $compiled-template = await get-template-repository.resolve-absolute($template-path.absolute);
+    Cro::WebApp::LogTimeline::RenderTemplate.log: :template($template-path), {
+        $compiled-template.render($initial-topic)
+    }
 }
 
 #| Render the template at the specified path using the specified data
 multi render-template(Str $template, $initial-topic --> Str) is export {
-    (await get-template-repository.resolve($template)).render($initial-topic);
+    my $compiled-template = await get-template-repository.resolve($template);
+    Cro::WebApp::LogTimeline::RenderTemplate.log: :$template, {
+        $compiled-template.render($initial-topic)
+    }
 }
 
 #| Add a path to search for templates. This will be used by both the template and

@@ -1,3 +1,4 @@
+use Cro::WebApp::LogTimelineSchema;
 use Cro::WebApp::Template::ASTBuilder;
 use Cro::WebApp::Template::Parser;
 use OO::Monitors;
@@ -57,9 +58,11 @@ sub get-template-repository(--> Cro::WebApp::Template::Repository) is export {
 }
 
 sub load-template(IO() $abs-path --> Cro::WebApp::Template::Compiled) {
-    my $*TEMPLATE-REPOSITORY = $template-repo;
-    my $source = slurp($abs-path);
-    my $*TEMPLATE-FILE = $abs-path;
-    my $ast = Cro::WebApp::Template::Parser.parse($source, actions => Cro::WebApp::Template::ASTBuilder).ast;
-    Cro::WebApp::Template::Compiled.new(|$ast.compile, repository => $template-repo)
+    Cro::WebApp::LogTimeline::CompileTemplate.log: :template($abs-path.relative), {
+        my $*TEMPLATE-REPOSITORY = $template-repo;
+        my $source = slurp($abs-path);
+        my $*TEMPLATE-FILE = $abs-path;
+        my $ast = Cro::WebApp::Template::Parser.parse($source, actions => Cro::WebApp::Template::ASTBuilder).ast;
+        Cro::WebApp::Template::Compiled.new(|$ast.compile, repository => $template-repo)
+    }
 }
