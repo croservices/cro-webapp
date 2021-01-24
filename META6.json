@@ -1,6 +1,6 @@
 {
   "name": "Cro::WebApp",
-  "description": "HTML templating for building server-side web applications with Cro.",
+  "description": "Support for building server-side web applications with Cro, including templates and form handling.",
   "version": "0.8.4",
   "perl": "6.*",
   "authors": [
