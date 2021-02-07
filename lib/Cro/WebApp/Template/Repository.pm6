@@ -42,6 +42,10 @@ monitor Cro::WebApp::Template::Repository {
         }
     }
 
+    method refresh($abs-path) {
+        %!abs-path-to-compiled{$abs-path}:delete with %!abs-path-to-compiled{$abs-path}
+    }
+
     method resolve-prelude(--> Promise) {
         my $*COMPILING-PRELUDE = True;
         self.resolve-absolute(%?RESOURCES<prelude.crotmp>.IO);
@@ -52,7 +56,21 @@ monitor Cro::WebApp::Template::Repository {
     }
 }
 
-my $template-repo = Cro::WebApp::Template::Repository.new;
+monitor Cro::WebApp::Template::ReloadingRepository is Cro::WebApp::Template::Repository {
+    has %!abs-path-to-mtime;
+
+    method resolve-absolute($abs-path --> Promise) {
+        my $modified = $abs-path.IO.modified;
+        if (%!abs-path-to-mtime{$abs-path} // 0) != $modified {
+            self.refresh($abs-path)
+        }
+        %!abs-path-to-mtime{$abs-path} = $modified;
+        callsame
+    }
+
+}
+
+my $template-repo = %*ENV<CRO_DEBUG> ?? Cro::WebApp::Template::ReloadingRepository.new !! Cro::WebApp::Template::Repository.new;
 sub get-template-repository(--> Cro::WebApp::Template::Repository) is export {
     $template-repo
 }
