@@ -43,7 +43,8 @@ monitor Cro::WebApp::Template::Repository {
     }
 
     method refresh($abs-path) {
-        %!abs-path-to-compiled{$abs-path}:delete with %!abs-path-to-compiled{$abs-path}
+        %!abs-path-to-compiled{$abs-path}:delete;
+        Nil
     }
 
     method resolve-prelude(--> Promise) {
@@ -70,7 +71,7 @@ monitor Cro::WebApp::Template::ReloadingRepository is Cro::WebApp::Template::Rep
 
 }
 
-my $template-repo = %*ENV<CRO_DEBUG> ?? Cro::WebApp::Template::ReloadingRepository.new !! Cro::WebApp::Template::Repository.new;
+my $template-repo = %*ENV<CRO_DEV> ?? Cro::WebApp::Template::ReloadingRepository.new !! Cro::WebApp::Template::Repository.new;
 sub get-template-repository(--> Cro::WebApp::Template::Repository) is export {
     $template-repo
 }
