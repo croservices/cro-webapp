@@ -62,38 +62,47 @@ grammar Cro::WebApp::Template::Parser {
 
     token sigil-tag:sym<topic> {
         '<.'
-        <deref>
-        [ '>' || <.panic: 'malformed topic tag'> ]
+        [ <deref> || <.malformed: 'topic tag'> ]
+        [ '>' || <.malformed: 'topic tag'> ]
     }
 
     token sigil-tag:sym<variable> {
         '<$'
-        <identifier>
-        [ ['.' <deref>]? '>' || <.panic: 'malformed variable tag'> ]
+        [ <identifier> || <.malformed: 'variable tag'> ]
+        [ '.' <deref> ]?
+        [ '>' || <.malformed: 'variable tag'> ]
     }
 
     token sigil-tag:sym<iteration> {
+        :my $opener = $¢.clone;
         :my $*lone-start-line = False;
         '<@'
         [ <?after [^ | $ | \n] \h* '<@'> { $*lone-start-line = True } ]?
         [
         | '.'? <deref>
         | $<variable>=['$' <.identifier>] ['.' <deref>]?
+        || <.malformed: 'iteration tag'>
         ]
-        [ \h* [':' \h* <iteration-variable=.parameter(:!allow-named, :!allow-default)>]? \h* '>' || <.panic('malformed iteration tag')> ]
+        \h*
+        [
+        ||  [':' \h* <iteration-variable=.parameter(:!allow-named, :!allow-default)>]? \h* '>'
+        || <.malformed('iteration tag')>
+        ]
         [ <?{ $*lone-start-line }> [ \h* \n | { $*lone-start-line = False } ] ]?
 
         <sequence-element>*
 
         :my $*lone-end-line = False;
-        '</@'
+        [ '</@' || { $opener.unclosed('iteration tag') } ]
         [ <?after \n \h* '</@'> { $*lone-end-line = True } ]?
         <close-ident=.ident>?
-        [ \h* '>' || <.panic('malformed iteration closing tag')> ]
+        [ \h* '>' || <.malformed: 'iteration closing tag'> ]
         [ <?{ $*lone-end-line }> [ \h* \n | { $*lone-end-line = False } ] ]?
     }
 
     token sigil-tag:sym<condition> {
+        <!before '<!-'>
+        :my $opener = $¢.clone;
         :my $*lone-start-line = False;
         '<' $<negate>=<[?!]>
         [ <?after [^ | $ | \n] \h* '<' <[?!]>> { $*lone-start-line = True } ]?
@@ -101,54 +110,60 @@ grammar Cro::WebApp::Template::Parser {
         | '.' <deref>
         | '$' <identifier> ['.' <deref>]?
         | '{' <expression> [ '}' || <.panic('malformed expression')> ]
+        || <.malformed: 'condition tag'>
         ]
-        [ \h* '>' || <.panic('malformed condition tag')> ]
+        [ \h* '>' || <.malformed: 'condition tag'> ]
         [ <?{ $*lone-start-line }> [ \h* \n | { $*lone-start-line = False } ] ]?
 
         <sequence-element>*
 
         :my $*lone-end-line = False;
-        '</' $<negate>
+        [ '</' $<negate> || { $opener.unclosed('condition tag') } ]
         [ <?after \n \h* '</' <[?!]>> { $*lone-end-line = True } ]?
         <close-ident=.ident>?
-        [ \h* '>' || <.panic('malformed conditional closing tag')> ]
+        [ \h* '>' || <.malformed: 'condition closing tag'> ]
         [ <?{ $*lone-end-line }> [ \h* \n | { $*lone-end-line = False } ] ]?
     }
 
     token sigil-tag:sym<call> {
         '<&'
-        <target=.identifier> \h* <arglist>? \h*
-        [ '>' || <.panic: 'malformed call tag'> ]
+        [
+        || <target=.identifier> \h* <arglist>? \h*
+        || <.malformed: 'call tag'>
+        ]
+        [ '>' || <.malformed: 'call tag'> ]
     }
 
     token sigil-tag:sym<sub> {
+        :my $opener = $¢.clone;
         :my $*lone-start-line = False;
         '<:sub'
         [ <?after [^ | $ | \n] \h* '<:sub'> { $*lone-start-line = True } ]?
         \h+
         [
         || <name=.identifier> \h* <signature>? '>'
-        || <.panic('malformed sub declaration tag')>
+        || <.malformed: 'sub declaration tag'>
         ]
         [ <?{ $*lone-start-line }> [ \h* \n | { $*lone-start-line = False } ] ]?
 
         <sequence-element>*
 
         :my $*lone-end-line = False;
-        '</:'
+        [ '</:' || { $opener.unclosed('sub declaration tag') } ]
         [ <?after \n \h* '</:'> { $*lone-end-line = True } ]?
-        [ 'sub'? \h* '>' || <.panic('malformed sub declaration closing tag')> ]
+        [ 'sub'? \h* '>' || <.malformed: 'sub declaration closing tag'> ]
         [ <?{ $*lone-end-line }> [ \h* \n | { $*lone-end-line = False } ] ]?
     }
 
     token sigil-tag:sym<macro> {
+        :my $opener = $¢.clone;
         :my $*lone-start-line = False;
         '<:macro'
         [ <?after [^ | $ | \n] \h* '<:macro'> { $*lone-start-line = True } ]?
         \h+
         [
         || <name=.identifier> \h* <signature>? '>'
-        || <.panic('malformed macro declaration tag')>
+        || <.maformed: 'macro declaration tag'>
         ]
         [ <?{ $*lone-start-line }> [ \h* \n | { $*lone-start-line = False } ] ]?
 
@@ -156,9 +171,9 @@ grammar Cro::WebApp::Template::Parser {
         <sequence-element>*
 
         :my $*lone-end-line = False;
-        '</:'
+        [ '</:' || { $opener.unclosed('macro declaration tag') } ]
         [ <?after \n \h* '</:'> { $*lone-end-line = True } ]?
-        [ 'macro'? \h* '>' || <.panic('malformed macro declaration closing tag')> ]
+        [ 'macro'? \h* '>' || <.malformed: 'macro declaration closing tag'> ]
         [ <?{ $*lone-end-line }> [ \h* \n | { $*lone-end-line = False } ] ]?
     }
 
@@ -171,8 +186,10 @@ grammar Cro::WebApp::Template::Parser {
         :my $*lone-start-line = False;
         '<|'
         [ <?after [^ | $ | \n] \h* '<|'> { $*lone-start-line = True } ]?
-        <target=.identifier>
-        [ \h* <arglist>? \h* '>' || <.panic('malformed macro application tag')> ]
+        [
+        || <target=.identifier> \h* <arglist>? \h* '>'
+        || <.malformed: 'macro application tag'>
+        ]
         [ <?{ $*lone-start-line }> [ \h* \n | { $*lone-start-line = False } ] ]?
 
         <sequence-element>*
@@ -181,7 +198,7 @@ grammar Cro::WebApp::Template::Parser {
         '</|'
         [ <?after \n \h* '</|'> { $*lone-end-line = True } ]?
         <close-ident=.ident>?
-        [ \h* '>' || <.panic('malformed macro application closing tag')> ]
+        [ \h* '>' || <.malformed: 'macro application closing tag'> ]
         [ <?{ $*lone-end-line }> [ \h* \n | { $*lone-end-line = False } ] ]?
     }
 
@@ -190,6 +207,7 @@ grammar Cro::WebApp::Template::Parser {
         [
         | <file=.single-quote-string>
         | <library=.module-name>
+        || <.malformed: 'use tag'>
         ]
         \h* '>'
     }
@@ -201,7 +219,7 @@ grammar Cro::WebApp::Template::Parser {
     token signature {
         :my $*seen-by-name-arguments = False;
         '(' \s* <parameter>* % [\s* ',' \s*] \s*
-        [ ')' || <.panic('Malformed signature')> ] \h*
+        [ ')' || <.malformed: 'signature'> ] \h*
     }
 
     token parameter(:$allow-named = True, :$allow-default = True) {
@@ -342,8 +360,16 @@ grammar Cro::WebApp::Template::Parser {
         <.ident> [ <[-']> <.ident> ]*
     }
 
+    method malformed($what) {
+        self.panic("malformed $what")
+    }
+
+    method unclosed($what) {
+        self.panic("unclosed $what")
+    }
+
     method panic($reason) {
         die X::Cro::WebApp::Template::SyntaxError.new:
-                :$reason, :cursor(self), :file($*TEMPLATE-FILE);
+                :$reason, :cursor(self), :file($*TEMPLATE-FILE // '<unknown>'.IO);
     }
 }
