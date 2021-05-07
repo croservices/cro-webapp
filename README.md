@@ -1,4 +1,4 @@
-# Cro::WebApp
+# Cro::WebApp ![Build Status](https://github.com/croservices/cro-webapp/actions/workflows/ci.yml/badge.svg)
 
 The [Cro::HTTP](http://cro.services/) distribution provides a convenient way to
 implement HTTP services, which may be providing an API and/or serving as the
