@@ -76,6 +76,10 @@ sub get-template-repository(--> Cro::WebApp::Template::Repository) is export {
     $template-repo
 }
 
+sub set-template-repository(Cro::WebApp::Template::Repository $repository --> Nil) is export {
+    $template-repo = $repository;
+}
+
 sub load-template(IO() $abs-path --> Cro::WebApp::Template::Compiled) {
     Cro::WebApp::LogTimeline::CompileTemplate.log: :template($abs-path.relative), {
         my $*TEMPLATE-REPOSITORY = $template-repo;
