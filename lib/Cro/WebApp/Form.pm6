@@ -42,6 +42,18 @@ multi trait_mod:<is>(Attribute:D $attr, :$help! --> Nil) is export {
     $attr.webapp-form-help = $help;
 }
 
+#| Indicate that this is a hidden form field
+multi trait_mod:<is>(Attribute:D $attr, :$hidden! --> Nil) is export {
+    ensure-attr-state($attr);
+    $attr.webapp-form-type = 'hidden';
+}
+
+#| Indicate that this is a file form field
+multi trait_mod:<is>(Attribute:D $attr, :$file! --> Nil) is export {
+    ensure-attr-state($attr);
+    $attr.webapp-form-type = 'file';
+}
+
 #| Indicate that this is a password form field
 multi trait_mod:<is>(Attribute:D $attr, :$password! --> Nil) is export {
     ensure-attr-state($attr);
@@ -261,17 +273,22 @@ role Cro::WebApp::Form {
 
     #| Return the form data as a hash
     method form-data() {
-      my %values;
-      for self.^attributes.grep(*.has_accessor) -> Attribute $attr {
-        my $name = $attr.name.substr(2);
-        %values{$name} = $attr.get_value(self);
-      }
-      %values
+        my %values;
+        for self.^attributes.grep(*.has_accessor) -> Attribute $attr {
+            my $name = $attr.name.substr(2);
+            %values{$name} = $attr.get_value(self);
+        }
+        %values
     }
 
-    #| Take a application/x-www-form-urlencoded body and populate the form values based
+    my subset Form where Cro::HTTP::Body::WWWFormUrlEncoded | Cro::HTTP::Body::MultiPartFormData;
+
+    multi sub get-value(Cro::HTTP::Body::MultiPartFormData::Part $p) { $p.body-blob.decode('utf-8') }
+    multi sub get-value($s) { $s }
+
+    #| Take a application/x-www-form-urlencoded or multipart/form-data body and populate the form values based
     #| upon it.
-    multi method parse(Cro::HTTP::Body::WWWFormUrlEncoded $body) {
+    multi method parse(Form $body) {
         my %form-data := $body.hash;
         my %values;
         my %unparseable;
@@ -281,11 +298,18 @@ role Cro::WebApp::Form {
             if $attr.type ~~ Positional {
                 my $value-type = $attr.type.of;
                 my @values := $value ~~ Cro::HTTP::MultiValue ?? $value.list !!
-                        $value.defined ?? ($value,) !! ();
+                        $value.defined ?? (get-value($value),) !! ();
                 %values{$name} := @values.map({ self!parse-one-value($name, $value-type, $_, %unparseable) }).list;
             }
-            else {
-                %values{$name} := self!parse-one-value($name, $attr.type, $value, %unparseable);
+            elsif defined($attr.?webapp-form-type) and $attr.webapp-form-type eq 'file' {
+                if $body ~~ Cro::HTTP::Body::MultiPartFormData {
+                    %values{$name} = %form-data{$name};
+                } else {
+                    %unparseable{$name} = "Invalid";
+                    %values{$name} = Nil;
+                }
+            } else {
+                %values{$name} := self!parse-one-value($name, $attr.type, get-value($value), %unparseable);
             }
         }
         given self.bless(|%values) -> Cro::WebApp::Form $parsed {
@@ -293,7 +317,8 @@ role Cro::WebApp::Form {
                 $parsed.add-unparseable-form-value($input, $value);
             }
             with $body{CSRF-TOKEN-NAME} {
-                $parsed.set-received-csrf-token($_);
+                my $csrf-token = get-value($_);
+                $parsed.set-received-csrf-token($csrf-token);
             }
             $parsed
         }
@@ -362,7 +387,7 @@ role Cro::WebApp::Form {
             my ($control-type, %properties) = self!calculate-control-type($attr);
             my $name = $attr.name.substr(2);
             my %control =
-                    name => $name,
+                    :$name,
                     label => self!calculate-label($attr),
                     (with $attr.?webapp-form-help { help => $_ }),
                     (with $attr.?webapp-form-placeholder { placeholder => $_ }),
@@ -375,7 +400,8 @@ role Cro::WebApp::Form {
             @controls.push(%control);
         }
         self!add-csrf-protection(@controls);
-        my %rendered := { :@controls, was-validated => $!validation-state.defined };
+        my %enctype = any(self.^attributes.map(*.?webapp-form-type).grep(*.defined)) eq 'file' ?? enctype => "multipart/form-data" !! Empty;
+        my %rendered := { :@controls, was-validated => $!validation-state.defined, |%enctype };
         if %validation-by-control{''} -> @errors {
             %rendered<validation-errors> = [@errors.map(*.message)];
         }
