@@ -1,6 +1,6 @@
 use Cro::WebApp::Template;
 use Test;
-use lib $*PROGRAM.parent.child('lib').Str;
+use lib $*PROGRAM.parent.add('library-module').Str;
 
 my constant $base = $*PROGRAM.parent.add('library-test-data');
 
