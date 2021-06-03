@@ -12,18 +12,21 @@ sub _-prefix(Str $prefix) is export {
     router-plugin-add-config($prefix-key, $prefix);
 }
 
-proto sub _(|) is export {*}
-
-multi sub _(Str $key) {
-    my @prefixes = router-plugin-get-innermost-configs($prefix-key)
-            or die "No prefix configured, did you mean to configure _-prefix or use the long form of _?";
-    _(@prefixes[*-1], $key);
-}
-
-multi sub _(Str $prefix, Str $key) {
+sub _(Str $key, Str :$prefix is copy, Str :$default) is export {
+    without $prefix {
+        my @prefixes = router-plugin-get-innermost-configs($prefix-key)
+                or die "No prefix configured, did you mean to configure _-prefix or use the long form of _?";
+        $prefix = @prefixes[*-1];
+    }
     my %config = router-plugin-get-configs($plugin-key);
     with %config{$prefix} {
-        ($_{$key} // die "No key $key in $prefix").msgstr;
+        with $_{$key} {
+            .msgstr;
+        } orwith $default {
+            $default
+        } else {
+            die "No key $key in $prefix";
+        }
     } else {
         die "No such translation file: $prefix";
     }

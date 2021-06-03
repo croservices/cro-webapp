@@ -1,2 +1,5 @@
 msgid "a"
 msgstr "b"
+
+msgid "name-field"
+msgstr "Your Name"
