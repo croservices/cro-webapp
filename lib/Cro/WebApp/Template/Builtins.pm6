@@ -1,3 +1,5 @@
+use Cro::WebApp::I18N;
+
 class X::Cro::WebApp::Template::XSS is Exception {
     has Str $.content is required;
     method message() {
@@ -14,4 +16,11 @@ sub __TEMPLATE_SUB__HTML(Str() $html) is export {
 
 sub __TEMPLATE_SUB__HTML-AND-JAVASCRIPT(Str() $html) is export {
     $html
+}
+
+multi sub __TEMPLATE_SUB___(Str $key) is export {
+    _($key);
+}
+multi sub __TEMPLATE_SUB___(Str $prefix, Str $key) is export {
+    _($prefix, $key);
 }
