@@ -14,17 +14,17 @@ my class TemplateResourcesLocation {
 
 #| Render the template at the specified path using the specified data, and
 #| return the result as a C<Str>.
-multi render-template(IO::Path $template-path, $initial-topic --> Str) is export {
+multi render-template(IO::Path $template-path, $initial-topic, :%parts --> Str) is export {
     my $compiled-template = await get-template-repository.resolve-absolute($template-path.absolute);
     Cro::WebApp::LogTimeline::RenderTemplate.log: :template($template-path), {
-        $compiled-template.render($initial-topic)
+        render-internal($compiled-template, $initial-topic, %parts)
     }
 }
 
 #| Render the template at the specified path, which will be resolved either in the
 #| resources or via the file system, as configured by C<template-location> or
 #| C<templates-from-resources>.
-multi render-template(Str $template, $initial-topic --> Str) is export {
+multi render-template(Str $template, $initial-topic, :%parts --> Str) is export {
     # First try to resolve it using the the route-specific locations.
     my $repo = get-template-repository;
     my @locations := try { router-plugin-get-configs($template-location-plugin) } // ();
@@ -53,8 +53,14 @@ multi render-template(Str $template, $initial-topic --> Str) is export {
 
     # Finally, render it.
     Cro::WebApp::LogTimeline::RenderTemplate.log: :$template, {
-        $compiled-template.render($initial-topic)
+        render-internal($compiled-template, $initial-topic, %parts)
     }
+}
+
+sub render-internal($compiled-template, $initial-topic, %parts) {
+    my $*CRO-TEMPLATE-MAIN-PART := $initial-topic;
+    my %*CRO-TEMPLATE-EXPLICIT-PARTS := %parts;
+    $compiled-template.render($initial-topic)
 }
 
 #| Add a file system path to search for templates. This will be used by both the
@@ -110,13 +116,13 @@ sub templates-from-resources(:$prefix = '' --> Nil) is export {
 #| Used in a Cro::HTTP::Router route handler to render a template and set it as
 #| the response body. The initial topic is passed to the template to render. The
 #| content type will default to text/html, but can be set explicitly also.
-multi template($template, $initial-topic, :$content-type = 'text/html' --> Nil) is export {
-    content $content-type, render-template($template, $initial-topic);
+multi template($template, $initial-topic, :%parts, :$content-type = 'text/html' --> Nil) is export {
+    content $content-type, render-template($template, $initial-topic, :%parts);
 }
 
 #| Used in a Cro::HTTP::Router route handler to render a template and set it as
 #| the response body. The content type will default to text/html, but can be set
 #| explicitly also.
-multi template($template, :$content-type = 'text/html' --> Nil) is export {
-    template($template, Nil, :$content-type);
+multi template($template, :%parts, :$content-type = 'text/html' --> Nil) is export {
+    template($template, Nil, :%parts, :$content-type);
 }

@@ -182,6 +182,27 @@ grammar Cro::WebApp::Template::Parser {
         '<:body' \h* '>'
     }
 
+    token sigil-tag:sym<part> {
+        :my $opener = $¢.clone;
+        :my $*lone-start-line = False;
+        '<:part'
+        [ <?after [^ | $ | \n] \h* '<:part'> { $*lone-start-line = True } ]?
+        \h+
+        [
+        || <name=.identifier> \h* <signature>? '>'
+        || <.malformed: 'part declaration tag'>
+        ]
+        [ <?{ $*lone-start-line }> [ \h* \n | { $*lone-start-line = False } ] ]?
+
+        <sequence-element>*
+
+        :my $*lone-end-line = False;
+        [ '</:' || { $opener.unclosed('part declaration tag') } ]
+        [ <?after \n \h* '</:'> { $*lone-end-line = True } ]?
+        [ 'part'? \h* '>' || <.malformed: 'part declaration closing tag'> ]
+        [ <?{ $*lone-end-line }> [ \h* \n | { $*lone-end-line = False } ] ]?
+    }
+
     token sigil-tag:sym<apply> {
         :my $*lone-start-line = False;
         '<|'

@@ -120,6 +120,15 @@ class Cro::WebApp::Template::ASTBuilder {
         make MacroBody.new;
     }
 
+    method sigil-tag:sym<part>($/) {
+        make TemplatePart.new:
+                name => ~$<name>,
+                parameters => $<signature> ?? $<signature>.ast !! (),
+                children => flatten-literals($<sequence-element>.map(*.ast),
+                        :trim-trailing-horizontal($*lone-end-line)),
+                trim-trailing-horizontal-before => $*lone-start-line;
+    }
+
     method sigil-tag:sym<use>($/) {
         with $<file> {
             my $template-name = .ast;

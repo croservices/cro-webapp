@@ -225,6 +225,18 @@ my class MacroApplication does ContainerNode is export {
     }
 }
 
+my class TemplatePart does ContainerNode is export {
+    has Str $.name is required;
+    has TemplateParameter @.parameters;
+
+    method compile() {
+        my $params = @!parameters.map(*.compile).join(", ");
+        "(sub ($params) \{\n" ~
+                'join "", (' ~ @!children.map(*.compile).join(", ") ~ ')' ~
+                "})(|template-part-args('$!name'))"
+    }
+}
+
 my class Sequence does ContainerNode is export {
     method compile() {
         '(join "", (' ~ @!children.map(*.compile).join(", ") ~ '))'
@@ -310,4 +322,17 @@ sub escape-text(Str() $text) {
 
 sub escape-attribute(Str() $attr) {
     $attr.subst(/<[&"']>/, { %escapes{.Str} }, :g)
+}
+
+sub template-part-args(Str $name) {
+    my $part-data = do if $name eq 'MAIN' {
+        $*CRO-TEMPLATE-MAIN-PART
+    }
+    orwith %*CRO-TEMPLATE-EXPLICIT-PARTS{$name} {
+        $_
+    }
+    else {
+        die "No template part arguments found for part '$name'";
+    }
+    $part-data ~~ Capture ?? $part-data !! \($part-data)
 }
