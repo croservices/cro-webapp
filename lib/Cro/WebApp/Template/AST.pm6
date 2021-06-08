@@ -1,3 +1,4 @@
+use Cro::HTTP::Router;
 use Cro::WebApp::Template::Builtins;
 
 unit module Cro::WebApp::Template::AST;
@@ -331,8 +332,31 @@ sub template-part-args(Str $name) {
     orwith %*CRO-TEMPLATE-EXPLICIT-PARTS{$name} {
         $_
     }
+    orwith find-template-part-provider($name) -> &provider {
+        provider()
+    }
     else {
         die "No template part arguments found for part '$name'";
     }
     $part-data ~~ Capture ?? $part-data !! \($part-data)
+}
+
+sub find-template-part-provider(Str $name) {
+    with @*CRO-TEMPLATE-PART-PROVIDERS -> @providers {
+        for @providers -> %route-block-providers {
+            with %route-block-providers{$name} -> @try-providers {
+                for @try-providers -> &provider {
+                    my $signature = &provider.signature;
+                    return &provider if $signature.arity == 0;
+                    my $auth = request.auth;
+                    if \($auth) ~~ $signature {
+                        return -> { provider($auth) }
+                    }
+                }
+            }
+        }
+    }
+    else {
+        Nil
+    }
 }

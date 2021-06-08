@@ -12,6 +12,13 @@ my constant TEST_PORT = 30209;
 # Global location
 template-location $*PROGRAM.parent.add('test-data-global');
 
+class TestAuth is Cro::HTTP::Auth {
+    has Str $.user-id is rw;
+}
+my subset LoggedIn of TestAuth where .user-id.defined;
+my subset NotLoggedIn of TestAuth where not .user-id.defined;
+my $current-auth = TestAuth.new;
+
 my $application = route {
     include route {
         # Route-block local location
@@ -45,6 +52,33 @@ my $application = route {
     include test-resource-template-without-prefix();
     include test-resource-template-with-prefix();
     include test-resource-template-with-prefix-with-slash();
+
+    include 'part-simple' => route {
+        template-location $*PROGRAM.parent.add('test-data');
+        template-part 'header', -> {
+            'lenka'
+        }
+        get -> 'use-part' {
+            template 'parts-simple.crotmp';
+        }
+        get -> 'override' {
+            template 'parts-simple.crotmp', :parts{ header => 'božena' };
+        }
+    }
+
+    include 'part-using-auth' => route {
+        before-matched { request.auth = $current-auth }
+        template-location $*PROGRAM.parent.add('test-data');
+        template-part 'header', -> LoggedIn $user {
+            $user.user-id
+        }
+        template-part 'header', -> NotLoggedIn {
+            'anonymous'
+        }
+        get -> 'use-part' {
+            template 'parts-simple.crotmp';
+        }
+    }
 }
 my $server = Cro::HTTP::Server.new(:$application, :host('localhost'), :port(TEST_PORT));
 $server.start;
@@ -133,6 +167,40 @@ lives-ok { $resp = await Cro::HTTP::Client.get("http://localhost:{TEST_PORT}/res
         'Templates located via resources work (prefix with trailing slash)';
 is norm-ws(await $resp.body-text), norm-ws(q:to/EXPECTED/), 'Correct resource template content';
     I am a resource
+    EXPECTED
+
+lives-ok { $resp = await Cro::HTTP::Client.get("http://localhost:{TEST_PORT}/part-simple/use-part") },
+        'Request relying on part provider is successful';
+is norm-ws(await $resp.body-text), norm-ws(q:to/EXPECTED/), 'Correct value from part provider used';
+    Before part
+    User lenka is logged in
+    After part
+    EXPECTED
+
+lives-ok { $resp = await Cro::HTTP::Client.get("http://localhost:{TEST_PORT}/part-simple/override") },
+        'Request using part provider override is successful';
+is norm-ws(await $resp.body-text), norm-ws(q:to/EXPECTED/), 'Correct value from override used';
+    Before part
+    User božena is logged in
+    After part
+    EXPECTED
+
+$current-auth.user-id = Nil;
+lives-ok { $resp = await Cro::HTTP::Client.get("http://localhost:{TEST_PORT}/part-using-auth/use-part") },
+        'Request relying on auth-aware part provider is successful';
+is norm-ws(await $resp.body-text), norm-ws(q:to/EXPECTED/), 'Correct part provider is picked (not logged in)';
+    Before part
+    User anonymous is logged in
+    After part
+    EXPECTED
+
+$current-auth.user-id = "noddy";
+lives-ok { $resp = await Cro::HTTP::Client.get("http://localhost:{TEST_PORT}/part-using-auth/use-part") },
+        'Request relying on auth-aware part provider is successful';
+is norm-ws(await $resp.body-text), norm-ws(q:to/EXPECTED/), 'Correct part provider is picked (logged in)';
+    Before part
+    User noddy is logged in
+    After part
     EXPECTED
 
 sub norm-ws($str) {
