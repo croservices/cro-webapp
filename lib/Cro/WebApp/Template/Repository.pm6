@@ -53,13 +53,13 @@ role Cro::WebApp::Template::Repository {
 #| changes to the file on disk will not be considered.
 monitor Cro::WebApp::Template::Repository::FileSystem does Cro::WebApp::Template::Repository {
     has Promise %!abs-path-to-compiled;
-    has @!search-paths = '.'.IO;
+    has @!global-search-paths = '.'.IO;
 
     #| Looks through the search paths and locates the first matching template.
     #| Returns a Promise that will be kept with the template. The method
     #| C<resolve-absolute> is called to load the located template.
     method resolve(Str $template-name --> Promise) {
-        for @!search-paths {
+        for @!global-search-paths {
             my $path = .add($template-name);
             return self.resolve-absolute($path) if $path.f;
         }
@@ -83,9 +83,9 @@ monitor Cro::WebApp::Template::Repository::FileSystem does Cro::WebApp::Template
         Nil
     }
 
-    #| Prepends a directory to the template search locations.
-    method add-location(IO::Path $location --> Nil) {
-        @!search-paths.unshift($location);
+    #| Prepends a directory to the global template search locations.
+    method add-global-location(IO::Path $location --> Nil) {
+        @!global-search-paths.unshift($location);
     }
 }
 

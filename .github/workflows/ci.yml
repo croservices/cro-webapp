@@ -25,6 +25,9 @@ jobs:
       - uses: Raku/setup-raku@v1
         with:
           raku-version: ${{ matrix.raku-version }}
+      - run: zef install https://github.com/croservices/cro-core/archive/master.zip
+      - run: zef install https://github.com/croservices/cro-tls/archive/master.zip
+      - run: zef install https://github.com/croservices/cro-http/archive/master.zip
       - name: Setup dependencies
         run: raku -v && zef install --deps-only .
       - name: Test code

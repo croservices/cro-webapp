@@ -1,0 +1,14 @@
+{
+  "name": "ResourceRoutes",
+  "version": "0.1",
+  "perl": "6.*",
+  "authors": [
+    "Jonathan Worthington <jnthn@jnthn.net>"
+  ],
+  "provides": {
+    "ResourceRoutes": "lib/ResourceRoutes.pm6"
+  },
+  "resources": [
+    "templates/restest.crotmp"
+  ]
+}

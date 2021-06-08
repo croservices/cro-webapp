@@ -1,0 +1,14 @@
+{
+  "name": "Some::Library",
+  "version": "0.1",
+  "perl": "6.*",
+  "authors": [
+    "Jonathan Worthington <jnthn@jnthn.net>"
+  ],
+  "provides": {
+    "Some::Library": "lib/Some/Library.pm6"
+  },
+  "resources": [
+    "test-template-library.crotmp"
+  ]
+}
