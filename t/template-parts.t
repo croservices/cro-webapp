@@ -29,4 +29,11 @@ is render-template($base.add('parts-main.crotmp'), \(:greeting<ahoj>, :name<dave
       ahoj, dave!
     EXPECTED
 
+template-location $*PROGRAM.parent.add('test-data');
+is render-template($base.add('parts-use.crotmp'), {}, :parts{ header => 'ann' }).trim,
+        q:to/EXPECTED/.trim, 'Correct interaction of parts, macros, and use';
+        Logged in as ann
+        Hello world
+    EXPECTED
+
 done-testing;

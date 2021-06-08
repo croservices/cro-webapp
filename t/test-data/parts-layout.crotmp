@@ -1,0 +1,8 @@
+<:macro layout>
+  <:part header($user)>
+    <?$user>
+      Logged in as <$user>
+    </?>
+  </:>
+  <:body>
+</:macro>
