@@ -1,3 +1,4 @@
+use Cro::HTTP::Router;
 use Cro::WebApp::Template::Builtins;
 
 unit module Cro::WebApp::Template::AST;
@@ -225,6 +226,18 @@ my class MacroApplication does ContainerNode is export {
     }
 }
 
+my class TemplatePart does ContainerNode is export {
+    has Str $.name is required;
+    has TemplateParameter @.parameters;
+
+    method compile() {
+        my $params = @!parameters.map(*.compile).join(", ");
+        "(sub ($params) \{\n" ~
+                'join "", (' ~ @!children.map(*.compile).join(", ") ~ ')' ~
+                "})(|template-part-args('$!name'))"
+    }
+}
+
 my class Sequence does ContainerNode is export {
     method compile() {
         '(join "", (' ~ @!children.map(*.compile).join(", ") ~ '))'
@@ -310,4 +323,40 @@ sub escape-text(Str() $text) {
 
 sub escape-attribute(Str() $attr) {
     $attr.subst(/<[&"']>/, { %escapes{.Str} }, :g)
+}
+
+sub template-part-args(Str $name) {
+    my $part-data = do if $name eq 'MAIN' {
+        $*CRO-TEMPLATE-MAIN-PART
+    }
+    orwith %*CRO-TEMPLATE-EXPLICIT-PARTS{$name} {
+        $_
+    }
+    orwith find-template-part-provider($name) -> &provider {
+        provider()
+    }
+    else {
+        die "No template part arguments found for part '$name'";
+    }
+    $part-data ~~ Capture ?? $part-data !! \($part-data)
+}
+
+sub find-template-part-provider(Str $name) {
+    with @*CRO-TEMPLATE-PART-PROVIDERS -> @providers {
+        for @providers -> %route-block-providers {
+            with %route-block-providers{$name} -> @try-providers {
+                for @try-providers -> &provider {
+                    my $signature = &provider.signature;
+                    return &provider if $signature.arity == 0;
+                    my $auth = request.auth;
+                    if \($auth) ~~ $signature {
+                        return -> { provider($auth) }
+                    }
+                }
+            }
+        }
+    }
+    else {
+        Nil
+    }
 }

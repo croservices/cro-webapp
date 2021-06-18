@@ -1,0 +1,3 @@
+<:part MAIN(:$greeting, :$name)>
+  <$greeting>, <$name>!
+</:>

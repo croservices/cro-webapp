@@ -12,19 +12,23 @@ my class TemplateResourcesLocation {
     has Str $.prefix is required;
 }
 
+# Another router plugin is used for data providers for template parts. This will
+# will have a hash per route block, mapping part names into providers.
+my $template-part-plugin = router-plugin-register("template-part");
+
 #| Render the template at the specified path using the specified data, and
 #| return the result as a C<Str>.
-multi render-template(IO::Path $template-path, $initial-topic --> Str) is export {
+multi render-template(IO::Path $template-path, $initial-topic, :%parts --> Str) is export {
     my $compiled-template = await get-template-repository.resolve-absolute($template-path.absolute);
     Cro::WebApp::LogTimeline::RenderTemplate.log: :template($template-path), {
-        $compiled-template.render($initial-topic)
+        render-internal($compiled-template, $initial-topic, %parts)
     }
 }
 
 #| Render the template at the specified path, which will be resolved either in the
 #| resources or via the file system, as configured by C<template-location> or
 #| C<templates-from-resources>.
-multi render-template(Str $template, $initial-topic --> Str) is export {
+multi render-template(Str $template, $initial-topic, :%parts --> Str) is export {
     # First try to resolve it using the the route-specific locations.
     my $repo = get-template-repository;
     my @locations := try { router-plugin-get-configs($template-location-plugin) } // ();
@@ -53,8 +57,14 @@ multi render-template(Str $template, $initial-topic --> Str) is export {
 
     # Finally, render it.
     Cro::WebApp::LogTimeline::RenderTemplate.log: :$template, {
-        $compiled-template.render($initial-topic)
+        render-internal($compiled-template, $initial-topic, %parts)
     }
+}
+
+sub render-internal($compiled-template, $initial-topic, %parts) {
+    my $*CRO-TEMPLATE-MAIN-PART := $initial-topic;
+    my %*CRO-TEMPLATE-EXPLICIT-PARTS := %parts;
+    $compiled-template.render($initial-topic)
 }
 
 #| Add a file system path to search for templates. This will be used by both the
@@ -107,16 +117,79 @@ sub templates-from-resources(:$prefix = '' --> Nil) is export {
             error-sub => 'templates-from-resources';
 }
 
+#| Thrown when a template part provider is registered in a C<route> block that
+#| is identical to an existing part provider for the same name.
+class X::Cro::WebApp::Template::DuplicatePartProvider is Exception {
+    has Str $.name is required;
+    method message() {
+        "Duplicate template-part provider for '$!name'"
+    }
+}
+
+#| Thrown when a part provider has an unsupported signature (anything other than a
+#| single authorization parameter is reserved).
+class X::Cro::WebApp::Template::BadPartProviderParameters is Exception {
+    method message() {
+        "A template-part provider should have either no parameters or a single parameter of type Cro::HTTP::Auth or marked with the `is auth` trait"
+    }
+}
+
+#| Specify a data provider for a template part. Parts are typically used for
+#| common page elements that appear on all or many pages and need some data.
+#| For example, a page header may wish to show the name of the currently logged
+#| in user. The part provider may either take zero or one arguments; the one
+#| argument must either be of type C<Cro::HTTP::Auth> or marked with the `is auth`
+#| trait, and will be passed the value of `request.auth` so long as it matches
+#| any type constraint. This allows, for example, writing different providers for
+#| logged in and not logged in users.
+sub template-part(Str $name, &provider --> Nil) is export {
+    # We use a hash per route block to store the parts that it contributes.
+    my @current-configs = router-plugin-get-innermost-configs($template-part-plugin);
+    my %parts := do if @current-configs {
+        @current-configs[0]
+    }
+    else {
+        my Array %new-hash;
+        router-plugin-add-config($template-part-plugin, %new-hash);
+        %new-hash
+    }
+
+    # It must be either zero arity or arity one but expecting a Cro::Auth of
+    # some kind.
+    my $signature = &provider.signature;
+    if $signature.arity == 1 {
+        my Parameter $param = $signature.params[0];
+        unless $param ~~ Cro::HTTP::Router::Auth || $param.type ~~ Cro::HTTP::Auth {
+            die X::Cro::WebApp::Template::BadPartProviderParameters.new;
+        }
+    }
+    elsif $signature.arity > 1 {
+        die X::Cro::WebApp::Template::BadPartProviderParameters.new;
+    }
+
+    # Detect conflicts. It is allowed to have multiple so long as they have
+    # distinct signatures.
+    if %parts{$name} -> @existing {
+        if any(@existing).signature eqv $signature {
+            die X::Cro::WebApp::Template::DuplicatePartProvider.new(:$name);
+        }
+    }
+
+    # All is well, so add the part.
+    %parts{$name}.push(&provider);
+}
+
 #| Used in a Cro::HTTP::Router route handler to render a template and set it as
 #| the response body. The initial topic is passed to the template to render. The
 #| content type will default to text/html, but can be set explicitly also.
-multi template($template, $initial-topic, :$content-type = 'text/html' --> Nil) is export {
-    content $content-type, render-template($template, $initial-topic);
+multi template($template, $initial-topic, :%parts, :$content-type = 'text/html' --> Nil) is export {
+    my @*CRO-TEMPLATE-PART-PROVIDERS := router-plugin-get-configs($template-part-plugin, error-sub => 'template');
+    content $content-type, render-template($template, $initial-topic, :%parts);
 }
 
 #| Used in a Cro::HTTP::Router route handler to render a template and set it as
 #| the response body. The content type will default to text/html, but can be set
 #| explicitly also.
-multi template($template, :$content-type = 'text/html' --> Nil) is export {
-    template($template, Nil, :$content-type);
+multi template($template, :%parts, :$content-type = 'text/html' --> Nil) is export {
+    template($template, Nil, :%parts, :$content-type);
 }
