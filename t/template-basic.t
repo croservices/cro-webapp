@@ -221,10 +221,15 @@ is norm-ws(render-template($base.add('comments.crotmp'), {})),
     <!-- HTML comment -->
     <div>Something else</div>
     <!--
-        multi-line HTML comment
+        multi-line HTML--comment
         -->
     <p>And that's it<!--really--></p>
     EXPECTED
+
+is norm-ws(render-template($base.add('comments-integration.crotmp'), {})),
+        norm-ws(q:to/EXPECTED/), 'Is not confused by HTML bits commented out';
+<html><!--<articleclass="messageis-small"><divclass="message--body">--><!--</div></article>--></html>
+EXPECTED
 
 sub norm-ws($str) {
     $str.subst(:g, /\s+/, '')
