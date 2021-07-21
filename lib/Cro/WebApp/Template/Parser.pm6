@@ -55,7 +55,8 @@ grammar Cro::WebApp::Template::Parser {
     }
 
     token tag-element:sym<literal> {
-        <-[<>]>+
+        | '!--' .*? '--' <?before '>'>
+        | <-[<>]>+
     }
 
     proto token sigil-tag { * }
