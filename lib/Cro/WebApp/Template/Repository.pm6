@@ -135,3 +135,14 @@ sub load-template(IO() $abs-path --> Cro::WebApp::Template::Compiled) is export 
         Cro::WebApp::Template::Compiled.new(|$ast.compile, repository => $template-repo)
     }
 }
+
+#| Parse a template from a source string. An optional path may be passed for
+#| use in error reporting.
+sub parse-template(Str $source, IO() :$path = 'anon'.IO --> Cro::WebApp::Template::Compiled) is export {
+    Cro::WebApp::LogTimeline::CompileTemplate.log: :template($path.relative), {
+        my $*TEMPLATE-REPOSITORY = $template-repo;
+        my $*TEMPLATE-FILE = $path;
+        my $ast = Cro::WebApp::Template::Parser.parse($source, actions => Cro::WebApp::Template::ASTBuilder).ast;
+        Cro::WebApp::Template::Compiled.new(|$ast.compile, repository => $template-repo)
+    }
+}
