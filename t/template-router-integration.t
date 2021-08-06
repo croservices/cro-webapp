@@ -2,12 +2,17 @@ use Cro::HTTP::Client;
 use Cro::HTTP::Router;
 use Cro::HTTP::Server;
 use Cro::WebApp::Template;
+use Cro::UnhandledErrorReporter;
 use Test;
 
 use lib $*PROGRAM.parent.add('template-resource-module').Str;
 use ResourceRoutes;
 
 my constant TEST_PORT = 30209;
+
+# Suppress any unhandled errors so they don't end up in the test output and
+# confuse folks.
+set-unhandled-error-reporter -> $ {}
 
 # Global location
 template-location $*PROGRAM.parent.add('test-data-global');
