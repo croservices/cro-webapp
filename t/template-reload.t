@@ -4,6 +4,7 @@ use Cro::WebApp::Template;
 plan 2;
 
 my $test-file = $*PROGRAM.parent.add('test-data').add('reload.crotmp');
+END try unlink $test-file;
 $test-file.spurt: 'Hello <.name>.';
 is render-template($test-file, {name => "World"}), 'Hello World.';
 
