@@ -13,6 +13,7 @@ my role FormProperties {
     has Int $.webapp-form-maxlength is rw;
     has Real $.webapp-form-min is rw;
     has Real $.webapp-form-max is rw;
+    has Bool $.webapp-form-ro is rw;
     has List @.webapp-form-validations;
 }
 
@@ -155,6 +156,11 @@ multi trait_mod:<is>(Attribute:D $attr, Real :$min! --> Nil) is export {
     $attr.webapp-form-min = $min;
 }
 
+multi trait_mod:<is>(Attribute:D $attr, Bool :$read-only --> Nil) is export {
+    ensure-attr-state($attr);
+    $attr.webapp-form-ro = $read-only;
+}
+
 #| Set the maximum numeric value of an input field
 multi trait_mod:<is>(Attribute:D $attr, Real :$max! --> Nil) is export {
     ensure-attr-state($attr);
@@ -292,9 +298,16 @@ role Cro::WebApp::Form {
         my %form-data := $body.hash;
         my %values;
         my %unparseable;
-        for self.^attributes.grep(*.has_accessor) -> Attribute $attr {
+
+        # cw: For lack of a direct handle to ::Metamodel::CoercionHOW...
+        my \t = self.HOW.^can('target_type') ?? self.^target_type !! self;
+
+        for t.^attributes.grep(*.has_accessor) -> Attribute $attr {
             my $name = $attr.name.substr(2);
             my $value := %form-data{$name};
+
+            say "D { $name } = {$value}";
+
             if $attr.type ~~ Positional {
                 my $value-type = $attr.type.of;
                 my @values := $value ~~ Cro::HTTP::MultiValue ?? $value.list !!
@@ -312,7 +325,7 @@ role Cro::WebApp::Form {
                 %values{$name} := self!parse-one-value($name, $attr.type, get-value($value), %unparseable);
             }
         }
-        given self.bless(|%values) -> Cro::WebApp::Form $parsed {
+        given t.bless(|%values) -> Cro::WebApp::Form $parsed {
             for %unparseable.kv -> $input, $value {
                 $parsed.add-unparseable-form-value($input, $value);
             }
@@ -354,8 +367,28 @@ role Cro::WebApp::Form {
                         !! Date
             }
             when DateTime {
-                $value.defined
-                        ?? (DateTime.new($value) // unparseable($name, $value, %unparseable, DateTime))
+                # cw: This is very much a hack, but required for DateTime when using
+                #     the datetime-local input-type!
+                my $v = $value;
+
+                if $v ~~ / 'T' \d ** 2 ':' \d ** 2 ( ':' \d ** 2 )? / {
+                  unless $0 {
+                    $v.substr-rw(.from, .to - .from) = .Str ~ ':00' given $/;
+                  }
+                }
+
+                if $v !~~ / <[+-]> \d ** 2 ':' \d ** 2 $/ {
+                  (my $offMain = (DateTime.now.offset / 3600)) ~~ / (\d+) [ '.' (\d+) ]? /;
+                  my $offHr   = $0;
+                  my $offMin  = ( ( '0.' ~ ($1 // 0) ).Num * 60 ).Int;
+
+                  $v ~= $offMain >= 0 ?? '+' !! '-' ~
+                        $offHr.fmt('%02d')          ~ ':' ~
+                        $offMin.fmt('%02d');
+                }
+
+                $v.defined
+                        ?? (DateTime.new($v) // unparseable($name, $v, %unparseable, DateTime))
                         !! DateTime
             }
             default {
@@ -393,6 +426,7 @@ role Cro::WebApp::Form {
                     (with $attr.?webapp-form-placeholder { placeholder => $_ }),
                     required => ?$attr.required,
                     type => $control-type,
+                    read-only => $attr.?webapp-form-ro,
                     %properties;
             if %validation-by-control{$name} -> @errors {
                 self!set-control-validation(%control, @errors)
@@ -487,7 +521,18 @@ role Cro::WebApp::Form {
     method !add-current-value(Attribute $attr, %properties? is copy) {
         with $attr.get_value(self) {
             when Date { %properties<value> = .yyyy-mm-dd; }
-            when DateTime { %properties<value> = .Str; }
+
+            when DateTime {
+              # Fractional seconds and Timezone must be dropped for Chrome.
+              my $ts = .Str;
+              say "TS: { $ts }";
+              my $cutoff = $ts.rindex(".") // $ts.rindex("-") // $ts.rindex("+");
+              my $i  = $ts.chars - $cutoff;
+              $ts .= substr(0, * - $i);
+              say "TS-F: { $ts }";
+              %properties<value> = $ts;
+            }
+
             default { %properties<value> = $_; }
         }
         orwith %!unparseable{$attr.name.substr(2)} {
