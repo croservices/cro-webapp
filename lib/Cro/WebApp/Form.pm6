@@ -320,7 +320,7 @@ role Cro::WebApp::Form {
                 %values{$name} := self!parse-one-value($name, $attr.type, get-value($value), %unparseable);
             }
         }
-        given sekf.bless(|%values) -> Cro::WebApp::Form $parsed {
+        given self.bless(|%values) -> Cro::WebApp::Form $parsed {
             for %unparseable.kv -> $input, $value {
                 $parsed.add-unparseable-form-value($input, $value);
             }
