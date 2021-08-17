@@ -1,1 +1,1 @@
-<a href="<&link('home', .id)>">...</a>
+<a href="<&link(.name, .id)>">...</a>
