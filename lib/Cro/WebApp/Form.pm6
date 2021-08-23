@@ -498,9 +498,11 @@ role Cro::WebApp::Form {
                 # Has to become:
                 #  YYYY-MM-DDTHH:MM:SS
                 my $ts = .Str;
-                my $cutoff = $ts.rindex(".") // $ts.rindex("-") // $ts.rindex("+");
-                my $i  = $ts.chars - $cutoff;
-                $ts .= substr(0, * - $i);
+                unless $ts.ends-with('Z') {
+                  my $cutoff = $ts.rindex(".") // $ts.rindex("-") // $ts.rindex("+");
+                  my $i  = $ts.chars - $cutoff;
+                  $ts .= substr(0, * - $i);
+                }
                 %properties<value> = $ts;
             }
 
