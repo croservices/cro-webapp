@@ -209,6 +209,26 @@ use Test;
                 ]
             },
             'Form with DateTime type attribute renders a datetime-local control';
+
+    my $dt = DateTime.now.utc;
+    my $formatted-now = sprintf(
+        '%4d-%02d-%02dT%02d:%02d:%02dZ',
+        .year, .month, .day, .hour, .minute, .second
+    ) given $dt;
+    is-deeply DateTimeForm.new(when => $dt).HTML-RENDER-DATA,
+            {
+                was-validated => False,
+                controls => [
+                    {
+                        type => 'datetime-local',
+                        name => 'when',
+                        label => 'When',
+                        required => True,
+                        value => $formatted-now
+                    },
+                ]
+            },
+            'Form with DateTime.utc type attribute renders a datetime-local control';
 }
 
 {

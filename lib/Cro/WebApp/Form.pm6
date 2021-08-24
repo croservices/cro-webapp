@@ -487,7 +487,27 @@ role Cro::WebApp::Form {
     method !add-current-value(Attribute $attr, %properties? is copy) {
         with $attr.get_value(self) {
             when Date { %properties<value> = .yyyy-mm-dd; }
-            when DateTime { %properties<value> = .Str; }
+
+            when DateTime {
+                # Fractional seconds and Timezone must be dropped for
+                # datetime-local form element, or the value will not be
+                # displayed.
+                #
+                # This means that:
+                #   YYYY-MM-DDTHH:MM:SS.SSS-0000
+                # Has to become:
+                #  YYYY-MM-DDTHH:MM:SS
+                my $ts = .Str;
+                if $ts.ends-with('Z') {
+                    $ts ~~ s/ '.' \d+? 'Z' /Z/;
+                } else {
+                    my $cutoff = $ts.rindex(".") // $ts.rindex("-") // $ts.rindex("+");
+                    my $i  = $ts.chars - $cutoff;
+                    $ts .= substr(0, * - $i);
+                }
+                %properties<value> = $ts;
+            }
+
             default { %properties<value> = $_; }
         }
         orwith %!unparseable{$attr.name.substr(2)} {
