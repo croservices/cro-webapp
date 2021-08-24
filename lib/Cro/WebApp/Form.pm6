@@ -489,21 +489,21 @@ role Cro::WebApp::Form {
             when Date { %properties<value> = .yyyy-mm-dd; }
 
             when DateTime {
-                # Fractional seconds and Timezone must be dropped for
-                # datetime-local form element, or the value will not be
-                # displayed.
-                #
-                # This means that:
-                #   YYYY-MM-DDTHH:MM:SS.SSS-0000
-                # Has to become:
-                #  YYYY-MM-DDTHH:MM:SS
-                my $ts = .Str;
-                unless $ts.ends-with('Z') {
-                  my $cutoff = $ts.rindex(".") // $ts.rindex("-") // $ts.rindex("+");
-                  my $i  = $ts.chars - $cutoff;
-                  $ts .= substr(0, * - $i);
-                }
-                %properties<value> = $ts;
+                  # Fractional seconds and Timezone must be dropped for
+                  # datetime-local form element, or the value will not be
+                  # displayed.
+                  #
+                  # This means that:
+                  #   YYYY-MM-DDTHH:MM:SS.SSS-0000
+                  # Has to become:
+                  #  YYYY-MM-DDTHH:MM:SS
+                  my $ts = .Str;
+                  unless $ts.ends-with('Z') {
+                    my $cutoff = $ts.rindex(".") // $ts.rindex("-") // $ts.rindex("+");
+                    my $i  = $ts.chars - $cutoff;
+                    $ts .= substr(0, * - $i);
+                  }
+                  %properties<value> = $ts;
             }
 
             default { %properties<value> = $_; }
