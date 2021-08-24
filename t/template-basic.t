@@ -57,6 +57,16 @@ is render-template($base.add('topic-3.crotmp'), { elems => 101 }),
     Elems method is 1. Elems key is 101.
     EXPECTED
 
+class WithMethodArgs {
+    method m($x, :$y) {
+        "$x and $y"
+    }
+}
+is render-template($base.add('topic-4.crotmp'), WithMethodArgs.new),
+        q:to/EXPECTED/, 'Can pass args in <.m(...)> form';
+    We have pos and named!
+    EXPECTED
+
 is render-template($base.add('deref-array-1.crotmp'), [1..5]),
         q:to/EXPECTED/, 'Can use <.[0]> and <.[2]> array indexing';
     1 and 3

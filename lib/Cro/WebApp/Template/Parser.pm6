@@ -280,7 +280,7 @@ grammar Cro::WebApp::Template::Parser {
     }
 
     rule expression {
-        <?>
+        <!before ')'>
         [ <term> || <.panic('unrecognized term')> ]
         [ <infix> [ <term> || <.panic('missing or unrecognized term')> ] ]*
     }
@@ -350,7 +350,7 @@ grammar Cro::WebApp::Template::Parser {
 
     proto token deref-item { * }
     token deref-item:sym<method> {
-        <identifier> '(' \s* ')'
+        <identifier> <arglist>
     }
     token deref-item:sym<smart> {
         <.identifier>

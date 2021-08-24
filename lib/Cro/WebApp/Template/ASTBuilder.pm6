@@ -238,7 +238,7 @@ class Cro::WebApp::Template::ASTBuilder {
 
     method deref-item:sym<method>($/) {
         make -> $target {
-            LiteralMethodDeref.new: :$target, symbol => ~$<identifier>
+            LiteralMethodDeref.new: :$target, symbol => ~$<identifier>, arguments => $<arglist>.ast
         }
     }
 
