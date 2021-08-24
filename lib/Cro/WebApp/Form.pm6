@@ -247,6 +247,16 @@ class Cro::WebApp::Form::ValidationState {
     }
 }
 
+#| Thrown when a form containing a file element is rendered with a GET method.
+class X::Cro::WebApp::Form::FileInGET is Exception {
+    has Str $.form    is required;
+    has Str $.element is required;
+
+    method message {
+        "Form '$.form' cannot contain element '$.element' with 'GET' method";
+    }
+}
+
 #| A role to be composed into Cro web application form objects, providing the key form
 #| functionality.
 role Cro::WebApp::Form {
@@ -255,6 +265,9 @@ role Cro::WebApp::Form {
 
     #| Cached rendered data, in case it is asked for multiple times.
     has $!cached-render-data;
+
+    #| The HTTP method for which $!cached-render-data is valid.
+    has $!cached-render-method;
 
     #| Computed validation state.
     has Cro::WebApp::Form::ValidationState $!validation-state;
@@ -374,8 +387,10 @@ role Cro::WebApp::Form {
 
     #| Produce a description of the form and its content for use in rendering
     #| the form to HTML.
-    method HTML-RENDER-DATA(--> Hash) {
-        .return with $!cached-render-data;
+    method HTML-RENDER-DATA(:$method where "get"|"post" = "post" --> Hash) {
+        return $!cached-render-data
+            if $!cached-render-data.defined && $!cached-render-method eq $method;
+
         my @controls;
         my %validation-by-control;
         with $!validation-state {
@@ -386,6 +401,8 @@ role Cro::WebApp::Form {
         for self.^attributes.grep(*.has_accessor) -> Attribute $attr {
             my ($control-type, %properties) = self!calculate-control-type($attr);
             my $name = $attr.name.substr(2);
+            die X::Cro::WebApp::Form::FileInGET.new :form(::?CLASS.^name) :element($name)
+                if $control-type eq 'file' && $method eq 'get';
             my %control =
                     :$name,
                     label => self!calculate-label($attr),
@@ -399,12 +416,13 @@ role Cro::WebApp::Form {
             }
             @controls.push(%control);
         }
-        self!add-csrf-protection(@controls);
+        self!add-csrf-protection(@controls) if $method eq 'post';
         my %enctype = any(self.^attributes.map(*.?webapp-form-type).grep(*.defined)) eq 'file' ?? enctype => "multipart/form-data" !! Empty;
         my %rendered := { :@controls, was-validated => $!validation-state.defined, |%enctype };
         if %validation-by-control{''} -> @errors {
             %rendered<validation-errors> = [@errors.map(*.message)];
         }
+        $!cached-render-method = $method;
         return $!cached-render-data := %rendered;
     }
 

@@ -21,12 +21,12 @@
   </?>
 </:>
 
-<:sub form-errors($_, :$form-errors-class, :$form-errors-text)>
-  <?.HTML-RENDER-DATA.<validation-errors>>
+<:sub form-errors($_, :$form-errors-class, :$form-errors-text, :$method)>
+  <?.HTML-RENDER-DATA(:$method).<validation-errors>>
     <div<&class($form-errors-class)>>
       <?$form-errors-text><$form-errors-text></?>
       <ul>
-        <@HTML-RENDER-DATA.<validation-errors>>
+        <@HTML-RENDER-DATA(:$method).<validation-errors>>
           <li><$_></li>
         </@>
       </ul>
@@ -39,10 +39,10 @@
                :$novalidate, :$was-validated-class, :$is-invalid-class,
                :$invalid-feedback-class, :$form-errors-class, :$form-errors-text,
                :$help-class, :$submit-button-class, :$submit-button-text,
-               :$action, :$name)>
-  <form name="<?$name><$name></?><!$name><.GENERATE-NAME></!>" method="post"<?$action> action="<$action>"</?><?$novalidate> novalidate</?><?{ .<was-validated> && $was-validated-class }> class="<$was-validated-class>"</?><?.HTML-RENDER-DATA.enctype> enctype="<.HTML-RENDER-DATA.enctype>"</?>>
-  <&form-errors($_, :$form-errors-class, :$form-errors-text)>
-  <@HTML-RENDER-DATA.controls>
+               :$action, :$name, :$method = 'post')>
+  <form name="<?$name><$name></?><!$name><.GENERATE-NAME></!>" method="<$method>"<?$action> action="<$action>"</?><?$novalidate> novalidate</?><?{ .<was-validated> && $was-validated-class }> class="<$was-validated-class>"</?><?.HTML-RENDER-DATA(:$method).enctype> enctype="<.HTML-RENDER-DATA(:$method).enctype>"</?>>
+  <&form-errors($_, :$form-errors-class, :$form-errors-text, :$method)>
+  <@HTML-RENDER-DATA(:$method).controls>
     <?{ .type eq 'text' || .type eq 'email' || .type eq 'search' || .type eq 'url' || .type eq 'tel' }>
       <div<&class($input-group-class)>>
         <label for="<.name>"<&class($input-label-class)>><.label></label>
