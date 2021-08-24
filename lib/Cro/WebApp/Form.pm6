@@ -498,7 +498,9 @@ role Cro::WebApp::Form {
                 # Has to become:
                 #  YYYY-MM-DDTHH:MM:SS
                 my $ts = .Str;
-                unless $ts.ends-with('Z') {
+                if $ts.ends-with('Z') {
+                    $ts ~~ / '.' \d+? 'Z' /Z/;
+                } else {
                     my $cutoff = $ts.rindex(".") // $ts.rindex("-") // $ts.rindex("+");
                     my $i  = $ts.chars - $cutoff;
                     $ts .= substr(0, * - $i);
