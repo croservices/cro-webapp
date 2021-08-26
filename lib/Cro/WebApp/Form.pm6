@@ -527,7 +527,7 @@ role Cro::WebApp::Form {
             else {
                 $key = $value = $opt;
             }
-            $value (elem) @current ?? ($key, $value, True) !! ($key, $value)
+            $key (elem) @current ?? ($key, $value, True) !! ($key, $value)
         }]
     }
 
