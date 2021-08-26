@@ -500,6 +500,7 @@ role Cro::WebApp::Form {
                 my $ts = .Str;
                 if $ts.ends-with('Z') {
                     $ts ~~ s/ '.' \d+? 'Z' /Z/;
+                    $ts .= chop if $ts.ends-with('Z');
                 } else {
                     my $cutoff = $ts.rindex(".") // $ts.rindex("-") // $ts.rindex("+");
                     my $i  = $ts.chars - $cutoff;
