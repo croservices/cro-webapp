@@ -318,11 +318,23 @@ my constant %escapes = %(
     "'" => '&apos;',
 );
 
-sub escape-text(Str() $text) {
+proto sub escape-text(|) { * }
+
+multi sub escape-text(Any:U --> Str ) {
+    ''
+}
+
+multi sub escape-text(Str:D() $text) {
     $text.subst(/<[<>&]>/, { %escapes{.Str} }, :g)
 }
 
-sub escape-attribute(Str() $attr) {
+proto sub escape-attribute(|) { * }
+
+multi sub escape-attribute(Any:U --> Str ) {
+    ''
+}
+
+multi sub escape-attribute(Str:D() $attr) {
     $attr.subst(/<[&"']>/, { %escapes{.Str} }, :g)
 }
 
