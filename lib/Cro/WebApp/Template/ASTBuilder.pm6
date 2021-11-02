@@ -1,6 +1,44 @@
 use Cro::WebApp::Template::AST;
 
 class Cro::WebApp::Template::ASTBuilder {
+    my &line-calculator;
+
+    sub calculate-offset-to-lines($str --> Callable) {
+        my @lines = $str.lines;
+        my @start-offsets;
+        my $current-offset = 0;
+        for @lines -> $line {
+            @start-offsets.push: $current-offset;
+            $current-offset += $line.chars + 1;
+            # because newline characters like \r\n or \n
+        }
+        return -> Int $int {
+            my $len = +@start-offsets;
+            my ($min, $max, $pivot) = 0, $len, 0;
+            my $current;
+            while $min < $max {
+                $pivot = floor ($min + $max) / 2;
+                if @start-offsets[$pivot] < $int {
+                    if $pivot < $len - 1 && $int < @start-offsets[$pivot - 1] {
+                        $current = $pivot;
+                        last;
+                    }
+                    $min = $pivot + 1;
+                } elsif @start-offsets[$pivot] > $int {
+                    if $pivot > 0 && $int > @start-offsets[$pivot - 1] {
+                        $current = $pivot - 1;
+                        last;
+                    }
+                    $max = $pivot;
+                } else {
+                    $current = $pivot;
+                    last;
+                }
+            }
+            $current ?? $current + 1 !! $len;
+        }
+    }
+
     method TOP($/) {
         my @prelude;
         unless $*COMPILING-PRELUDE {
@@ -42,12 +80,12 @@ class Cro::WebApp::Template::ASTBuilder {
 
     method sigil-tag:sym<topic>($/) {
         my $derefer = $<deref>.ast;
-        make escape($derefer(VariableAccess.new(name => '$_')));
+        make escape($/, $derefer(VariableAccess.new(name => '$_')), $/.pos);
     }
 
     method sigil-tag:sym<variable>($/) {
         my $derefer = $<deref> ?? $<deref>.ast !! { $_ };
-        make escape($derefer(VariableAccess.new(name => '$' ~ $<identifier>)));
+        make escape($/, $derefer(VariableAccess.new(name => '$' ~ $<identifier>)), $/.pos);
     }
 
     method sigil-tag:sym<iteration>($/) {
@@ -297,9 +335,12 @@ class Cro::WebApp::Template::ASTBuilder {
         return @squashed;
     }
 
-    sub escape($target) {
+    sub escape($/, $target, $pos) {
+        without &line-calculator {
+            &line-calculator = calculate-offset-to-lines($/.orig);
+        }
         $*IN-ATTRIBUTE
-            ?? EscapeAttribute.new(:$target)
-            !! EscapeText.new(:$target)
+            ?? EscapeAttribute.new(:$target, filename => $*TEMPLATE-FILE, line => &line-calculator($pos))
+            !! EscapeText.new(:$target, filename => $*TEMPLATE-FILE, line => &line-calculator($pos))
     }
 }

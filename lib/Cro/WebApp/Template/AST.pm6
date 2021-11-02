@@ -13,6 +13,9 @@ my role ContainerNode does Node {
 }
 
 my class Template does ContainerNode is export {
+    has Str $.filename;
+    has Int $.start-offset;
+
     method compile() {
         my $*IN-SUB = False;
         my $children-compiled = @!children.map(*.compile).join(", ");
@@ -296,17 +299,21 @@ my class Expression does Node is export {
 
 my class EscapeText does Node is export {
     has Node $.target;
+    has $.filename;
+    has $.line;
 
     method compile() {
-        'escape-text(' ~ $!target.compile() ~ ')'
+        'escape-text(' ~ $!target.compile() ~ ", '$!filename.Str()', $!line)"
     }
 }
 
 my class EscapeAttribute does Node is export {
     has Node $.target;
+    has $.filename;
+    has $.line;
 
     method compile() {
-        'escape-attribute(' ~ $!target.compile() ~ ')'
+        'escape-attribute(' ~ $!target.compile() ~ ", '$!filename.Str()', $!line)"
     }
 }
 
@@ -318,11 +325,21 @@ my constant %escapes = %(
     "'" => '&apos;',
 );
 
-sub escape-text(Str() $text) {
+multi escape-text(Nil $text, $file, $line) {
+    warn "An expression at $file:$line compiled into Nil";
+    ''
+}
+
+multi escape-text(Str() $text, *@_) {
     $text.subst(/<[<>&]>/, { %escapes{.Str} }, :g)
 }
 
-sub escape-attribute(Str() $attr) {
+multi escape-attribute(Nil $text, $file, $line) {
+    warn "An expression at $file:$line compiled into Nil";
+    ''
+}
+
+multi escape-attribute(Str() $attr, *@_) {
     $attr.subst(/<[&"']>/, { %escapes{.Str} }, :g)
 }
 
