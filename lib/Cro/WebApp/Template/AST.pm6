@@ -296,19 +296,21 @@ my class Expression does Node is export {
 
 my class EscapeText does Node is export {
     has Node $.target;
-    has $.line;
+    has Mu $.filename;
+    has Mu $.line;
 
     method compile() {
-        'escape-text(' ~ $!target.compile() ~ ", $!line)"
+        'escape-text(' ~ $!target.compile() ~ ", '$!filename.Str()', $!line)";
     }
 }
 
 my class EscapeAttribute does Node is export {
     has Node $.target;
-    has $.line;
+    has Mu $.filename;
+    has Mu $.line;
 
     method compile() {
-        'escape-attribute(' ~ $!target.compile() ~ ", $!line)"
+        'escape-attribute(' ~ $!target.compile() ~ ", '$!filename.Str()', $!line)";
     }
 }
 
@@ -320,23 +322,21 @@ my constant %escapes = %(
     "'" => '&apos;',
 );
 
-multi escape-text(Nil $, $line) {
-    my $file = $*TEMPLATE-FILE;
-    %*WARNINGS{"An expression at $file:$line evaluated to Nil"}++;
+multi escape-text(Mu:U $t, Mu $file, Mu $line) {
+    %*WARNINGS{"An expression at $file:$line evaluated to $t.^name()"}++;
     ''
 }
 
-multi escape-text(Str() $text, $) {
+multi escape-text(Str(Mu:D) $text, Mu $, Mu $) {
     $text.subst(/<[<>&]>/, { %escapes{.Str} }, :g)
 }
 
-multi escape-attribute(Nil $, $line) {
-    my $file = $*TEMPLATE-FILE;
-    %*WARNINGS{"An expression at $file:$line evaluted to Nil"}++;
+multi escape-attribute(Mu:U $t, Mu $file, Mu $line) {
+    %*WARNINGS{"An expression at $file:$line evaluted to $t.^name()"}++;
     ''
 }
 
-multi escape-attribute(Str() $attr, $) {
+multi escape-attribute(Str(Mu:D) $attr, Mu $, Mu $) {
     $attr.subst(/<[&"']>/, { %escapes{.Str} }, :g)
 }
 

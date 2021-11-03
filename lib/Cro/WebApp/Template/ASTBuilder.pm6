@@ -9,11 +9,10 @@ class Cro::WebApp::Template::ASTBuilder {
         my $current-offset = 0;
         for @lines -> $line {
             @start-offsets.push: $current-offset;
-            $current-offset += $line.chars + 1;
-            # because newline characters like \r\n or \n
+            $current-offset += $line.chars + 1; # +1 because of newline characters like \r\n or \n
         }
+        my $len = +@start-offsets;
         return -> Int $int {
-            my $len = +@start-offsets;
             my ($min, $max, $pivot) = 0, $len, 0;
             my $current;
             while $min < $max {
@@ -336,11 +335,9 @@ class Cro::WebApp::Template::ASTBuilder {
     }
 
     sub escape($/, $target, $pos) {
-        without &line-calculator {
-            &line-calculator = calculate-offset-to-lines($/.orig);
-        }
+        &line-calculator //= calculate-offset-to-lines($/.orig);
         $*IN-ATTRIBUTE
-            ?? EscapeAttribute.new(:$target, line => &line-calculator($pos))
-            !! EscapeText.new(:$target, line => &line-calculator($pos))
+            ?? EscapeAttribute.new(:$target, filename => $*TEMPLATE-FILE, line => &line-calculator($pos))
+            !! EscapeText.new(:$target, filename => $*TEMPLATE-FILE, line => &line-calculator($pos))
     }
 }
