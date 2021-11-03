@@ -21,7 +21,7 @@ my $template-part-plugin = router-plugin-register("template-part");
 multi render-template(IO::Path $template-path, $initial-topic, :%parts --> Str) is export {
     my $compiled-template = await get-template-repository.resolve-absolute($template-path.absolute);
     Cro::WebApp::LogTimeline::RenderTemplate.log: :template($template-path), {
-        render-internal($compiled-template, $initial-topic, %parts)
+        render-internal($template-path, $compiled-template, $initial-topic, %parts)
     }
 }
 
@@ -57,13 +57,14 @@ multi render-template(Str $template, $initial-topic, :%parts --> Str) is export 
 
     # Finally, render it.
     Cro::WebApp::LogTimeline::RenderTemplate.log: :$template, {
-        render-internal($compiled-template, $initial-topic, %parts)
+        render-internal($template, $compiled-template, $initial-topic, %parts)
     }
 }
 
-sub render-internal($compiled-template, $initial-topic, %parts) {
+sub render-internal($template, $compiled-template, $initial-topic, %parts) {
     my $*CRO-TEMPLATE-MAIN-PART := $initial-topic;
     my %*CRO-TEMPLATE-EXPLICIT-PARTS := %parts;
+    my $*TEMPLATE-FILE = $template;
     $compiled-template.render($initial-topic)
 }
 

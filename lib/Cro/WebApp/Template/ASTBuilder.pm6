@@ -340,7 +340,7 @@ class Cro::WebApp::Template::ASTBuilder {
             &line-calculator = calculate-offset-to-lines($/.orig);
         }
         $*IN-ATTRIBUTE
-            ?? EscapeAttribute.new(:$target, filename => $*TEMPLATE-FILE, line => &line-calculator($pos))
-            !! EscapeText.new(:$target, filename => $*TEMPLATE-FILE, line => &line-calculator($pos))
+            ?? EscapeAttribute.new(:$target, line => &line-calculator($pos))
+            !! EscapeText.new(:$target, line => &line-calculator($pos))
     }
 }
