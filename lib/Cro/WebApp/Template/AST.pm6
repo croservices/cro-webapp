@@ -322,7 +322,7 @@ my constant %escapes = %(
 
 multi escape-text(Nil $, $line) {
     my $file = $*TEMPLATE-FILE;
-    %*WARNINGS{"An expression at $file:$line compiled into Nil"}++;
+    %*WARNINGS{"An expression at $file:$line evaluated to Nil"}++;
     ''
 }
 
@@ -332,7 +332,7 @@ multi escape-text(Str() $text, $) {
 
 multi escape-attribute(Nil $, $line) {
     my $file = $*TEMPLATE-FILE;
-    %*WARNINGS{"An expression at $file:$line compiled into Nil"}++;
+    %*WARNINGS{"An expression at $file:$line evaluted to Nil"}++;
     ''
 }
 
