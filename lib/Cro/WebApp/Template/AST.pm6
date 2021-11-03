@@ -322,7 +322,7 @@ my constant %escapes = %(
 
 multi escape-text(Nil $, $line) {
     my $file = $*TEMPLATE-FILE;
-    warn "An expression at $file:$line compiled into Nil";
+    %*WARNINGS{"An expression at $file:$line compiled into Nil"}++;
     ''
 }
 
@@ -330,9 +330,9 @@ multi escape-text(Str() $text, $) {
     $text.subst(/<[<>&]>/, { %escapes{.Str} }, :g)
 }
 
-multi escape-attribute(Nil $text, $line) {
+multi escape-attribute(Nil $, $line) {
     my $file = $*TEMPLATE-FILE;
-    warn "An expression at $file:$line compiled into Nil";
+    %*WARNINGS{"An expression at $file:$line compiled into Nil"}++;
     ''
 }
 
