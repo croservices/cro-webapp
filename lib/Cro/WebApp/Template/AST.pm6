@@ -327,8 +327,8 @@ multi escape-text(Mu:U $t, Mu $file, Mu $line) {
     ''
 }
 
-multi escape-text(Str(Mu:D) $text, Mu $, Mu $) {
-    $text.subst(/<[<>&]>/, { %escapes{.Str} }, :g)
+multi escape-text(Mu:D $text, Mu $, Mu $) {
+    $text.Str.subst(/<[<>&]>/, { %escapes{.Str} }, :g)
 }
 
 multi escape-attribute(Mu:U $t, Mu $file, Mu $line) {
@@ -336,8 +336,8 @@ multi escape-attribute(Mu:U $t, Mu $file, Mu $line) {
     ''
 }
 
-multi escape-attribute(Str(Mu:D) $attr, Mu $, Mu $) {
-    $attr.subst(/<[&"']>/, { %escapes{.Str} }, :g)
+multi escape-attribute(Mu:D $attr, Mu $, Mu $) {
+    $attr.Str.subst(/<[&"']>/, { %escapes{.Str} }, :g)
 }
 
 sub template-part-args(Str $name) {
