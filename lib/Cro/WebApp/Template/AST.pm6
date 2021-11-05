@@ -120,14 +120,22 @@ my class HashKeyDeref does Node is export {
     }
 }
 
+my class Separator does ContainerNode is export {
+    method compile() {
+        '(' ~ @!children.map(*.compile).join(", ") ~ ').join'
+    }
+}
+
 my class Iteration does ContainerNode is export {
     has Node $.target is required;
+    has Separator $.separator;
     has $.iteration-variable;
 
     method compile() {
         my $variable = $!iteration-variable.?name // '$_';
         my $children-compiled = @!children.map(*.compile).join(", ");
-        '(' ~ $!target.compile ~ ').map(-> ' ~ $variable  ~ ' { join "", (' ~ $children-compiled ~ ') }).join'
+        '(' ~ $!target.compile ~ ').map(-> ' ~ $variable  ~ ' { join "", (' ~ $children-compiled ~ ') }).join' ~
+                ($!separator ?? '(' ~ $!separator.compile() ~ ')' !! '')
     }
 }
 
@@ -311,6 +319,12 @@ my class EscapeAttribute does Node is export {
 
     method compile() {
         'escape-attribute(' ~ $!target.compile() ~ ", '$!filename.Str()', $!line)";
+    }
+}
+
+my class Nothing does Node is export {
+    method compile() {
+        "''"
     }
 }
 

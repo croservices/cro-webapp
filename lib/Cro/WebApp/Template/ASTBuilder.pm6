@@ -95,10 +95,18 @@ class Cro::WebApp::Template::ASTBuilder {
         }
         my $iteration-variable = $<iteration-variable>.ast;
         make Iteration.new:
-            :$target,  :$iteration-variable,
+            :$target,  :$iteration-variable, :separator($*SEPARATOR // Separator),
             children => flatten-literals($<sequence-element>.map(*.ast),
                 :trim-trailing-horizontal($*lone-end-line)),
             trim-trailing-horizontal-before => $*lone-start-line;
+    }
+
+    method sigil-tag:sym<separator>($/) {
+        $*SEPARATOR = Separator.new:
+                children => flatten-literals($<sequence-element>.map(*.ast),
+                        :trim-trailing-horizontal($*lone-end-line)),
+                trim-trailing-horizontal-before => $*lone-start-line;
+        make Nothing.new;
     }
 
     method sigil-tag:sym<condition>($/) {
