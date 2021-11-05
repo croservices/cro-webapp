@@ -64,7 +64,14 @@ multi render-template(Str $template, $initial-topic, :%parts --> Str) is export 
 sub render-internal($compiled-template, $initial-topic, %parts) {
     my $*CRO-TEMPLATE-MAIN-PART := $initial-topic;
     my %*CRO-TEMPLATE-EXPLICIT-PARTS := %parts;
-    $compiled-template.render($initial-topic)
+    my %*WARNINGS;
+    my $result = $compiled-template.render($initial-topic);
+    if %*WARNINGS {
+        for %*WARNINGS.kv -> $text, $number {
+            warn "$text ($number time{ $number == 1 ?? '' !! 's' })";
+        }
+    }
+    $result;
 }
 
 #| Add a file system path to search for templates. This will be used by both the
