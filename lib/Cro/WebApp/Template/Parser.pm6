@@ -25,7 +25,7 @@ grammar Cro::WebApp::Template::Parser {
         [ $ || <.panic: 'confused'> ]
     }
 
-    proto token sequence-element { * }
+    proto token sequence-element($*TAG-CONTEXT = '') { * }
 
     token sequence-element:sym<sigil-tag> {
         <sigil-tag>
@@ -75,6 +75,7 @@ grammar Cro::WebApp::Template::Parser {
     }
 
     token sigil-tag:sym<iteration> {
+        :my $*SEPARATOR;
         :my $opener = $¢.clone;
         :my $*lone-start-line = False;
         '<@'
@@ -91,13 +92,43 @@ grammar Cro::WebApp::Template::Parser {
         ]
         [ <?{ $*lone-start-line }> [ \h* \n | { $*lone-start-line = False } ] ]?
 
-        <sequence-element>*
+        <sequence-element('iteration')>*
 
         :my $*lone-end-line = False;
         [ '</@' || { $opener.unclosed('iteration tag') } ]
         [ <?after \n \h* '</@'> { $*lone-end-line = True } ]?
         <close-ident=.ident>?
         [ \h* '>' || <.malformed: 'iteration closing tag'> ]
+        [ <?{ $*lone-end-line }> [ \h* \n | { $*lone-end-line = False } ] ]?
+    }
+
+    token sigil-tag:sym<separator> {
+        :my $opener = $¢.clone;
+        :my $*lone-start-line = False;
+        '<:separator'
+        [ <?after [^ | $ | \n] \h* '<:separator'> { $*lone-start-line = True } ]?
+        \h*
+        [
+        || '>'
+        || <.malformed: 'separator tag'>
+        ]
+        [ <?{ $*lone-start-line }> [ \h* \n | { $*lone-start-line = False } ] ]?
+
+        [
+        || <?{ $*TAG-CONTEXT eq 'iteration' }>
+        || <.panic('separator may only appear inside of an iteration')>
+        ]
+        [
+        || <!{ $*SEPARATOR }>
+        || <.panic('separator for this iteration already defined')>
+        ]
+
+        <sequence-element>*
+
+        :my $*lone-end-line = False;
+        [ '</:' || { $opener.unclosed('separator tag') } ]
+        [ <?after \n \h* '</:'> { $*lone-end-line = True } ]?
+        [ 'separator'? \h* '>' || <.malformed: 'separator closing tag'> ]
         [ <?{ $*lone-end-line }> [ \h* \n | { $*lone-end-line = False } ] ]?
     }
 

@@ -2,6 +2,7 @@ use Cro::WebApp::Template;
 use Test;
 
 my constant $base = $*PROGRAM.parent.add('test-data');
+my constant $error-base = $*PROGRAM.parent.add('error-data');
 
 is norm-ws(render-template($base.add('iteration-2.crotmp'), %{ countries => [
                 { name => 'Argentina', alpha2 => 'AR' },
@@ -56,5 +57,22 @@ is norm-ws(render-template($base.add('iteration-5.crotmp'), %{ countries => [
         <option value="CZ">Czech Republic</option>
     </select>
     EXPECTED
+
+is norm-ws(render-template($base.add('iteration-6.crotmp'), { :things['foo', 'bar', 'baz'] })),
+        norm-ws(q:to/EXPECTED/), 'Separator syntax works';
+    foo
+    <hr>
+    bar
+    <hr>
+    baz
+    EXPECTED
+
+throws-like { render-template($error-base.add('misplaced-separator.crotmp'), {}) },
+        X::Cro::WebApp::Template::SyntaxError,
+        'Can only use separator inside of iteration';
+
+throws-like { render-template($error-base.add('duplicate-separator.crotmp'), {}) },
+        X::Cro::WebApp::Template::SyntaxError,
+        'Can only have one separator';
 
 done-testing;
