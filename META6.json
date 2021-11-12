@@ -1,13 +1,13 @@
 {
   "name": "Cro::WebApp",
   "description": "Support for building server-side web applications with Cro, including templates and form handling.",
-  "version": "0.8.6",
+  "version": "0.8.7",
   "perl": "6.*",
   "authors": [
     "Jonathan Worthington <jnthn@jnthn.net>"
   ],
   "depends": [
-    "Cro::HTTP:ver<0.8.6>",
+    "Cro::HTTP:ver<0.8.7>",
     "Log::Timeline",
     "OO::Monitors"
   ],
