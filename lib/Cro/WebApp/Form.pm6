@@ -1,9 +1,11 @@
 use Cro::HTTP::Body;
 use Cro::HTTP::MultiValue;
+use Cro::WebApp::I18N;
 
 #| A role to be mixed in to Attribute to hold extra form-related properties.
 my role FormProperties {
     has $.webapp-form-label is rw;
+    has $.webapp-form-i18n-label is rw;
     has $.webapp-form-placeholder is rw;
     has $.webapp-form-help is rw;
     has Str $.webapp-form-type is rw;
@@ -28,6 +30,12 @@ sub ensure-attr-state(Attribute $attr --> Nil) {
 multi trait_mod:<is>(Attribute:D $attr, :$label! --> Nil) is export {
     ensure-attr-state($attr);
     $attr.webapp-form-label = $label;
+}
+
+#| Set the i18n key to be used for this attribute (falls back to label).
+multi trait_mod:<is>(Attribute:D $attr, :$i18n-label! --> Nil) is export {
+    ensure-attr-state($attr);
+    $attr.webapp-form-i18n-label = $i18n-label;
 }
 
 #| Provide placeholder text for a form field.
@@ -559,7 +567,7 @@ role Cro::WebApp::Form {
     }
 
     method !calculate-label($attr) {
-        with $attr.?webapp-form-label {
+        my $label = do with $attr.?webapp-form-label {
             # Explicitly provided label
             $_
         }
@@ -568,6 +576,12 @@ role Cro::WebApp::Form {
             my @words = $attr.name.substr(2).split('-');
             @words[0] .= tclc;
             @words.join(' ')
+        }
+
+        with $attr.?webapp-form-i18n-label {
+            _($_, prefix => self.i18n-prefix, default => $label)
+        } else {
+            $label
         }
     }
 
@@ -785,6 +799,9 @@ role Cro::WebApp::Form {
     method add-validation-error($message --> Nil) {
         $!validation-state.add-custom-error($message);
     }
+
+    #| Defines the prefix to use for translations using this form
+    method i18n-prefix(--> Str) { Str:U }
 }
 
 #| Take the submitted data in the request body and parse it into a form object of
