@@ -138,6 +138,16 @@ is render-template($base.add('conditional-1.crotmp'), { foo => True, bar => True
     This is also always here.
     EXPECTED
 
+is render-template($base.add('conditional-tag.crotmp'), { website => 'https://raku.org/' }),
+        q:to/EXPECTED/, 'Conditional with tag part (true)';
+    <a href="https://raku.org/">Click to visit</a>
+    EXPECTED
+
+is render-template($base.add('conditional-tag.crotmp'), { website => Nil }).trim,
+        q:to/EXPECTED/.trim, 'Conditional with tag part (false)';
+    <span>No website</span>
+    EXPECTED
+
 is render-template($base.add('sub-1.crotmp'), {}),
         q:to/EXPECTED/, 'Basic no-argument sub works';
       <header>
