@@ -85,11 +85,9 @@ grammar Cro::WebApp::Template::Parser {
         | $<variable>=['$' <.identifier>] ['.' <deref>]?
         || <.malformed: 'iteration tag'>
         ]
-        \h*
-        [
-        ||  [':' \h* <iteration-variable=.parameter(:!allow-named, :!allow-default)>]? \h* '>'
-        || <.malformed('iteration tag')>
-        ]
+        [\h* ':' \h* <iteration-variable=.parameter(:!allow-named, :!allow-default)>]?
+        [ \h+ <structural-tag> ]?
+        [ \h* '>' || <.malformed: 'iteration tag'> ]
         [ <?{ $*lone-start-line }> [ \h* \n | { $*lone-start-line = False } ] ]?
 
         <sequence-element('iteration')>*

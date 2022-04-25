@@ -96,7 +96,7 @@ class Cro::WebApp::Template::ASTBuilder {
         my $iteration-variable = $<iteration-variable>.ast;
         make Iteration.new:
             :$target,  :$iteration-variable, :separator($*SEPARATOR // Separator),
-            children => flatten-literals($<sequence-element>.map(*.ast),
+            children => flatten-literals(add-structural-tag($/, $<sequence-element>.map(*.ast)),
                 :trim-trailing-horizontal($*lone-end-line)),
             trim-trailing-horizontal-before => $*lone-start-line;
     }
