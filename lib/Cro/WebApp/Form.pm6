@@ -1,5 +1,6 @@
 use Cro::HTTP::Body;
 use Cro::HTTP::MultiValue;
+use Cro::WebApp::Form::Component;
 
 #| A role to be mixed in to Attribute to hold extra form-related properties.
 my role FormProperties {
@@ -14,6 +15,7 @@ my role FormProperties {
     has Real $.webapp-form-min is rw;
     has Real $.webapp-form-max is rw;
     has List @.webapp-form-validations;
+    has Cro::WebApp::Form::Component $.webapp-form-component is rw;
 }
 
 #| Ensure that the attribute has the FormProperties mixin.
@@ -135,6 +137,13 @@ multi trait_mod:<is>(Attribute:D $attr, :$multiline! --> Nil) is export {
         die "Unknown option '$_' for multiline trait on attribute '$attr.name()'";
     }
     $attr.webapp-form-multiline = %multiline;
+}
+
+#| Indicate that this is form control with a custom component.
+multi trait_mod:<is>(Attribute:D $attr, Cro::WebApp::Form::Component :$component! --> Nil) is export {
+    ensure-attr-state($attr);
+    $attr.webapp-form-type = 'custom';
+    $attr.webapp-form-component = $component;
 }
 
 #| Set the minimum length of an input field
@@ -436,6 +445,12 @@ role Cro::WebApp::Form {
             when 'email' | 'search' | 'tel' | 'url' | 'password' {
                 ensure-acceptable-type($attr);
                 return self!calculate-text-control-type($attr, $_);
+            }
+            when 'custom' {
+                return $_, %(
+                    custom-component => $attr.webapp-form-component,
+                    custom-data => Cro::WebApp::Form::Component::Data
+                );
             }
             default {
                 ensure-acceptable-type($attr);

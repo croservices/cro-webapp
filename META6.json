@@ -15,6 +15,7 @@
   "test-depends": [],
   "provides": {
     "Cro::WebApp::Form": "lib/Cro/WebApp/Form.pm6",
+    "Cro::WebApp::Form::Component": "lib/Cro/WebApp/Form/Component.rakumod",
     "Cro::WebApp::LogTimelineSchema": "lib/Cro/WebApp/LogTimelineSchema.pm6",
     "Cro::WebApp::Template": "lib/Cro/WebApp/Template.pm6",
     "Cro::WebApp::Template::AST": "lib/Cro/WebApp/Template/AST.pm6",

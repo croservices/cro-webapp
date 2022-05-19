@@ -114,6 +114,18 @@
     <?{ .type eq 'hidden' }>
       <input type="hidden" name="<.name>" id="<.name>"<?.<value>.defined()> value="<.value>"</?>>
     </?>
+    <?{ .type eq 'custom' }>
+      <?{ .<custom-component>.default-wrapper() }>
+        <div<&class($input-group-class)>>
+          <label for="<.name>"<&class($input-label-class)>><.label></label>
+      </?>
+      <&HTML-AND-JAVASCRIPT(.<custom-component>.render(.<custom-data>.new(:name(.name), :value(.value))))>
+      <?{ .<custom-component>.default-wrapper() }>
+          <&control-help($_, :$help-class)>
+          <&control-validation-message($_, :$invalid-feedback-class)>
+        </div>
+      </?>
+    </?>
   </@>
   <button type="submit"<&class($submit-button-class)>>
     <?$submit-button-text><$submit-button-text></?><!$submit-button-text>Save</!>
