@@ -316,9 +316,21 @@ role Cro::WebApp::Form {
         my %unparseable;
         for self.^attributes.grep(*.has_accessor) -> Attribute $attr {
             my $name = $attr.name.substr(2);
+            my $type = $attr.type;
             my $value := %form-data{$name};
-            if $attr.type ~~ Positional {
-                my $value-type = $attr.type.of;
+            if ($attr.?webapp-form-type // '') eq 'custom' {
+                with $value {
+                    my $parsed = $attr.webapp-form-component.parse-value($value, $type);
+                    if $parsed ~~ Failure {
+                        %unparseable{$name} = $value;
+                    }
+                    else {
+                        %values{$name} = $parsed;
+                    }
+                }
+            }
+            elsif $attr.type ~~ Positional {
+                my $value-type = $type.of;
                 my @values := $value ~~ Cro::HTTP::MultiValue ?? $value.list !!
                         $value.defined ?? (get-value($value),) !! ();
                 %values{$name} := @values.map({ self!parse-one-value($name, $value-type, $_, %unparseable) }).list;
@@ -331,7 +343,7 @@ role Cro::WebApp::Form {
                     %values{$name} = Nil;
                 }
             } else {
-                %values{$name} := self!parse-one-value($name, $attr.type, get-value($value), %unparseable);
+                %values{$name} := self!parse-one-value($name, $type, get-value($value), %unparseable);
             }
         }
         given self.bless(|%values) -> Cro::WebApp::Form $parsed {
@@ -447,10 +459,17 @@ role Cro::WebApp::Form {
                 return self!calculate-text-control-type($attr, $_);
             }
             when 'custom' {
-                return $_, %(
-                    custom-component => $attr.webapp-form-component,
-                    custom-data => Cro::WebApp::Form::Component::Data
-                );
+                my %props = custom-component => $attr.webapp-form-component,
+                           custom-data => Cro::WebApp::Form::Component::Data;
+                my $attr-value = $attr.get_value(self);
+                my $unparseable-value = %!unparseable{$attr.name.substr(2)};
+                if $unparseable-value && !$attr-value {
+                    %props<value> = $unparseable-value;
+                }
+                orwith $attr-value {
+                    %props<value> = $attr.webapp-form-component.serialize-value($_);
+                }
+                return $_, %props;
             }
             default {
                 ensure-acceptable-type($attr);

@@ -43,4 +43,21 @@ role Cro::WebApp::Form::Component {
             die "Custom form component template for {self.^name} has no render function";
         }
     }
+
+    #| Parse a value sent to the form into the specified data type (which is the declared
+    #| type of the attribute on the class defining the form). If the value cannot be
+    #| parsed, return a Failure, which will mark the value as unparseable. Only die if
+    #| there is an implementation error rather than the input data being malformed.
+    method parse-value(Str $value, Mu:U $type) {
+        $type ~~ Str
+                ?? $value
+                !! die "Custom form component {self.^name} cannot parse into a {$type.^name}; override parse-value"
+    }
+
+    #| Serialize a value into a Str, which will be used in the form rendering.
+    method serialize-value(Mu $value --> Str) {
+        $value ~~ Str
+            ?? $value
+            !! die  "Custom form component {self.^name} cannot serialize a {$value.^name}; override serialize-value"
+    }
 }
