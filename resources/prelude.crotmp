@@ -119,7 +119,12 @@
         <div<&class($input-group-class)>>
           <label for="<.name>"<&class($input-label-class)>><.label></label>
       </?>
-      <&HTML-AND-JAVASCRIPT(.<custom-component>.render(.<custom-data>.new(:name(.name), :value(.value))))>
+      <&HTML-AND-JAVASCRIPT(.<custom-component>.render(.<custom-data>.new(
+          :name(.<name>), :label(.<label>), :help(.<help>), :validation-errors(.<validation-errors>), :value(.<value>),
+          :input-group-class($input-group-class), :input-label-class($input-label-class),
+          :help-class($help-class), :input-control-class($input-control-class),
+          :invalid-feedback-class($invalid-feedback-class), :is-invalid-class($is-invalid-class)
+      )))>
       <?{ .<custom-component>.default-wrapper() }>
           <&control-help($_, :$help-class)>
           <&control-validation-message($_, :$invalid-feedback-class)>

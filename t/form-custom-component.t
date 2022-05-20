@@ -33,7 +33,7 @@ use Test;
         is-deeply .<custom-data>, Cro::WebApp::Form::Component::Data, 'Also given component data type object';
 
         my Str $rendered;
-        lives-ok { $rendered = .<custom-component>.render(.<custom-data>.new(:name('test'), :value('v'))) },
+        lives-ok { $rendered = .<custom-component>.render(.<custom-data>.new(:name('test'), :label('Test'), :value('v'))) },
                 'Can render template component';
         ok $rendered.contains('<input type="text" name="test" value="v">'),
                 'Rendered as expected';

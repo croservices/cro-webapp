@@ -7,8 +7,35 @@ class Cro::WebApp::Form::Component::Data {
     #| The name of the control.
     has Str $.name is required;
 
+    #| The label of the control.
+    has Str $.label is required;
+
+    #| Help message for the control, if any.
+    has $.help;
+
+    #| Validation errors, if any.
+    has @.validation-errors;
+
     #| The current value of the control, if any.
     has $.value;
+
+    #| The CSS class for input groups, if any.
+    has $.input-group-class;
+
+    #| The CSS class for labels, if any.
+    has $.input-label-class;
+
+    #| The CSS class for help messages, if any.
+    has $.help-class;
+
+    #| The CSS class for validation errors against a particular component, if any..
+    has $.invalid-feedback-class;
+
+    #| The CSS class for controls that are invalid, if any..
+    has $.is-invalid-class;
+
+    #| The CSS class for an input control, if any..
+    has $.input-control-class;
 }
 
 #| The base role of all custom form components.
