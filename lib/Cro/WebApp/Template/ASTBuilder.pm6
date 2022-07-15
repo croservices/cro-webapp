@@ -188,8 +188,8 @@ class Cro::WebApp::Template::ASTBuilder {
     method sigil-tag:sym<use>($/) {
         with $<file> {
             my $template-name = .ast;
-            my $used = await $*TEMPLATE-REPOSITORY.resolve($template-name);
-            make UseFile.new: :$template-name,
+            my $used = await $*TEMPLATE-REPOSITORY.resolve($template-name, @*TEMPLATE-LOCATIONS);
+            make UseFile.new: :path($used.path),
                     exported-subs => $used.exports<sub>.keys,
                     exported-macros => $used.exports<macro>.keys;
         }

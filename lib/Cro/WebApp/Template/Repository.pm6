@@ -17,6 +17,9 @@ class Cro::WebApp::Template::Compiled is implementation-detail {
     #| The repository that compiled this template.
     has $.repository;
 
+    #| The source file for the template, if available.
+    has IO::Path $.path;
+
     # Implementation details.
     has &.renderer;
     has %.exports;
@@ -44,7 +47,7 @@ role Cro::WebApp::Template::Repository {
 
     #| Resolve an absolute path into a C<Promise> that will be kept with a
     #| C<Cro::WebApp::Template::Compiled>.
-    method resolve-absolute(IO() $abs-path --> Promise) { ... }
+    method resolve-absolute(IO() $abs-path, :@locations --> Promise) { ... }
 
     #| Resolve the template prelude, which contains various built-ins.
     method resolve-prelude(--> Promise) is implementation-detail {
@@ -69,24 +72,24 @@ monitor Cro::WebApp::Template::Repository::FileSystem does Cro::WebApp::Template
     method resolve(Str $template-name, Cro::WebApp::Template::Location @locations? --> Promise) {
         for @locations {
             with .try-resolve($template-name) {
-                return self.resolve-absolute($_);
+                return self.resolve-absolute($_, :@locations);
             }
         }
         for @!global-search-paths {
             my $path = .add($template-name);
-            return self.resolve-absolute($path) if $path.f;
+            return self.resolve-absolute($path, :@locations) if $path.f;
         }
         die X::Cro::WebApp::Template::NotFound.new(:$template-name);
     }
 
     #| Loads a template from an absolute path, and caches the compilation of
     #| that template for future requests.
-    method resolve-absolute(IO() $abs-path --> Promise) {
+    method resolve-absolute(IO() $abs-path, :@locations --> Promise) {
         with %!abs-path-to-compiled{$abs-path} {
             $_
         }
         else {
-            %!abs-path-to-compiled{$abs-path} = start load-template($abs-path);
+            %!abs-path-to-compiled{$abs-path} = start load-template($abs-path, :@locations);
         }
     }
 
@@ -111,7 +114,7 @@ monitor Cro::WebApp::Template::Repository::FileSystem::Reloading is Cro::WebApp:
     #| Loads a template from an absolute path. If the file at that path didn't
     #| change since the last template compilation, then the cached compilation of
     #| the template is returned. Otherwise, it is recompiled.
-    method resolve-absolute(IO() $abs-path --> Promise) {
+    method resolve-absolute(IO() $abs-path, :@locations --> Promise) {
         my $modified = $abs-path.IO.modified;
         if (%!abs-path-to-mtime{$abs-path} // 0) != $modified {
             self.refresh($abs-path)
@@ -138,24 +141,26 @@ sub set-template-repository(Cro::WebApp::Template::Repository $repository --> Ni
     $template-repo = $repository;
 }
 
-#| Load a template from the given C<IO>. Currently considered an experimental API.
-sub load-template(IO() $abs-path --> Cro::WebApp::Template::Compiled) is export {
+#| Load a template from the given C<IO>.
+sub load-template(IO() $abs-path, :@locations --> Cro::WebApp::Template::Compiled) is export {
     Cro::WebApp::LogTimeline::CompileTemplate.log: :template($abs-path.relative), {
         my $*TEMPLATE-REPOSITORY = $template-repo;
-        my $source = $abs-path.slurp;
+        my Cro::WebApp::Template::Location @*TEMPLATE-LOCATIONS = @locations;
         my $*TEMPLATE-FILE = $abs-path;
+        my $source = $abs-path.slurp;
         my $ast = Cro::WebApp::Template::Parser.parse($source, actions => Cro::WebApp::Template::ASTBuilder).ast;
-        Cro::WebApp::Template::Compiled.new(|$ast.compile, repository => $template-repo)
+        Cro::WebApp::Template::Compiled.new(|$ast.compile, repository => $template-repo, :path($abs-path))
     }
 }
 
 #| Parse a template from a source string. An optional path may be passed for
 #| use in error reporting.
-sub parse-template(Str $source, IO() :$path = 'anon'.IO --> Cro::WebApp::Template::Compiled) is export {
+sub parse-template(Str $source, IO() :$path = 'anon'.IO, :@locations --> Cro::WebApp::Template::Compiled) is export {
     Cro::WebApp::LogTimeline::CompileTemplate.log: :template($path.relative), {
         my $*TEMPLATE-REPOSITORY = $template-repo;
+        my Cro::WebApp::Template::Location @*TEMPLATE-LOCATIONS = @locations;
         my $*TEMPLATE-FILE = $path;
         my $ast = Cro::WebApp::Template::Parser.parse($source, actions => Cro::WebApp::Template::ASTBuilder).ast;
-        Cro::WebApp::Template::Compiled.new(|$ast.compile, repository => $template-repo)
+        Cro::WebApp::Template::Compiled.new(|$ast.compile, repository => $template-repo, :$path)
     }
 }

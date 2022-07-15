@@ -45,6 +45,9 @@ my $application = route {
         get -> 'global-inner' {
             template 'global.crotmp';
         }
+        get -> 'transitive-use' {
+            template 'transitive-use.crotmp';
+        }
     }
 
     get -> 'no-location' {
@@ -148,6 +151,21 @@ lives-ok { $resp = await Cro::HTTP::Client.get("http://localhost:{TEST_PORT}/glo
         'A global template location is available in the inner route block';
 is norm-ws(await $resp.body-text), norm-ws(q:to/EXPECTED/), 'Correct global template content';
     I am everywhere
+    EXPECTED
+
+lives-ok { $resp = await Cro::HTTP::Client.get("http://localhost:{TEST_PORT}/transitive-use") },
+        'A route block template-location is used in resolving use';
+is norm-ws(await $resp.body-text), norm-ws(q:to/EXPECTED/), 'Correct transitive use template content';
+    <html>
+    <header>
+        Foo bar header
+    </header>
+    <h1>A heading!</h1>
+    <p>Content!</p>
+    <footer>
+        Foo bar footer
+    </footer>
+    </html>
     EXPECTED
 
 lives-ok { $resp = await Cro::HTTP::Client.get("http://localhost:{TEST_PORT}/global-outer") },

@@ -254,7 +254,7 @@ my class Sequence does ContainerNode is export {
 }
 
 my class UseFile does Node is export {
-    has Str $.template-name is required;
+    has IO::Path $.path is required;
     has @.exported-subs;
     has @.exported-macros;
 
@@ -262,8 +262,8 @@ my class UseFile does Node is export {
         my $decls = join ",", flat
                 @!exported-subs.map(-> $sym { '(my &__TEMPLATE_SUB__' ~ $sym ~ ' = .<sub><' ~ $sym ~ '>)' }),
                 @!exported-macros.map(-> $sym { '(my &__TEMPLATE_MACRO__' ~ $sym ~ ' = .<macro><' ~ $sym ~ '>)' });
-        '(BEGIN (((' ~ $decls ~ ') given await($*TEMPLATE-REPOSITORY.resolve(\'' ~
-                $!template-name ~ '\')).exports) && ""))'
+        '(BEGIN (((' ~ $decls ~ ') given await($*TEMPLATE-REPOSITORY.resolve-absolute(\'' ~
+                $!path.absolute ~ '\'.IO)).exports) && ""))'
     }
 }
 
