@@ -33,6 +33,10 @@ class Cro::WebApp::Template::Compiled is implementation-detail {
 #| C<Cro::WebApp>. Custom implementations should use the C<load-template>
 #| function to turn an C<IO::Path> into a C<Cro::WebApp::Template::Compiled>.
 role Cro::WebApp::Template::Repository {
+    #| a Promise that resolves to the loaded prelude. Populated upon first
+    #| request for the prelude.
+    has Promise $!prelude;
+
     #| Resolve a template name into a C<Promise> that will be kept with a
     #| C<Cro::WebApp::Template::Compiled>.
     method resolve(Str $template-name --> Promise) { ... }
@@ -41,9 +45,12 @@ role Cro::WebApp::Template::Repository {
     #| C<Cro::WebApp::Template::Compiled>.
     method resolve-absolute(IO() $abs-path --> Promise) { ... }
 
+    #| Resolve the template prelude, which contains various built-ins.
     method resolve-prelude(--> Promise) is implementation-detail {
-        my $*COMPILING-PRELUDE = True;
-        self.resolve-absolute(%?RESOURCES<prelude.crotmp>.IO);
+        $!prelude //= start {
+            my $*COMPILING-PRELUDE = True;
+            load-template(%?RESOURCES<prelude.crotmp>.IO)
+        }
     }
 }
 
