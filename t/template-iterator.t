@@ -75,4 +75,20 @@ throws-like { render-template($error-base.add('duplicate-separator.crotmp'), {})
         X::Cro::WebApp::Template::SyntaxError,
         'Can only have one separator';
 
+is norm-ws(render-template($base.add('iteration-tag-1.crotmp'), { :foo['bar', 'baz'] })),
+        norm-ws(q:to/EXPECTED/), 'Structured iteration tags work';
+    <ul>
+      <li>bar</li>
+      <li>baz</li>
+    </ul>
+    EXPECTED
+
+is norm-ws(render-template($base.add('iteration-tag-2.crotmp'), { :foo['bar', 'baz'] })),
+        norm-ws(q:to/EXPECTED/), 'Structured iteration tags work with explicit variable';
+    <ul>
+      <li>bar</li>
+      <li>baz</li>
+    </ul>
+    EXPECTED
+
 done-testing;
