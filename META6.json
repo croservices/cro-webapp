@@ -22,6 +22,7 @@
     "Cro::WebApp::Template::Builtins": "lib/Cro/WebApp/Template/Builtins.pm6",
     "Cro::WebApp::Template::Error": "lib/Cro/WebApp/Template/Error.pm6",
     "Cro::WebApp::Template::Library": "lib/Cro/WebApp/Template/Library.pm6",
+    "Cro::WebApp::Template::Location": "lib/Cro/WebApp/Template/Location.rakumod",
     "Cro::WebApp::Template::Parser": "lib/Cro/WebApp/Template/Parser.pm6",
     "Cro::WebApp::Template::Repository": "lib/Cro/WebApp/Template/Repository.pm6"
   },

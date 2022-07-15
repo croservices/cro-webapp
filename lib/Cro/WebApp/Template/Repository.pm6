@@ -1,5 +1,6 @@
 use Cro::WebApp::LogTimelineSchema;
 use Cro::WebApp::Template::ASTBuilder;
+use Cro::WebApp::Template::Location;
 use Cro::WebApp::Template::Parser;
 use OO::Monitors;
 
@@ -39,7 +40,7 @@ role Cro::WebApp::Template::Repository {
 
     #| Resolve a template name into a C<Promise> that will be kept with a
     #| C<Cro::WebApp::Template::Compiled>.
-    method resolve(Str $template-name --> Promise) { ... }
+    method resolve(Str $template-name, Cro::WebApp::Template::Location @locations? --> Promise) { ... }
 
     #| Resolve an absolute path into a C<Promise> that will be kept with a
     #| C<Cro::WebApp::Template::Compiled>.
@@ -65,7 +66,12 @@ monitor Cro::WebApp::Template::Repository::FileSystem does Cro::WebApp::Template
     #| Looks through the search paths and locates the first matching template.
     #| Returns a Promise that will be kept with the template. The method
     #| C<resolve-absolute> is called to load the located template.
-    method resolve(Str $template-name --> Promise) {
+    method resolve(Str $template-name, Cro::WebApp::Template::Location @locations? --> Promise) {
+        for @locations {
+            with .try-resolve($template-name) {
+                return self.resolve-absolute($_);
+            }
+        }
         for @!global-search-paths {
             my $path = .add($template-name);
             return self.resolve-absolute($path) if $path.f;

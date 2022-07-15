@@ -1,4 +1,5 @@
 use Cro::HTTP::Router :DEFAULT, :plugin, :resource-plugin;
+use Cro::WebApp::Template::Location;
 use Cro::WebApp::LogTimelineSchema;
 use Cro::WebApp::Template::Repository;
 
@@ -29,31 +30,25 @@ multi render-template(IO::Path $template-path, $initial-topic, :%parts --> Str) 
 #| resources or via the file system, as configured by C<template-location> or
 #| C<templates-from-resources>.
 multi render-template(Str $template, $initial-topic, :%parts --> Str) is export {
-    # First try to resolve it using the the route-specific locations.
-    my $repo = get-template-repository;
-    my @locations := try { router-plugin-get-configs($template-location-plugin) } // ();
-    my $compiled-template;
-    for @locations {
+    # Gather the route-specific locations and turn them into location descriptors
+    # for the resolver to use.
+    my @route-locations := try { router-plugin-get-configs($template-location-plugin) } // ();
+    my Cro::WebApp::Template::Location @locations = @route-locations.map: {
         when TemplateResourcesLocation {
-            my $name = .prefix
-                    ?? .prefix ~ (.prefix.ends-with('/') ?? '' !! '/') ~ $template
-                    !! $template;
-            with resolve-route-resource($name, error-sub => 'render-template') {
-                $compiled-template = await $repo.resolve-absolute(.absolute.IO);
-                last;
-            }
+            my &resource-resolver = route-resource-resolver(error-sub => 'render-template');
+            Cro::WebApp::Template::Location::Resource.new(:prefix(.prefix), :&resource-resolver)
         }
         when TemplateFileSystemLocation {
-            my $file = .location.add($template);
-            if $file.e && $file.f {
-                $compiled-template = await $repo.resolve-absolute($file.absolute.IO);
-                last;
-            }
+            Cro::WebApp::Template::Location::FileSystem.new(:location(.location))
+        }
+        default {
+            Empty
         }
     }
 
-    # Fall back on the resolving it with the template repository globals.
-    $compiled-template //= await $repo.resolve($template);
+    # Use the template repository to do the resolution.
+    my $repo = get-template-repository;
+    my $compiled-template = await $repo.resolve($template, @locations);
 
     # Finally, render it.
     Cro::WebApp::LogTimeline::RenderTemplate.log: :$template, {
