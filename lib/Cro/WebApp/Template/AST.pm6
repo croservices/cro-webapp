@@ -13,6 +13,8 @@ my role ContainerNode does Node {
 }
 
 my class Template does ContainerNode is export {
+    has @.used-files;
+
     method compile() {
         my $*IN-SUB = False;
         my $children-compiled = @!children.map(*.compile).join(", ");
@@ -25,7 +27,7 @@ my class Template does ContainerNode is export {
         }
         my %*TEMPLATE-EXPORTS = :sub{}, :macro{};
         my $renderer = EVAL 'sub ($_) { join "", (' ~ $children-compiled ~ ') }';
-        return { :$renderer, exports => %*TEMPLATE-EXPORTS };
+        return Map.new((:$renderer, exports => %*TEMPLATE-EXPORTS, :@!used-files));
     }
 }
 

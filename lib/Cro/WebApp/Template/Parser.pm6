@@ -21,6 +21,7 @@ grammar Cro::WebApp::Template::Parser {
     token TOP {
         :my $*IN-ATTRIBUTE = False;
         :my $*IN-MACRO = False;
+        :my @*USED-FILES;
         <sequence-element>*
         [ $ || <.panic: 'confused'> ]
     }

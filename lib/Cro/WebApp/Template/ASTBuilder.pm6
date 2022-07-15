@@ -46,7 +46,9 @@ class Cro::WebApp::Template::ASTBuilder {
                     exported-subs => $loaded-prelude.exports<sub>.keys,
                     exported-macros => $loaded-prelude.exports<macro>.keys;
         }
-        make Template.new(children => [|@prelude, |flatten-literals($<sequence-element>.map(*.ast))]);
+        make Template.new:
+                children => [|@prelude, |flatten-literals($<sequence-element>.map(*.ast))],
+                used-files => @*USED-FILES;
     }
 
     method sequence-element:sym<sigil-tag>($/) {
@@ -189,6 +191,7 @@ class Cro::WebApp::Template::ASTBuilder {
         with $<file> {
             my $template-name = .ast;
             my $used = await $*TEMPLATE-REPOSITORY.resolve($template-name, @*TEMPLATE-LOCATIONS);
+            @*USED-FILES.push($used);
             make UseFile.new: :path($used.path),
                     exported-subs => $used.exports<sub>.keys,
                     exported-macros => $used.exports<macro>.keys;

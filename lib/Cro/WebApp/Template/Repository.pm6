@@ -20,6 +20,9 @@ class Cro::WebApp::Template::Compiled is implementation-detail {
     #| The source file for the template, if available.
     has IO::Path $.path;
 
+    #| Files that are used by this template.
+    has Cro::WebApp::Template::Compiled @.used-files;
+
     # Implementation details.
     has &.renderer;
     has %.exports;
@@ -77,7 +80,7 @@ monitor Cro::WebApp::Template::Repository::FileSystem does Cro::WebApp::Template
         }
         for @!global-search-paths {
             my $path = .add($template-name);
-            return self.resolve-absolute($path, :@locations) if $path.f;
+            return self.resolve-absolute($path.absolute.IO, :@locations) if $path.f;
         }
         die X::Cro::WebApp::Template::NotFound.new(:$template-name);
     }
@@ -110,17 +113,44 @@ monitor Cro::WebApp::Template::Repository::FileSystem does Cro::WebApp::Template
 #| disk changes. Ideal for development time.
 monitor Cro::WebApp::Template::Repository::FileSystem::Reloading is Cro::WebApp::Template::Repository::FileSystem {
     has %!abs-path-to-mtime;
+    has %!dependencies;
 
     #| Loads a template from an absolute path. If the file at that path didn't
-    #| change since the last template compilation, then the cached compilation of
-    #| the template is returned. Otherwise, it is recompiled.
+    #| change since the last template compilation, nor any of the templates
+    #| that it depends on, then the cached compilation of the template is
+    #| returned. Otherwise, it is recompiled.
     method resolve-absolute(IO() $abs-path, :@locations --> Promise) {
-        my $modified = $abs-path.IO.modified;
+        my $modified = $abs-path.modified;
         if (%!abs-path-to-mtime{$abs-path} // 0) != $modified {
             self.refresh($abs-path)
         }
+        elsif %!dependencies{$abs-path} -> @deps {
+            for @deps -> $dep-path {
+                my $dep-modified = $dep-path.modified;
+                if (%!abs-path-to-mtime{$dep-path} // 0) != $dep-modified {
+                    self.refresh($abs-path);
+                    last;
+                }
+            }
+        }
         %!abs-path-to-mtime{$abs-path} = $modified;
-        callsame
+        my Promise $compiled-promise = callsame;
+        $compiled-promise.then: {
+            if $compiled-promise.status == Kept {
+                self.update-dependencies($compiled-promise.result);
+            }
+        }
+        $compiled-promise
+    }
+
+    method update-dependencies($compiled) {
+        sub collect-deps(Cro::WebApp::Template::Compiled $compiled) {
+            for $compiled.used-files -> $used {
+                take .absolute.IO with $used.path;
+                collect-deps($used);
+            }
+        }
+        %!dependencies{$compiled.path.absolute} = eager gather collect-deps($compiled);
     }
 }
 
