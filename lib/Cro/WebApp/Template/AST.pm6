@@ -3,7 +3,7 @@ use Cro::WebApp::Template::Builtins;
 
 unit module Cro::WebApp::Template::AST;
 
-role Node {
+role Node is export {
     has Bool $.trim-trailing-horizontal-before = False;
     method compile() { ... }
 }
@@ -144,13 +144,21 @@ my class Iteration does ContainerNode is export {
 my class Condition does ContainerNode is export {
     has Node $.condition is required;
     has Bool $.negated = False;
+    has Node $.else;
 
     method compile() {
         my $cond = '(' ~ $!condition.compile ~ ')';
         my $if-true = '(' ~ @!children.map(*.compile).join(", ") ~ ').join';
+        my $else = $!else ?? '(' ~ $!else.compile ~ ')' !! "''";
         $!negated
-            ?? "$cond ?? '' !! $if-true"
-            !! "$cond ?? $if-true !! ''"
+            ?? "$cond ?? $else !! $if-true"
+            !! "$cond ?? $if-true !! $else"
+    }
+}
+
+my class Else does ContainerNode is export {
+    method compile() {
+        '(' ~ @!children.map(*.compile).join(", ") ~ ').join'
     }
 }
 

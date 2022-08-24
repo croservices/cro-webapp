@@ -112,22 +112,44 @@ class Cro::WebApp::Template::ASTBuilder {
     }
 
     method sigil-tag:sym<condition>($/) {
-        my $condition = do if $<deref> {
-            my $derefer = $<deref>.ast;
-            $derefer(VariableAccess.new(name => $<identifier> ?? '$' ~ $<identifier> !! '$_'))
-        }
-        elsif $<identifier> {
-            VariableAccess.new(name => '$' ~ $<identifier>)
-        }
-        else {
-            $<expression>.ast
-        }
+        my Node $else-part = $<else> ?? $<else>.ast !! Nil;
         make Condition.new:
             negated => $<negate> eq '!',
-            condition => $condition,
+            condition => $<condition>.ast,
             children => flatten-literals(add-structural-tag($/, $<sequence-element>.map(*.ast)),
                 :trim-trailing-horizontal($*lone-end-line)),
-            trim-trailing-horizontal-before => $*lone-start-line;
+            trim-trailing-horizontal-before => $*lone-start-line,
+            else => $else-part;
+    }
+
+    method condition($/) {
+        if $<deref> {
+            my $derefer = $<deref>.ast;
+            make $derefer(VariableAccess.new(name => $<identifier> ?? '$' ~ $<identifier> !! '$_'));
+        }
+        elsif $<identifier> {
+            make VariableAccess.new(name => '$' ~ $<identifier>);
+        }
+        else {
+            make $<expression>.ast;
+        }
+    }
+
+    method elsif($/) {
+        my Node $else-part = $<else> ?? $<else>.ast !! Nil;
+        make Condition.new:
+                condition => $<condition>.ast,
+                children => flatten-literals(add-structural-tag($/, $<sequence-element>.map(*.ast)),
+                        :trim-trailing-horizontal($*lone-end-line)),
+                trim-trailing-horizontal-before => $*lone-start-line,
+                else => $else-part;
+    }
+
+    method else($/) {
+        make Else.new:
+                children => flatten-literals(add-structural-tag($/, $<sequence-element>.map(*.ast)),
+                        :trim-trailing-horizontal($*lone-end-line)),
+                trim-trailing-horizontal-before => $*lone-start-line;
     }
 
     sub add-structural-tag($/, \children) {

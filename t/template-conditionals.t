@@ -107,6 +107,46 @@ is norm-ws(render-template($base.add('cond-var-deref.crotmp'), { x => { :foo }, 
     not foo
     EXPECTED
 
+is norm-ws(render-template($base.add('cond-if-else.crotmp'), { :foo })),
+        norm-ws(q:to/EXPECTED/), 'if/else works correctly (true case)';
+    foo
+    EXPECTED
+
+is norm-ws(render-template($base.add('cond-if-else.crotmp'), { :!foo })),
+        norm-ws(q:to/EXPECTED/), 'if/else works correctly (true case)';
+    not foo
+    EXPECTED
+
+is norm-ws(render-template($base.add('cond-if-elsif-else.crotmp'), { :x(10) })),
+        norm-ws(q:to/EXPECTED/), 'if/elsif/else works correctly (if true)';
+    over five
+    EXPECTED
+
+is norm-ws(render-template($base.add('cond-if-elsif-else.crotmp'), { :x(5) })),
+        norm-ws(q:to/EXPECTED/), 'if/elsif/else works correctly (elsif true)';
+    over zero
+    EXPECTED
+
+is norm-ws(render-template($base.add('cond-if-elsif-else.crotmp'), { :x(0) })),
+        norm-ws(q:to/EXPECTED/), 'if/elsif/else works correctly (no branches true)';
+    zero or less
+    EXPECTED
+
+is norm-ws(render-template($base.add('cond-if-elsif-else-tag.crotmp'), { :x(10) })),
+        norm-ws(q:to/EXPECTED/), 'if/elsif/else works correctly (if true)';
+    <div>over five</div>
+    EXPECTED
+
+is norm-ws(render-template($base.add('cond-if-elsif-else-tag.crotmp'), { :x(5) })),
+        norm-ws(q:to/EXPECTED/), 'if/elsif/else works correctly (elsif true)';
+    <p>over zero</p>
+    EXPECTED
+
+is norm-ws(render-template($base.add('cond-if-elsif-else-tag.crotmp'), { :x(0) })),
+        norm-ws(q:to/EXPECTED/), 'if/elsif/else works correctly (no branches true)';
+    <span>zero or less</span>
+    EXPECTED
+
 sub norm-ws($str) {
     $str.subst(:g, /\s+/, '')
 }
