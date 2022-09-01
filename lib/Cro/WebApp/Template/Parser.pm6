@@ -54,6 +54,10 @@ grammar Cro::WebApp::Template::Parser {
         <sigil-tag>
     }
 
+    token sigil-tag:sym<comment> {
+      '<#>' .+? '</#>'
+    }
+
     token tag-element:sym<literal> {
         | '!--' .*? '--' <?before '>'>
         | <-[<>]>+

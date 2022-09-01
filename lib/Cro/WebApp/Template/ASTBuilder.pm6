@@ -40,6 +40,11 @@ class Cro::WebApp::Template::ASTBuilder {
         make Literal.new(text => ~$/);
     }
 
+
+    method sigil-tag:sym<comment>($/) {
+      make Nothing.new;
+    }
+
     method sigil-tag:sym<topic>($/) {
         my $derefer = $<deref>.ast;
         make escape($derefer(VariableAccess.new(name => '$_')));
