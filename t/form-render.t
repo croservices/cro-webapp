@@ -204,7 +204,7 @@ use Test;
                         name => 'when',
                         label => 'When',
                         required => True,
-                        value => '2020-12-25T10:00:00Z',
+                        value => '2020-12-25T10:00:00',
                     },
                 ]
             },
@@ -212,7 +212,7 @@ use Test;
 
     my $dt = DateTime.now.utc;
     my $formatted-now = sprintf(
-        '%4d-%02d-%02dT%02d:%02d:%02dZ',
+        '%4d-%02d-%02dT%02d:%02d:%02d',
         .year, .month, .day, .hour, .minute, .second
     ) given $dt;
     is-deeply DateTimeForm.new(when => $dt).HTML-RENDER-DATA,
