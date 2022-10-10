@@ -248,8 +248,18 @@ is norm-ws(render-template($base.add('comments.crotmp'), {})),
 
 is norm-ws(render-template($base.add('comments-integration.crotmp'), {})),
         norm-ws(q:to/EXPECTED/), 'Is not confused by HTML bits commented out';
-<html><!--<articleclass="messageis-small"><divclass="message--body">--><!--</div></article>--></html>
-EXPECTED
+    <html><!--<articleclass="messageis-small"><divclass="message--body">--><!--</div></article>--></html>
+    EXPECTED
+
+is norm-ws(render-template($base.add('template-comments-basic.crotmp'), {})),
+        norm-ws(q:to/EXPECTED/), 'Template-level comment syntax works';
+    Eat a pie! Om nom ARGH!
+    EXPECTED
+
+is norm-ws(render-template($base.add('template-comments-tags.crotmp'), {})),
+        norm-ws(q:to/EXPECTED/), 'Template-level comment syntax works';
+    Stuff before! Stuff after!
+    EXPECTED
 
 sub norm-ws($str) {
     $str.subst(:g, /\s+/, '')
