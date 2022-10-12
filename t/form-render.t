@@ -595,4 +595,40 @@ use Test;
             'Custom label, placeholder, and hint are included in rendering description';
 }
 
+{
+    my class EmailForm does Cro::WebApp::Form {
+        has Str $.email is required;
+    }
+    my class TestForm is EmailForm {
+        has Str $.password is required is password;
+        has Bool $.remember-me;
+    }
+
+    is-deeply TestForm.empty.HTML-RENDER-DATA,
+            {
+                was-validated => False,
+                controls => [
+                    {
+                        type => 'text',
+                        name => 'email',
+                        label => 'Email',
+                        required => True
+                    },
+                    {
+                        type => 'password',
+                        name => 'password',
+                        label => 'Password',
+                        required => True
+                    },
+                    {
+                        type => 'checkbox',
+                        name => 'remember-me',
+                        label => 'Remember me',
+                        required => False
+                    },
+                ]
+            },
+            'Can subclass a form and add further controls';
+}
+
 done-testing;
