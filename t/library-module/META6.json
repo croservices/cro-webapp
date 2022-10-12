@@ -6,7 +6,7 @@
     "Jonathan Worthington <jnthn@jnthn.net>"
   ],
   "provides": {
-    "Some::Library": "lib/Some/Library.pm6"
+    "Some::Library": "lib/Some/Library.rakumod"
   },
   "resources": [
     "test-template-library.crotmp"

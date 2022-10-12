@@ -6,7 +6,7 @@
     "Jonathan Worthington <jnthn@jnthn.net>"
   ],
   "provides": {
-    "ResourceRoutes": "lib/ResourceRoutes.pm6"
+    "ResourceRoutes": "lib/ResourceRoutes.rakumod"
   },
   "resources": [
     "templates/restest.crotmp"
