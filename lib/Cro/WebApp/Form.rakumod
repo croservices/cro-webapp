@@ -1,6 +1,5 @@
 use Cro::HTTP::Body;
 use Cro::HTTP::MultiValue;
-use Cro::HTTP::Router;
 
 #| A role to be mixed in to Attribute to hold extra form-related properties.
 my role FormProperties {
