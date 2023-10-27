@@ -559,7 +559,7 @@ role Cro::WebApp::Form {
         ensure-acceptable-type($attr, $attr.type);
     }
     multi sub ensure-acceptable-type(Attribute $attr, Mu $type --> Nil) {
-        unless $type ~~ Str || $type ~~ Real || $type ~~ Date || $type ~~ DateTime || $type ~~ Cro::HTTP::Body::MultiPartFormData || Any ~~ $type {
+        unless $type ~~ Str || $type ~~ Real || $type ~~ Date || $type ~~ DateTime || $type ~~ Cro::HTTP::Body::MultiPartFormData::Part || Any ~~ $type {
             die "Don't know how to handle type '$type.^name()' of '$attr.name()' in a form";
         }
     }
