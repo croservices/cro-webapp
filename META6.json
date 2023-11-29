@@ -1,7 +1,7 @@
 {
   "name": "Cro::WebApp",
   "description": "Support for building server-side web applications with Cro, including templates and form handling.",
-  "version": "0.8.9",
+  "version": "0.8.9.1",
   "perl": "6.*",
   "authors": [
     "Jonathan Worthington <jnthn@jnthn.net>"
