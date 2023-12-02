@@ -79,9 +79,25 @@ class Cro::WebApp::Template::ASTBuilder {
         make Literal.new(text => ~$/);
     }
 
-
     method sigil-tag:sym<comment>($/) {
-      make Nothing.new;
+        make Nothing.new;
+    }
+
+    # cw: These are reversed for some reason... I don't know why!
+    method sigil-tag:sym<leLiteral>($/) {
+        make Literal.new( text => '<=' );
+    }
+
+    method sigil-tag:sym<geLiteral>($/) {
+        make Literal.new( text => '>=' );
+    }
+
+    method sigil-tag:sym<gtLiteral>($/) {
+        make Literal.new( text => '>' );
+    }
+
+    method sigil-tag:sym<ltLiteral>($/) {
+        make Literal.new( text => '<' );
     }
 
     method sigil-tag:sym<topic>($/) {
