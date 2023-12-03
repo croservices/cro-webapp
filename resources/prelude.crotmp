@@ -39,7 +39,7 @@
                :$novalidate, :$was-validated-class, :$is-invalid-class,
                :$invalid-feedback-class, :$form-errors-class, :$form-errors-text,
                :$help-class, :$submit-button-class, :$submit-button-text,
-               :$action, :$name, :$method = 'post')>
+               :$action, :$name, :$supplemental-markup, :$method = 'post')>
   <form name="<?$name><$name></?><!$name><.GENERATE-NAME></!>" method="<$method>"<?$action> action="<$action>"</?><?$novalidate> novalidate</?><?{ .<was-validated> && $was-validated-class }> class="<$was-validated-class>"</?><?.HTML-RENDER-DATA(:$method).enctype> enctype="<.HTML-RENDER-DATA(:$method).enctype>"</?>>
   <&form-errors($_, :$form-errors-class, :$form-errors-text, :$method)>
   <@HTML-RENDER-DATA(:$method).controls>
@@ -115,6 +115,9 @@
       <input type="hidden" name="<.name>" id="<.name>"<?.<value>.defined()> value="<.value>"</?>>
     </?>
   </@>
+  <?$supplemental-markup>
+    <&HTML($supplemental-markup)>
+  </?>
   <button type="submit"<&class($submit-button-class)>>
     <?$submit-button-text><$submit-button-text></?><!$submit-button-text>Save</!>
   </button>
