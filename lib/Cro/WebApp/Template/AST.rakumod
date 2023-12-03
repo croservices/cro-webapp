@@ -347,7 +347,8 @@ my constant %escapes = %(
 );
 
 multi escape-text(Mu:U $t, Mu $file, Mu $line) {
-    %*WARNINGS{"An expression at $file:$line evaluated to $t.^name()"}++;
+    %*WARNINGS{"An expression at $file:$line evaluated to $t.^name()"}++
+        if DYNAMIC::<%*WARNINGS>;
     ''
 }
 
