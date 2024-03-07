@@ -57,6 +57,16 @@ multi render-template(Str $template, $initial-topic, :%parts --> Str) is export 
 }
 
 sub render-internal($compiled-template, $initial-topic, %parts) {
+    my @*CRO-TEMPLATE-PART-PROVIDERS;
+    {
+        CATCH { when X::Cro::HTTP::Router::OnlyInHandler {
+            # We want to allow `render-template()` and `template()` to work
+            # outside of a `route()` block. Thus when we're outside, just be ok
+            # with not finding any template part provider such a block would
+            # provide.
+        }}
+        @*CRO-TEMPLATE-PART-PROVIDERS := router-plugin-get-configs($template-part-plugin, error-sub => 'template');
+    }
     my $*CRO-TEMPLATE-MAIN-PART := $initial-topic;
     my %*CRO-TEMPLATE-EXPLICIT-PARTS := %parts;
     my %*WARNINGS;
@@ -185,7 +195,6 @@ sub template-part(Str $name, &provider --> Nil) is export {
 #| the response body. The initial topic is passed to the template to render. The
 #| content type will default to text/html, but can be set explicitly also.
 multi template($template, $initial-topic, :%parts, :$content-type = 'text/html' --> Nil) is export {
-    my @*CRO-TEMPLATE-PART-PROVIDERS := router-plugin-get-configs($template-part-plugin, error-sub => 'template');
     content $content-type, render-template($template, $initial-topic, :%parts);
 }
 
