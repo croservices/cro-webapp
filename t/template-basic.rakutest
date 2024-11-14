@@ -4,6 +4,10 @@ use Test;
 my constant $base = $*PROGRAM.parent.add('test-data');
 my constant $error-base = $*PROGRAM.parent.add('error-data');
 
+sub norm-ws($str) {
+    $str.subst(:g, /\s+/, '')
+}
+
 #`[
 
 is render-template($base.add('literal.crotmp'), {}), q:to/EXPECTED/, 'Literal text passed through';
@@ -265,7 +269,7 @@ is norm-ws(render-template($base.add('template-comments-tags.crotmp'), {})),
 #]
 
 is norm-ws(render-template($base.add('fragment-1.crotmp'), { archived => True, id => 42, email => 'me@me.com' })),
-    norm-ws(q:to/EXPECTED/), 'Fragment none specified works';
+    norm-ws(q:to/EXPECTED/), 'Fragment, none specified, works';
     <html>
         <body>
             <div hx-target="this">
@@ -278,15 +282,10 @@ is norm-ws(render-template($base.add('fragment-1.crotmp'), { archived => True, i
     EXPECTED
 
 is norm-ws(render-template($base.add('fragment-1.crotmp'), :fragment<archive-ui>, { archived => True, id => 42, email => 'me@me.com' })),
-    norm-ws(q:to/EXPECTED/), 'Fragment, named works';
+    norm-ws(q:to/EXPECTED/), 'Fragment, named, works';
             <div hx-target="this">
                 <buttonhx-patch="contacts/42/unarchive">Unarchive</button>
             </div>
     EXPECTED
-
-
-sub norm-ws($str) {
-    $str.subst(:g, /\s+/, '')
-}
 
 done-testing;

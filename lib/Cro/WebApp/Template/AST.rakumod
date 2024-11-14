@@ -30,9 +30,6 @@ my class Template does ContainerNode is export {
             %*TEMPLATE-EXPORTS<fragment>{$r.name.substr('__TEMPLATE_FRAGMENT__'.chars)} = $r;
         }
         my %*TEMPLATE-EXPORTS = :sub{}, :macro{}, :fragment{};
-#        say %*TEMPLATE-EXPORTS;
-#        say $children-compiled;
-        say @!children;
         my $renderer = EVAL 'sub ($_) { join "", (' ~ $children-compiled ~ ') }';
         return Map.new((:$renderer, exports => %*TEMPLATE-EXPORTS, :@!used-files));
     }
