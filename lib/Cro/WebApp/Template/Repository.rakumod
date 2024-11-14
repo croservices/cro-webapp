@@ -29,8 +29,13 @@ class Cro::WebApp::Template::Compiled is implementation-detail {
 
     #| Renders the template, setting the provided argument as the topic.
     method render($topic, :$fragment --> Str) {
-        my $*TEMPLATE-REPOSITORY = $!repository;
-        &!renderer($topic)
+        if $fragment {
+            %.exports<fragment>{$fragment}($topic);
+        } else {
+            #        say %.exports<fragment><archive-ui>({ archived => True, id => 42, email => 'me@me.com' });
+            my $*TEMPLATE-REPOSITORY = $!repository;
+            &!renderer($topic)
+        }
     }
 }
 
@@ -46,11 +51,11 @@ role Cro::WebApp::Template::Repository {
 
     #| Resolve a template name into a C<Promise> that will be kept with a
     #| C<Cro::WebApp::Template::Compiled>.
-    method resolve(Str $template-name, Cro::WebApp::Template::Location @locations? --> Promise) { ... }
+    method resolve(Str $template-name, Cro::WebApp::Template::Location @locations? --> Promise) {...}
 
     #| Resolve an absolute path into a C<Promise> that will be kept with a
     #| C<Cro::WebApp::Template::Compiled>.
-    method resolve-absolute(IO() $abs-path, :@locations --> Promise) { ... }
+    method resolve-absolute(IO() $abs-path, :@locations --> Promise) {...}
 
     #| Resolve the template prelude, which contains various built-ins.
     method resolve-prelude(--> Promise) is implementation-detail {
@@ -155,8 +160,8 @@ monitor Cro::WebApp::Template::Repository::FileSystem::Reloading is Cro::WebApp:
 }
 
 my $template-repo = %*ENV<CRO_DEV>
-        ?? Cro::WebApp::Template::Repository::FileSystem::Reloading.new
-        !! Cro::WebApp::Template::Repository::FileSystem.new;
+    ?? Cro::WebApp::Template::Repository::FileSystem::Reloading.new
+    !! Cro::WebApp::Template::Repository::FileSystem.new;
 
 #| Gets the currently active template repository. By default, this is
 #| C<Cro::WebApp::Template::Repository::FileSystem>, however if the C<CRO_DEV>
@@ -179,7 +184,6 @@ sub load-template(IO() $abs-path, :@locations --> Cro::WebApp::Template::Compile
         my $*TEMPLATE-FILE = $abs-path;
         my $source = $abs-path.slurp;
         my $ast = Cro::WebApp::Template::Parser.parse($source, actions => Cro::WebApp::Template::ASTBuilder).ast;
-        #iamerejh
         Cro::WebApp::Template::Compiled.new(|$ast.compile, repository => $template-repo, :path($abs-path))
     }
 }

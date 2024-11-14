@@ -15,9 +15,10 @@ my role ContainerNode does Node {
 my class Template does ContainerNode is export {
     has @.used-files;
 
-    method compile() {
+    method compile(:$no-fragment) {
         my $*IN-SUB = False;
         my $*IN-FRAGMENT = False;
+        my $*NO-FRAGMENT = $no-fragment;
         my $children-compiled = @!children.map(*.compile).join(", ");
         use MONKEY-SEE-NO-EVAL;
         multi sub trait_mod:<is>(Routine $r, :$TEMPLATE-EXPORT-SUB!) {
@@ -254,14 +255,22 @@ my class TemplateFragment does ContainerNode is export {
     has TemplateParameter @.parameters;
 
     method compile() {
+
+#        if $*NO-FRAGMENT {
+#            return '(' ~ @!children.map(*.compile).join(", ") ~ ').join'
+#        }
+
         my $should-export = !$*IN-FRAGMENT;
         {
             my $*IN-FRAGMENT = True;
             my $params = @!parameters.map(*.compile).join(", ");
             my $trait = $should-export ?? 'is TEMPLATE-EXPORT-FRAGMENT' !! '';
+
             '(sub __TEMPLATE_FRAGMENT__' ~ $!name ~ "($params) $trait \{\n" ~
                 'join "", (' ~ @!children.map(*.compile).join(", ") ~ ')' ~
                 "} && '')\n"
+            ~
+            ', (' ~ @!children.map(*.compile).join(", ") ~ ').join'
         }
     }
 }

@@ -20,7 +20,7 @@ is render-template($base.add('call-macro.crotmp'), {}), q:to/EXPECTED/, 'Can cal
     <div class="container">Contained</div>
     EXPECTED
 
-is render-template($base.add('call-fragment.crotmp'), {}), q:to/EXPECTED/, 'Can call a library fragment';
+is render-template($base.add('call-fragment.crotmp'), {a => 'hell', b=> 'dunkel'}), q:to/EXPECTED/, 'Can call a library fragment';
 
     Fragment: hell and dunkel
     EXPECTED

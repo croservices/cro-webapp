@@ -1,7 +1,7 @@
 <html>
     <body>
         <div hx-target="this">
-          <:fragment archive-ui>
+          <:fragment archive-ui($_)>
             <?.archived>
             <button hx-patch="contacts/<.id>/unarchive">Unarchive</button>
             </?>

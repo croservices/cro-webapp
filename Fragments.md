@@ -115,24 +115,6 @@ add to comma syntax hl
 
 ---
 
-touch files search 'macro'
-- [x] AST.rakumod
-- [x] ASTBuilder.rakumod
-- [ ] Template/Library.rakumod
-- [ ] Parser.rakumod
-- [ ] test-template-library.crotmp
-- [ ] library.rakutest
-- [ ] template-basic.rakutest
-- [ ] template-parts.rakutest
-- [ ] template-router-integration.rakutest
-- [ ] template-use.rakutest
-- [ ] common.crotmp
-- [ ] macro-1.crotmp
-- [ ] macro-2.crotmp
-- [ ] parts-layout.crotmp
-- [ ] transitive-use.crotmp
-
-- [x] Repository.rakumod
 
 
 #iamerejh
@@ -140,10 +122,9 @@ class Cro::WebApp::Template::Compiled in Repository
 and
  Cro::WebApp::Template::Compiled.new(|$ast.compile, in Repository
 
-maybe want a class Fragmenter that mangles the fagment name and calls the fragment as an export
+maybe want a class Fragmenter that mangles the fragment name and calls the fragment as an export
 
 
-clean up library.rakutest
 
 ===
 
@@ -157,6 +138,90 @@ this makes a literal.crotmp
 <§frag-test()>
 
 syntax §frag is used for FragmentApplication
+
+
+
+===
+
+issues
+
+#ignore it
+
+spike
+```raku
+#Parser.rakumod/TOP
+:my $*NO-FRAGMENT = False;
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#call it
+
+
+
+
+
+
+
+
+
+so - spiking a BOTH strategy
+- we have Repository.load-template|parse-template (ie compile it)
+  - no change as this does BOTH
+
+- we have Template.render-template => render-internal => Compiled.render
+  - ok if none specified
+  - 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

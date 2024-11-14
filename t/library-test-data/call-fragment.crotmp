@@ -1,2 +1,2 @@
 <:use Some::Library>
-<§frag-test('hell','dunkel')>
+<§frag-test($_)>

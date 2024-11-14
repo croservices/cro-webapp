@@ -283,9 +283,7 @@ is norm-ws(render-template($base.add('fragment-1.crotmp'), { archived => True, i
 
 is norm-ws(render-template($base.add('fragment-1.crotmp'), :fragment<archive-ui>, { archived => True, id => 42, email => 'me@me.com' })),
     norm-ws(q:to/EXPECTED/), 'Fragment, named, works';
-            <div hx-target="this">
                 <buttonhx-patch="contacts/42/unarchive">Unarchive</button>
-            </div>
     EXPECTED
 
 done-testing;
