@@ -4,6 +4,7 @@ use lib $*PROGRAM.parent.add('library-module').Str;
 
 my constant $base = $*PROGRAM.parent.add('library-test-data');
 
+#`[
 is render-template($base.add('use-only.crotmp'), {}), q:to/EXPECTED/, 'Use of a library compiles';
 
     Everything is OK
@@ -17,6 +18,21 @@ is render-template($base.add('call-sub.crotmp'), {}), q:to/EXPECTED/, 'Can call 
 is render-template($base.add('call-macro.crotmp'), {}), q:to/EXPECTED/, 'Can call a library macro';
 
     <div class="container">Contained</div>
+    EXPECTED
+
+
+my $contact = {
+    archived => True,
+    id => 007,
+    email => 'me@me.com',
+};
+#| iamerejh  raku library.rakutest
+
+#]
+
+is render-template($base.add('call-fragment.crotmp'), {}), q:to/EXPECTED/, 'Can call a library fragment';
+
+    Library: hell and damnation
     EXPECTED
 
 done-testing;

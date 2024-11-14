@@ -258,7 +258,7 @@ grammar Cro::WebApp::Template::Parser {
         \h+
         [
         || <name=.identifier> \h* <signature>? '>'
-        || <.maformed: 'macro declaration tag'>
+        || <.malformed: 'macro declaration tag'>
         ]
         [ <?{ $*lone-start-line }> [ \h* \n | { $*lone-start-line = False } ] ]?
 
@@ -316,6 +316,36 @@ grammar Cro::WebApp::Template::Parser {
         <close-ident=.ident>?
         [ \h* '>' || <.malformed: 'macro application closing tag'> ]
         [ <?{ $*lone-end-line }> [ \h* \n | { $*lone-end-line = False } ] ]?
+    }
+
+    token sigil-tag:sym<fragment> {
+        :my $opener = $¢.clone;
+        :my $*lone-start-line = False;
+        '<:fragment'
+        [ <?after [^ | $ | \n] \h* '<:fragment'> { $*lone-start-line = True } ]?
+        \h+
+        [
+        || <name=.identifier> \h* <signature>? '>'
+        || <.malformed: 'fragment declaration tag'>
+        ]
+        [ <?{ $*lone-start-line }> [ \h* \n | { $*lone-start-line = False } ] ]?
+
+        <sequence-element>*
+
+        :my $*lone-end-line = False;
+        [ '</:' || { $opener.unclosed('fragment declaration tag') } ]
+        [ <?after \n \h* '</:'> { $*lone-end-line = True } ]?
+        [ 'fragment'? \h* '>' || <.malformed: 'fragment declaration closing tag'> ]
+        [ <?{ $*lone-end-line }> [ \h* \n | { $*lone-end-line = False } ] ]?
+    }
+
+    token sigil-tag:sym<fragment-call> {
+        '<§'
+        [
+        || <target=.identifier> \h* <arglist>? \h*
+        || <.malformed: 'call tag'>
+        ]
+        [ '>' || <.malformed: 'call tag'> ]
     }
 
     token sigil-tag:sym<use> {
@@ -465,7 +495,7 @@ grammar Cro::WebApp::Template::Parser {
 
     token sigil {
         # Single characters we can always take as a tag sigil
-        | <[.$@&:|]>
+        | <[.$@&:|§]>
         # The ? and ! for boolification must be followed by a . or $ tag sigil or
         # { expression. <!DOCTYPE>, <?xml>, and <!--comment--> style things
         # must be considered literal.

@@ -4,3 +4,6 @@ Library: <$a> and <$b>
 <:macro bs-container()>
 <div class="container"><:body></div>
 </:>
+<:fragment frag-test($a, $b)>
+Fragment: <$a> and <$b>
+</:>

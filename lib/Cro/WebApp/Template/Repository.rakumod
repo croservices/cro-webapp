@@ -28,7 +28,7 @@ class Cro::WebApp::Template::Compiled is implementation-detail {
     has %.exports;
 
     #| Renders the template, setting the provided argument as the topic.
-    method render($topic --> Str) {
+    method render($topic, :$fragment --> Str) {
         my $*TEMPLATE-REPOSITORY = $!repository;
         &!renderer($topic)
     }
@@ -179,6 +179,7 @@ sub load-template(IO() $abs-path, :@locations --> Cro::WebApp::Template::Compile
         my $*TEMPLATE-FILE = $abs-path;
         my $source = $abs-path.slurp;
         my $ast = Cro::WebApp::Template::Parser.parse($source, actions => Cro::WebApp::Template::ASTBuilder).ast;
+        #iamerejh
         Cro::WebApp::Template::Compiled.new(|$ast.compile, repository => $template-repo, :path($abs-path))
     }
 }
