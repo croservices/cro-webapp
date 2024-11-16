@@ -270,7 +270,7 @@ is norm-ws(render-template($base.add('fragment-1.crotmp'), { archived => True, i
     <html>
         <body>
             <div hx-target="this">
-                <buttonhx-patch="contacts/42/unarchive">Unarchive</button>
+                <buttonhx-patch="/contacts/42/unarchive">Unarchive</button>
             </div>
             <h3>Contact</h3>
             <p>me@me.com</p>
@@ -280,7 +280,7 @@ is norm-ws(render-template($base.add('fragment-1.crotmp'), { archived => True, i
 
 is norm-ws(render-template($base.add('fragment-1.crotmp'), :fragment<archive-ui>, { archived => True, id => 42, email => 'me@me.com' })),
     norm-ws(q:to/EXPECTED/), 'Fragment, named, works';
-                <buttonhx-patch="contacts/42/unarchive">Unarchive</button>
+                <buttonhx-patch="/contacts/42/unarchive">Unarchive</button>
     EXPECTED
 
 done-testing;
