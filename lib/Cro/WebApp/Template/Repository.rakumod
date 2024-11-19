@@ -29,11 +29,11 @@ class Cro::WebApp::Template::Compiled is implementation-detail {
 
     #| Renders the template, setting the provided argument as the topic.
     method render($topic, :$fragment --> Str) {
+        my $*TEMPLATE-REPOSITORY = $!repository;
+
         if $fragment {
             %.exports<fragment>{$fragment}($topic);
         } else {
-            #        say %.exports<fragment><archive-ui>({ archived => True, id => 42, email => 'me@me.com' });
-            my $*TEMPLATE-REPOSITORY = $!repository;
             &!renderer($topic)
         }
     }
