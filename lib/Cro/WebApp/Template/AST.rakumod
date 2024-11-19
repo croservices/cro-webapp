@@ -15,7 +15,7 @@ my role ContainerNode does Node {
 my class Template does ContainerNode is export {
     has @.used-files;
 
-    method compile(:$no-fragment) {
+    method compile() {
         my $*IN-SUB = False;
         my $*IN-FRAGMENT = False;
         my $children-compiled = @!children.map(*.compile).join(", ");
