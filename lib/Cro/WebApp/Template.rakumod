@@ -19,17 +19,17 @@ my $template-part-plugin = router-plugin-register("template-part");
 
 #| Render the template at the specified path using the specified data, and
 #| return the result as a C<Str>.
-multi render-template(IO::Path $template-path, $initial-topic, :%parts --> Str) is export {
+multi render-template(IO::Path $template-path, $initial-topic, :%parts, :$fragment --> Str) is export {
     my $compiled-template = await get-template-repository.resolve-absolute($template-path.absolute);
     Cro::WebApp::LogTimeline::RenderTemplate.log: :template($template-path), {
-        render-internal($compiled-template, $initial-topic, %parts)
+        render-internal($compiled-template, $initial-topic, %parts, :$fragment)
     }
 }
 
 #| Render the template at the specified path, which will be resolved either in the
 #| resources or via the file system, as configured by C<template-location> or
 #| C<templates-from-resources>.
-multi render-template(Str $template, $initial-topic, :%parts --> Str) is export {
+multi render-template(Str $template, $initial-topic, :%parts, :$fragment --> Str) is export {
     # Gather the route-specific locations and turn them into location descriptors
     # for the resolver to use.
     my @route-locations := try { router-plugin-get-configs($template-location-plugin) } // ();
@@ -52,11 +52,11 @@ multi render-template(Str $template, $initial-topic, :%parts --> Str) is export 
 
     # Finally, render it.
     Cro::WebApp::LogTimeline::RenderTemplate.log: :$template, {
-        render-internal($compiled-template, $initial-topic, %parts)
+        render-internal($compiled-template, $initial-topic, %parts, :$fragment)
     }
 }
 
-sub render-internal($compiled-template, $initial-topic, %parts) {
+sub render-internal($compiled-template, $initial-topic, %parts, :$fragment) {
     my @*CRO-TEMPLATE-PART-PROVIDERS;
     {
         CATCH { when X::Cro::HTTP::Router::OnlyInHandler {
@@ -70,7 +70,7 @@ sub render-internal($compiled-template, $initial-topic, %parts) {
     my $*CRO-TEMPLATE-MAIN-PART := $initial-topic;
     my %*CRO-TEMPLATE-EXPLICIT-PARTS := %parts;
     my %*WARNINGS;
-    my $result = $compiled-template.render($initial-topic);
+    my $result = $compiled-template.render($initial-topic, :$fragment);
     if %*WARNINGS {
         for %*WARNINGS.kv -> $text, $number {
             warn "$text ($number time{ $number == 1 ?? '' !! 's' })";
@@ -194,13 +194,13 @@ sub template-part(Str $name, &provider --> Nil) is export {
 #| Used in a Cro::HTTP::Router route handler to render a template and set it as
 #| the response body. The initial topic is passed to the template to render. The
 #| content type will default to text/html, but can be set explicitly also.
-multi template($template, $initial-topic, :%parts, :$content-type = 'text/html' --> Nil) is export {
-    content $content-type, render-template($template, $initial-topic, :%parts);
+multi template($template, $initial-topic, :%parts, :$content-type = 'text/html', :$fragment --> Nil) is export {
+    content $content-type, render-template($template, $initial-topic, :%parts, :$fragment);
 }
 
 #| Used in a Cro::HTTP::Router route handler to render a template and set it as
 #| the response body. The content type will default to text/html, but can be set
 #| explicitly also.
-multi template($template, :%parts, :$content-type = 'text/html' --> Nil) is export {
-    template($template, Nil, :%parts, :$content-type);
+multi template($template, :%parts, :$content-type = 'text/html', :$fragment --> Nil) is export {
+    template($template, Nil, :%parts, :$content-type, :$fragment);
 }
