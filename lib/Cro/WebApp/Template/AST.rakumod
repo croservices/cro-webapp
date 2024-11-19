@@ -18,7 +18,6 @@ my class Template does ContainerNode is export {
     method compile(:$no-fragment) {
         my $*IN-SUB = False;
         my $*IN-FRAGMENT = False;
-        my $*NO-FRAGMENT = $no-fragment;
         my $children-compiled = @!children.map(*.compile).join(", ");
         use MONKEY-SEE-NO-EVAL;
         multi sub trait_mod:<is>(Routine $r, :$TEMPLATE-EXPORT-SUB!) {
@@ -255,11 +254,6 @@ my class TemplateFragment does ContainerNode is export {
     has TemplateParameter @.parameters;
 
     method compile() {
-
-#        if $*NO-FRAGMENT {
-#            return '(' ~ @!children.map(*.compile).join(", ") ~ ').join'
-#        }
-
         my $should-export = !$*IN-FRAGMENT;
         {
             my $*IN-FRAGMENT = True;
