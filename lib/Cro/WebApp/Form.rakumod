@@ -523,7 +523,7 @@ role Cro::WebApp::Form {
                 #  YYYY-MM-DDTHH:MM:SS
                 my $ts = .Str;
                 if $ts.ends-with('Z') {
-                    $ts ~~ s/ '.' \d+? 'Z' /Z/;
+                    $ts ~~ s/ ['.' \d+?]? 'Z' //;
                 } else {
                     my $cutoff = $ts.rindex(".") // $ts.rindex("-") // $ts.rindex("+");
                     my $i  = $ts.chars - $cutoff;
