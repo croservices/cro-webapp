@@ -3,5 +3,3 @@
 This is a library to make it easier to build server-side web applications using
 Cro. See the [Cro website](http://cro.raku.org/) for further information and
 documentation.
-
-... adding :fragments
