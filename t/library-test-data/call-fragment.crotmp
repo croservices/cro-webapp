@@ -1,2 +1,2 @@
 <:use Some::Library>
-<§frag-test($_)>
+<~frag-test($_)>

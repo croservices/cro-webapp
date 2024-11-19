@@ -340,7 +340,7 @@ grammar Cro::WebApp::Template::Parser {
     }
 
     token sigil-tag:sym<fragment-call> {
-        '<§'
+        '<~'
         [
         || <target=.identifier> \h* <arglist>? \h*
         || <.malformed: 'call tag'>
@@ -495,7 +495,7 @@ grammar Cro::WebApp::Template::Parser {
 
     token sigil {
         # Single characters we can always take as a tag sigil
-        | <[.$@&:|§]>
+        | <[.$@&:|~]>
         # The ? and ! for boolification must be followed by a . or $ tag sigil or
         # { expression. <!DOCTYPE>, <?xml>, and <!--comment--> style things
         # must be considered literal.
