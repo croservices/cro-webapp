@@ -1,3 +1,4 @@
 .precomp/
 *.swp
-.idea/workspace.xml
+.idea/
+*.iml
