@@ -17,6 +17,7 @@ my class Template does ContainerNode is export {
 
     method compile() {
         my $*IN-SUB = False;
+        my $*IN-FRAGMENT = False;
         my $children-compiled = @!children.map(*.compile).join(", ");
         use MONKEY-SEE-NO-EVAL;
         multi sub trait_mod:<is>(Routine $r, :$TEMPLATE-EXPORT-SUB!) {
@@ -25,7 +26,10 @@ my class Template does ContainerNode is export {
         multi sub trait_mod:<is>(Routine $r, :$TEMPLATE-EXPORT-MACRO!) {
             %*TEMPLATE-EXPORTS<macro>{$r.name.substr('__TEMPLATE_MACRO__'.chars)} = $r;
         }
-        my %*TEMPLATE-EXPORTS = :sub{}, :macro{};
+        multi sub trait_mod:<is>(Routine $r, :$TEMPLATE-EXPORT-FRAGMENT!) {
+            %*TEMPLATE-EXPORTS<fragment>{$r.name.substr('__TEMPLATE_FRAGMENT__'.chars)} = $r;
+        }
+        my %*TEMPLATE-EXPORTS = :sub{}, :macro{}, :fragment{};
         my $renderer = EVAL 'sub ($_) { join "", (' ~ $children-compiled ~ ') }';
         return Map.new((:$renderer, exports => %*TEMPLATE-EXPORTS, :@!used-files));
     }
@@ -245,6 +249,36 @@ my class MacroApplication does ContainerNode is export {
     }
 }
 
+my class TemplateFragment does ContainerNode is export {
+    has Str $.name is required;
+    has TemplateParameter @.parameters;
+
+    method compile() {
+        my $should-export = !$*IN-FRAGMENT;
+        {
+            my $*IN-FRAGMENT = True;
+            my $params = @!parameters.map(*.compile).join(", ");
+            my $trait = $should-export ?? 'is TEMPLATE-EXPORT-FRAGMENT' !! '';
+
+            '(sub __TEMPLATE_FRAGMENT__' ~ $!name ~ "($params) $trait \{\n" ~
+                'join "", (' ~ @!children.map(*.compile).join(", ") ~ ')' ~
+                "} && '')\n"
+            ~
+            ', (' ~ @!children.map(*.compile).join(", ") ~ ').join'
+        }
+    }
+}
+
+my class FragmentCall does ContainerNode is export {
+    has Str $.target is required;
+    has Node @.arguments;
+
+    method compile() {
+        '__TEMPLATE_FRAGMENT__' ~ $!target ~ '(' ~ @!arguments.map(*.compile).join(", ") ~ ')'
+
+    }
+}
+
 my class TemplatePart does ContainerNode is export {
     has Str $.name is required;
     has TemplateParameter @.parameters;
@@ -267,11 +301,13 @@ my class UseFile does Node is export {
     has IO::Path $.path is required;
     has @.exported-subs;
     has @.exported-macros;
+    has @.exported-fragments;
 
     method compile() {
         my $decls = join ",", flat
                 @!exported-subs.map(-> $sym { '(my &__TEMPLATE_SUB__' ~ $sym ~ ' = .<sub><' ~ $sym ~ '>)' }),
-                @!exported-macros.map(-> $sym { '(my &__TEMPLATE_MACRO__' ~ $sym ~ ' = .<macro><' ~ $sym ~ '>)' });
+                @!exported-macros.map(-> $sym { '(my &__TEMPLATE_MACRO__' ~ $sym ~ ' = .<macro><' ~ $sym ~ '>)' }),
+                @!exported-fragments.map(-> $sym { '(my &__TEMPLATE_FRAGMENT__' ~ $sym ~ ' = .<fragment><' ~ $sym ~ '>)' });
         '(BEGIN (((' ~ $decls ~ ') given await($*TEMPLATE-REPOSITORY.resolve-absolute(\'' ~
                 $!path.absolute ~ '\'.IO)).exports) && ""))'
     }
@@ -280,11 +316,13 @@ my class UseFile does Node is export {
 my class Prelude does Node is export {
     has @.exported-subs;
     has @.exported-macros;
+    has @.exported-fragments;
 
     method compile() {
         my $decls = join ",", flat
                 @!exported-subs.map(-> $sym { '(my &__TEMPLATE_SUB__' ~ $sym ~ ' = .<sub><' ~ $sym ~ '>)' }),
-                @!exported-macros.map(-> $sym { '(my &__TEMPLATE_MACRO__' ~ $sym ~ ' = .<macro><' ~ $sym ~ '>)' });
+                @!exported-macros.map(-> $sym { '(my &__TEMPLATE_MACRO__' ~ $sym ~ ' = .<macro><' ~ $sym ~ '>)' }),
+                @!exported-fragments.map(-> $sym { '(my &__TEMPLATE_FRAGMENT__' ~ $sym ~ ' = .<fragment><' ~ $sym ~ '>)' });
         '(BEGIN (((' ~ $decls ~ ') given await($*TEMPLATE-REPOSITORY.resolve-prelude()).exports) && ""))'
     }
 }

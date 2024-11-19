@@ -44,7 +44,8 @@ class Cro::WebApp::Template::ASTBuilder {
             my $loaded-prelude = await $*TEMPLATE-REPOSITORY.resolve-prelude();
             @prelude[0] = Prelude.new:
                     exported-subs => $loaded-prelude.exports<sub>.keys,
-                    exported-macros => $loaded-prelude.exports<macro>.keys;
+                    exported-macros => $loaded-prelude.exports<macro>.keys,
+                    exported-fragments => $loaded-prelude.exports<fragment>.keys;
         }
         make Template.new:
                 children => [|@prelude, |flatten-literals($<sequence-element>.map(*.ast))],
@@ -205,6 +206,21 @@ class Cro::WebApp::Template::ASTBuilder {
         make MacroBody.new;
     }
 
+    method sigil-tag:sym<fragment>($/) {
+        make TemplateFragment.new:
+            name => ~$<name>,
+            parameters => $<signature> ?? $<signature>.ast !! (),
+            children => flatten-literals($<sequence-element>.map(*.ast),
+                :trim-trailing-horizontal($*lone-end-line)),
+            trim-trailing-horizontal-before => $*lone-start-line;
+    }
+
+    method sigil-tag:sym<fragment-call>($/) {
+        make FragmentCall.new:
+            target => ~$<target>,
+            arguments => $<arglist> ?? $<arglist>.ast !! ();
+    }
+
     method sigil-tag:sym<part>($/) {
         make TemplatePart.new:
                 name => ~$<name>,
@@ -221,7 +237,8 @@ class Cro::WebApp::Template::ASTBuilder {
             @*USED-FILES.push($used);
             make UseFile.new: :path($used.path),
                     exported-subs => $used.exports<sub>.keys,
-                    exported-macros => $used.exports<macro>.keys;
+                    exported-macros => $used.exports<macro>.keys,
+                    exported-fragments => $used.exports<fragment>.keys;
         }
         orwith $<library> {
             my $module-name = .ast;

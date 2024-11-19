@@ -1,0 +1,16 @@
+<html>
+  <body>
+    <div hx-target="this">
+      <:fragment archive-ui($_)>
+        <?.archived>
+        <button hx-patch="/contacts/<.id>/unarchive">Unarchive</button>
+        </?>
+        <!>
+        <button hx-delete="/contacts/<.id>">Archive</button>
+        </!>
+      </:>
+    </div>
+    <h3>Contact</h3>
+    <p><.email></p>
+  </body>
+</html>

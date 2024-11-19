@@ -26,6 +26,13 @@ sub template-library(*@resources) is export {
             }
             %exports{$mangled} := $sub;
         }
+        for %template-exports<fragment>.kv -> $sym, $sub {
+            my $mangled = "&__TEMPLATE_FRAGMENT__$sym";
+            if %exports{$mangled}:exists {
+                die "Duplicate export of fragment '$sym' in $*TEMPLATE-FILE";
+            }
+            %exports{$mangled} := $sub;
+        }
     }
     return %exports;
 }
