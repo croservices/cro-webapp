@@ -204,3 +204,10 @@ multi template($template, $initial-topic, :%parts, :$content-type = 'text/html',
 multi template($template, :%parts, :$content-type = 'text/html', :$fragment --> Nil) is export {
     template($template, Nil, :%parts, :$content-type, :$fragment);
 }
+
+#| Used in a Cro::HTTP::Router route handler to render a template inline from
+#| a source Str. The initial topic is then passed to the template to render. The
+#| content type will default to text/html, but can be set explicitly also.
+sub template-inline($source, $initial-topic, :%parts, :$content-type = 'text/html', :$fragment --> Nil) is export {
+    content $content-type, parse-template($source).render($initial-topic, :%parts, :$fragment);
+}

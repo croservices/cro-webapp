@@ -1,6 +1,8 @@
 use Test;
 use Cro::WebApp::Template::Repository;
 
+#| template-inline() is not amenable to direct testing since
+#| Can only use 'content' inside of a request handler
 my Cro::WebApp::Template::Compiled $parsed;
 lives-ok { $parsed = parse-template('<.foo>, <.bar>') },
         'Can parse a template from a string';
