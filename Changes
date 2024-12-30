@@ -1,0 +1,11 @@
+Revision history for Cro::WebApp
+
+{{NEXT}}
+    - Implement Fragment support. A template fragment works somewhat like a
+      template subroutine, except that it is intended to be placed inline within
+      other template content. This allows rendering only parts of a template. This
+      can prove useful when building dynamic web pages using e.g. HTMX.
+    - Fix using template parts via `render-template`.
+    - Fix the generation of `DateTime` values in form elements.
+    - Change dependency management to allow individual Cro modules to be
+      updated individually.
