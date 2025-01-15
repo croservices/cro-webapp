@@ -1,6 +1,6 @@
 Revision history for Cro::WebApp
 
-{{NEXT}}
+0.9.0
     - Implement Fragment support. A template fragment works somewhat like a
       template subroutine, except that it is intended to be placed inline within
       other template content. This allows rendering only parts of a template. This
