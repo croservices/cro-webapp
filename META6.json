@@ -1,37 +1,40 @@
 {
-    "name": "Cro::WebApp",
-    "description": "Support for building server-side web applications with Cro, including templates and form handling.",
-    "version": "0.8.9.1",
-    "authors": [
-        "Jonathan Worthington <jnthn@jnthn.net>"
-    ],
-    "auth": "zef:cro",
-    "depends": [
-        "Cro::HTTP:ver<0.8.9>",
-        "Log::Timeline",
-        "OO::Monitors"
-    ],
-    "build-depends": [],
-    "provides": {
-        "Cro::WebApp::Form": "lib/Cro/WebApp/Form.rakumod",
-        "Cro::WebApp::LogTimelineSchema": "lib/Cro/WebApp/LogTimelineSchema.rakumod",
-        "Cro::WebApp::Template": "lib/Cro/WebApp/Template.rakumod",
-        "Cro::WebApp::Template::AST": "lib/Cro/WebApp/Template/AST.rakumod",
-        "Cro::WebApp::Template::ASTBuilder": "lib/Cro/WebApp/Template/ASTBuilder.rakumod",
-        "Cro::WebApp::Template::Builtins": "lib/Cro/WebApp/Template/Builtins.rakumod",
-        "Cro::WebApp::Template::Error": "lib/Cro/WebApp/Template/Error.rakumod",
-        "Cro::WebApp::Template::Library": "lib/Cro/WebApp/Template/Library.rakumod",
-        "Cro::WebApp::Template::Location": "lib/Cro/WebApp/Template/Location.rakumod",
-        "Cro::WebApp::Template::Parser": "lib/Cro/WebApp/Template/Parser.rakumod",
-        "Cro::WebApp::Template::Repository": "lib/Cro/WebApp/Template/Repository.rakumod"
-    },
-    "resources": [
-        "prelude.crotmp"
-    ],
-    "license": "Artistic-2.0",
-    "tags": [
-        "template",
-        "web"
-    ],
-    "source-url": "https://github.com/croservices/cro-webapp.git"
+  "name": "Cro::WebApp",
+  "description": "Support for building server-side web applications with Cro, including templates and form handling.",
+  "version": "0.9.0",
+  "api": "0",
+  "perl": "6.*",
+  "authors": [
+    "Jonathan Worthington <jnthn@jnthn.net>"
+  ],
+  "auth": "zef:cro",
+  "depends": [
+    "Cro::HTTP:ver<0.8.10+>:api<0>:auth<zef:cro>",
+    "Log::Timeline",
+    "OO::Monitors"
+  ],
+  "build-depends": [],
+  "test-depends": [],
+  "provides": {
+    "Cro::WebApp::Form": "lib/Cro/WebApp/Form.rakumod",
+    "Cro::WebApp::LogTimelineSchema": "lib/Cro/WebApp/LogTimelineSchema.rakumod",
+    "Cro::WebApp::Template": "lib/Cro/WebApp/Template.rakumod",
+    "Cro::WebApp::Template::AST": "lib/Cro/WebApp/Template/AST.rakumod",
+    "Cro::WebApp::Template::ASTBuilder": "lib/Cro/WebApp/Template/ASTBuilder.rakumod",
+    "Cro::WebApp::Template::Builtins": "lib/Cro/WebApp/Template/Builtins.rakumod",
+    "Cro::WebApp::Template::Error": "lib/Cro/WebApp/Template/Error.rakumod",
+    "Cro::WebApp::Template::Library": "lib/Cro/WebApp/Template/Library.rakumod",
+    "Cro::WebApp::Template::Location": "lib/Cro/WebApp/Template/Location.rakumod",
+    "Cro::WebApp::Template::Parser": "lib/Cro/WebApp/Template/Parser.rakumod",
+    "Cro::WebApp::Template::Repository": "lib/Cro/WebApp/Template/Repository.rakumod"
+  },
+  "resources": [
+    "prelude.crotmp"
+  ],
+  "license": "Artistic-2.0",
+  "tags": [
+    "template",
+    "web"
+  ],
+  "source-url": "https://github.com/croservices/cro-webapp.git"
 }
