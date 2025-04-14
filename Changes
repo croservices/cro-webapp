@@ -1,5 +1,8 @@
 Revision history for Cro::WebApp
 
+{{NEXT}}
+    - Allow templates to be assembled within route blocks for HTML::Components.
+
 0.9.0
     - Implement Fragment support. A template fragment works somewhat like a
       template subroutine, except that it is intended to be placed inline within
