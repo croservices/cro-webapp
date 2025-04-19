@@ -1,0 +1,19 @@
+<:sub footer>
+    <footer>
+        Foo bar footer<\gt><\ge>
+    </footer>
+</:>
+
+<:sub header>
+    <header>
+        Foo bar header<\lt><\le>
+    </header>
+</:>
+
+<:macro wrap>
+    <html>
+        <&header><\le><\ge>
+        <:body>
+        <&footer>
+    </html>
+</:>
