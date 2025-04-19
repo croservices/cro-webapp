@@ -3,17 +3,18 @@ use Cro::HTTP::MultiValue;
 
 #| A role to be mixed in to Attribute to hold extra form-related properties.
 my role FormProperties {
-    has $.webapp-form-label is rw;
-    has $.webapp-form-placeholder is rw;
-    has $.webapp-form-help is rw;
-    has Str $.webapp-form-type is rw;
-    has Hash $.webapp-form-multiline is rw;
-    has Block $.webapp-form-select is rw;
-    has Int $.webapp-form-minlength is rw;
-    has Int $.webapp-form-maxlength is rw;
-    has Real $.webapp-form-min is rw;
-    has Real $.webapp-form-max is rw;
-    has List @.webapp-form-validations;
+    has       $.webapp-form-label        is rw;
+    has       $.webapp-form-placeholder  is rw;
+    has       $.webapp-form-help         is rw;
+    has Str   $.webapp-form-type         is rw;
+    has Hash  $.webapp-form-multiline    is rw;
+    has Block $.webapp-form-select       is rw;
+    has Int   $.webapp-form-minlength    is rw;
+    has Int   $.webapp-form-maxlength    is rw;
+    has Real  $.webapp-form-min          is rw;
+    has Real  $.webapp-form-max          is rw;
+    has List  @.webapp-form-validations;
+    has       &.webapp-form-custom       is rw;
 }
 
 #| Ensure that the attribute has the FormProperties mixin.
@@ -181,6 +182,34 @@ multi trait_mod:<is>(Attribute:D $attr, :$validated! --> Nil) is export {
     }
     $attr.webapp-form-validations.push($validated);
 }
+
+multi trait_mod:<is>(
+  Attribute:D  $attr         is copy,
+              :$form-custom! is copy --> Nil
+)
+  is export
+{
+  ensure-attr-state($attr);
+
+  # cw: This doesn't work because the method may not yet exist;
+  if $form-custom ~~ Str {
+    unless $form-custom.starts-with('template:') {
+      my $m = $attr.package.^can($form-custom);
+
+      die "Cannot use non-existing method { $form-custom } as a custom field handler!"
+        unless $m;
+
+      $form-custom = $m.head;
+    }
+  }
+
+  if $form-custom ~~ Callable {
+    $attr.webapp-form-custom = $form-custom;
+  } else {
+    die "Cannot use a { $form-custom.^name } as a custom field handler!";
+  }
+}
+
 
 #| The set of validation issues relating to a form.
 class Cro::WebApp::Form::ValidationState {
@@ -463,6 +492,26 @@ role Cro::WebApp::Form {
         with $attr.?webapp-form-multiline {
             ensure-acceptable-type($attr);
             return self!calculate-text-control-type($attr, 'textarea', $_);
+        }
+        with $attr.?webapp-form-custom {
+          when Str {
+            my $template = .subst('template:', '');
+
+            load-template(
+              self.template-dir.add($template)
+            ).render( :$val )
+          }
+
+          %properties<value> = do {
+            when Method   {
+                $attr.webapp-form-custom.(self, $val)
+            }
+
+            when Callable {
+                $attr.webapp-form-custom.($val)
+            }
+          }
+          return 'custom', %properties;
         }
 
         # Otherwise, look at the type-specific cases; booleans become checkboxes, and

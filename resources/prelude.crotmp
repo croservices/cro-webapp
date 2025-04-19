@@ -111,6 +111,15 @@
         <&control-validation-message($_, :$invalid-feedback-class)>
       </div>
     </?>
+    <?{ .type eq 'custom' }>
+      <div<&class($input-group-class)>>
+        <label for="<&fieldName($prefix, .name)>"<&class($input-label-class)>><.label></label>
+        <div class="subform-<&fieldName($prefix, .name)>">
+          <&HTML-AND-JAVASCRIPT(.value)>
+        </div>
+      </div>
+    </?>
+
     <?{ .type eq 'hidden' }>
       <input type="hidden" name="<.name>" id="<.name>"<?.<value>.defined()> value="<.value>"</?>>
     </?>
