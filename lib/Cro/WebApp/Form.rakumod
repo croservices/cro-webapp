@@ -1,5 +1,6 @@
 use Cro::HTTP::Body;
 use Cro::HTTP::MultiValue;
+use Cro::WebApp::Template::Repository;
 
 #| A role to be mixed in to Attribute to hold extra form-related properties.
 my role FormProperties {
@@ -493,13 +494,19 @@ role Cro::WebApp::Form {
             ensure-acceptable-type($attr);
             return self!calculate-text-control-type($attr, 'textarea', $_);
         }
+
+        my %properties;
+
+        my $an  = $attr.name.substr(2);
+        my $val = self."{ $an }"();
+
         with $attr.?webapp-form-custom {
           when Str {
             my $template = .subst('template:', '');
 
             load-template(
               self.template-dir.add($template)
-            ).render( :$val )
+            ).render(+ :$val )
           }
 
           %properties<value> = do {
