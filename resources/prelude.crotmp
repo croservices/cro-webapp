@@ -46,8 +46,7 @@
     <?{ .type eq 'text' || .type eq 'email' || .type eq 'search' || .type eq 'url' || .type eq 'tel' }>
       <div<&class($input-group-class)>>
         <label for="<.name>"<&class($input-label-class)>><.label></label>
-        <input type="<.type>" name="<.name>" id="<.name>" <?.required>required</?>
-        <&control-class($_, $input-control-class, :$is-invalid-class)><&str-opts($_)><?.<value>.defined()> value="<.value>"</?>>
+        <input type="<.type>" name="<.name>" id="<.name>"<&control-class($_, $input-control-class, :$is-invalid-class)><&str-opts($_)><?.<value>.defined()> value="<.value>"</?>>
         <&control-help($_, :$help-class)>
         <&control-validation-message($_, :$invalid-feedback-class)>
       </div>
@@ -55,8 +54,7 @@
     <?{ .type eq 'file' }>
       <div<&class($input-group-class)>>
         <label for="<.name>"<&class($input-label-class)>><.label></label>
-        <input type="<.type>" name="<.name>" id="<.name>" <?.required>required</?>
-        <&control-class($_, $input-control-class, :$is-invalid-class)><&str-opts($_)>>
+        <input type="<.type>" name="<.name>" id="<.name>"<&control-class($_, $input-control-class, :$is-invalid-class)><&str-opts($_)>>
         <&control-help($_, :$help-class)>
         <&control-validation-message($_, :$invalid-feedback-class)>
       </div>
@@ -64,8 +62,7 @@
     <?{ .type eq 'number' }>
       <div<&class($input-group-class)>>
         <label for="<.name>"<&class($input-label-class)>><.label></label>
-        <input type="number" name="<.name>" id="<.name>" <?.required>required</?>
-        <&control-class($_, $input-control-class, :$is-invalid-class)><&num-opts($_)><?.<value>.defined()> value="<.value>"</?>>
+        <input type="number" name="<.name>" id="<.name>"<&control-class($_, $input-control-class, :$is-invalid-class)><&num-opts($_)><?.<value>.defined()> value="<.value>"</?>>
         <&control-help($_, :$help-class)>
         <&control-validation-message($_, :$invalid-feedback-class)>
       </div>
@@ -73,8 +70,7 @@
     <?{ .type eq 'color' || .type eq 'date' || .type eq 'datetime-local' || .type eq 'month' || .type eq 'time' || .type eq 'week' }>
       <div<&class($input-group-class)>>
         <label for="<.name>"<&class($input-label-class)>><.label></label>
-        <input type="<.type>" name="<.name>" id="<.name>" <?.required>required</?>
-        <&control-class($_, $input-control-class, :$is-invalid-class)><?.<value>.defined()> value="<.value>"</?>>
+        <input type="<.type>" name="<.name>" id="<.name>"<&control-class($_, $input-control-class, :$is-invalid-class)><?.<value>.defined()> value="<.value>"</?>>
         <&control-help($_, :$help-class)>
         <&control-validation-message($_, :$invalid-feedback-class)>
       </div>
@@ -82,8 +78,7 @@
     <?{ .type eq 'password' }>
       <div<&class($input-group-class)>>
         <label for="<.name>"<&class($input-label-class)>><.label></label>
-        <input type="password" name="<.name>" id="<.name>" <?.required>required</?>
-        <&control-class($_, $input-control-class, :$is-invalid-class)>>
+        <input type="password" name="<.name>" id="<.name>"<&control-class($_, $input-control-class, :$is-invalid-class)>>
         <&control-help($_, :$help-class)>
         <&control-validation-message($_, :$invalid-feedback-class)>
       </div>
@@ -91,16 +86,14 @@
     <?{ .type eq 'textarea' }>
       <div<&class($input-group-class)>>
         <label for="<.name>"<&class($input-label-class)>><.label></label>
-        <textarea name="<.name>" id="<.name>" <?.required>required</?>
-        <&control-class($_, $input-control-class, :$is-invalid-class)><&rows-cols(.rows, .cols)><&str-opts($_)>><?.<value>.defined()><.value></?></textarea>
+        <textarea name="<.name>" id="<.name>"<&control-class($_, $input-control-class, :$is-invalid-class)><&rows-cols(.rows, .cols)><&str-opts($_)>><?.<value>.defined()><.value></?></textarea>
         <&control-help($_, :$help-class)>
         <&control-validation-message($_, :$invalid-feedback-class)>
       </div>
     </?>
     <?{ .type eq 'checkbox' }>
       <div<&class($check-group-class)>>
-        <input type="checkbox" name="<.name>" id="<.name>" <?.required>required</?>
-        <&control-class($_, $check-control-class, :$is-invalid-class)><?.<value>> checked</?>>
+        <input type="checkbox" name="<.name>" id="<.name>"<&control-class($_, $check-control-class, :$is-invalid-class)><?.<value>> checked</?>>
         <label for="<.name>"<&class($check-label-class)>><.label></label>
         <&control-help($_, :$help-class)>
         <&control-validation-message($_, :$invalid-feedback-class)>
