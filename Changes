@@ -1,5 +1,8 @@
 Revision history for Cro::WebApp
 
+{{$NEXT}}
+    - Add the 'required' attr to input tags
+
 0.10.0
     - Allow templates to be assembled within route blocks for HTML::Components.
 
