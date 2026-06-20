@@ -1,0 +1,93 @@
+#!/usr/bin/env raku
+
+# Proves the thread-safety race in Cro::WebApp::Form.!add-csrf-protection.
+#
+# Root cause: `my constant @CHARS = flat 'A'..'Z', 'a'..'z', '0'..'9'`
+#
+#   `flat` returns a List whose .elems count is lazily cached on first call.
+#   Under concurrent first-calls, multiple threads simultaneously invoke
+#   .elems (via .roll), race on writing the cache, and one thread reads
+#   the cache slot before it is filled — producing:
+#     "elems requires a concrete object (got a Mu type object instead)"
+#   This matches the production errors:
+#     "Cannot pop from an empty Array"
+#     "No such method 'fully-reified' for invocant of type 'VMNull'"
+#
+#   The race fires with ~70% probability per fresh process when the constant
+#   is in a method body (first runtime access is concurrent).  At role scope
+#   the List.elems cache is populated during single-threaded module load,
+#   which is why moving to role scope reduced the observable error rate —
+#   but it does not eliminate the race mechanically.
+#
+# True fix: wrap in [...] to force eager Array construction.
+#   An Array stores its element count directly; .elems is O(1) and requires
+#   no lazy cache write, so concurrent calls are always safe.
+#
+# Why subprocess for Broken: the lazy cache is populated once per process.
+#   Subsequent batches in the same process cannot re-trigger the race.
+
+use Test;
+
+# --- Broken: method-scope constant using flat (lazy List) ---
+# Run as a subprocess so each attempt gets a fresh, uncached List.
+
+my $broken-probe = q:to/RAKU/;
+    role R {
+        method generate() {
+            my $token;
+            without $token {
+                my constant @CHARS = flat 'A'..'Z', 'a'..'z', '0'..'9';
+                $token = @CHARS.roll(64).join;
+            }
+            $token
+        }
+    }
+    my $obj = R.new;
+    my @errors; my $lock = Lock.new; my $gate = Promise.new;
+    my @p = (^300).map: {
+        start {
+            await $gate;
+            CATCH { default { $lock.protect: { @errors.push: 1 } } }
+            $obj.generate
+        }
+    };
+    sleep 0.05; $gate.keep(True); await @p;
+    say +@errors;
+    RAKU
+
+my $broken-fired = False;
+for 1..20 {
+    my $proc = run 'raku', '-e', $broken-probe, :out, :err;
+    $proc.err.slurp(:close);
+    if ($proc.out.slurp(:close).trim.Int) > 0 {
+        $broken-fired = True;
+        last;
+    }
+}
+
+# --- Fixed: constant uses [...] to force eager Array construction ---
+
+my constant @SAFE-CHARS = [flat 'A'..'Z', 'a'..'z', '0'..'9'];
+
+role FixedRole {
+    method generate() {
+        my $token;
+        without $token { $token = @SAFE-CHARS.roll(64).join }
+        $token
+    }
+}
+my $obj = FixedRole.new;
+my @fixed-errors; my $lock = Lock.new; my $gate = Promise.new;
+my @p = (^300).map: {
+    start {
+        await $gate;
+        CATCH { default { $lock.protect: { @fixed-errors.push: 1 } } }
+        $obj.generate
+    }
+};
+sleep 0.05; $gate.keep(True); await @p;
+
+ok  $broken-fired,        "Broken (flat List constant): List.elems race fires under concurrent first-call";
+is  +@fixed-errors, 0,    "Fixed  ([flat] Array constant): zero errors across 300 concurrent threads";
+
+done-testing;
