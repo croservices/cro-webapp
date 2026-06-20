@@ -262,6 +262,8 @@ class X::Cro::WebApp::Form::FileInGET is Exception {
 role Cro::WebApp::Form {
     #| The CSRF token hidden field name and cookie name.
     my constant CSRF-TOKEN-NAME = '__CSRF_TOKEN';
+    #| Alphabet for CSRF token generation; module-scoped to avoid first-call race under concurrency.
+    my constant @CSRF-CHARS = flat 'A'..'Z', 'a'..'z', '0'..'9';
 
     #| Cached rendered data, in case it is asked for multiple times.
     has $!cached-render-data;
@@ -624,8 +626,7 @@ role Cro::WebApp::Form {
             my $token = $response.request.cookie-value(CSRF-TOKEN-NAME) //
                     $response.cookies.first(*.name eq CSRF-TOKEN-NAME).?value;
             without $token {
-                my constant @CHARS = flat 'A'..'Z', 'a'..'z', '0'..'9';
-                $token = @CHARS.roll(64).join;
+                $token = @CSRF-CHARS.roll(64).join;
                 try $response.set-cookie(CSRF-TOKEN-NAME, $token, path => '/');
             }
             @controls.unshift: {
