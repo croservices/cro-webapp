@@ -41,6 +41,17 @@ is norm-ws(render-template('transitive-use.crotmp', {})),
     </html>
     EXPECTED
 
+is norm-ws(render-template('ab-test-1.crotmp', {})),
+          norm-ws(q:to/EXPECTED/), 'Can call a sub from a used template';
+      <header>
+          Foo bar header<<=
+      </header>
+      Content
+      <footer>
+          Foo bar footer>>=
+      </footer>
+      EXPECTED
+
 sub norm-ws($str) {
     $str.subst(:g, /\s+/, '')
 }

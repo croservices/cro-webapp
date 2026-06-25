@@ -49,6 +49,8 @@ grammar Cro::WebApp::Template::Parser {
         [ '>' || <.panic: "malformed closing tag"> ]
     }
 
+
+
     proto token tag-element { * }
 
     token tag-element:sym<sigil-tag> {
@@ -65,6 +67,11 @@ grammar Cro::WebApp::Template::Parser {
     }
 
     proto token sigil-tag { * }
+
+    token sigil-tag:sym<geLiteral> { '<\ge>' }
+    token sigil-tag:sym<leLiteral> { '<\le>' }
+    token sigil-tag:sym<gtLiteral> { '<\gt>' }
+    token sigil-tag:sym<ltLiteral> { '<\lt>' }
 
     token sigil-tag:sym<topic> {
         '<.'
