@@ -55,7 +55,7 @@ my class RatLiteral does Node is export {
     has Rat $.value is required;
 
     method compile() {
-        $!value.perl
+        $!value.raku
     }
 }
 
@@ -63,7 +63,7 @@ my class NumLiteral does Node is export {
     has Num $.value is required;
 
     method compile() {
-        $!value.perl
+        $!value.raku
     }
 }
 

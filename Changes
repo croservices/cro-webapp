@@ -1,5 +1,8 @@
 Revision history for Cro::WebApp
 
+{{NEXT}}
+    - Replace .perl with .raku
+
 0.10.1
     - Add the 'required' attr to input tags
     - fix constant lazy-list
